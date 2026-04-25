@@ -1,0 +1,42 @@
+{
+  "name": "@agent-ix/ix-ui",
+  "description": "Design system for Agent IX — terminal and web components",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@10.10.0",
+  "scripts": {
+    "build": "pnpm -r run build",
+    "test": "pnpm -r run test",
+    "test:json": "pnpm -r run test:json",
+    "lint": "pnpm -r run lint",
+    "format": "pnpm -r run format",
+    "format:check": "pnpm -r run format:check",
+    "clean": "pnpm -r run clean",
+    "version": "node scripts/build-tools.js version",
+    "info": "node scripts/build-tools.js info",
+    "pkg:use-local": "pnpm dlx @agent-ix/js-deps use-local",
+    "pkg:use-upstream": "pnpm dlx @agent-ix/js-deps use-upstream",
+    "pkg:refresh-local": "pnpm dlx @agent-ix/js-deps refresh-local"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.7",
+    "@typescript-eslint/eslint-plugin": "^8.31.1",
+    "@typescript-eslint/parser": "^8.31.1",
+    "eslint": "^9.25.1",
+    "eslint-plugin-prettier": "^5.2.6",
+    "prettier": "^3.5.3",
+    "typescript": "^5.9.3"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/agent-ix/ix-ui.git"
+  },
+  "pnpm": {
+    "updateConfig": {
+      "ignoreDependencies": [
+        "typescript"
+      ]
+    }
+  }
+}
