@@ -11,10 +11,7 @@ tags:
   - listr2
   - ansi
 implementation_language: typescript
-relationships:
-  - target: "ix://agent-ix/ix-cli"
-    type: "consumed_by"
-    cardinality: "1:N"
+relationships: []
 standards_alignment:
   - iso-iec-ieee-29148
   - ieee-828
