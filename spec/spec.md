@@ -2,36 +2,34 @@
 artifact_type: master-requirements
 name: ix-ui
 org: agent-ix
-component_type: react-lib
+component_type: node-lib
 tags:
   - design-system
-  - react
   - terminal
   - clack
   - listr2
   - ansi
 implementation_language: typescript
-relationships: []
+relationships:
+  - target: "ix://agent-ix/ix-themes"
+    type: "requires"
+    cardinality: "1:1"
 standards_alignment:
   - iso-iec-ieee-29148
   - ieee-828
 ---
 # Master Requirements Specification
-## IX UI — Agent IX Design System
+## IX UI — Agent IX CLI Design System
 
 ---
 
 ## 1. Purpose
 
-This document defines the **scope, intent, and governing requirements framework** for the ix-ui design system.
+This document defines the **scope, intent, and governing requirements framework** for ix-ui.
 
-It establishes:
-- The problem space addressed by the design system
-- The boundaries of responsibility across `semantic`, `cli`, and `web` packages
-- The authoritative structure for requirements, verification, and change control
-- The shared visual and interaction language for all Agent IX CLI and web surfaces
+ix-ui is the **terminal design system** for Agent IX. It provides the shared state vocabulary and CLI output components used by all Agent IX CLI tools.
 
-This document is the **top-level requirements artifact** for the repository.
+Web/React theming is owned by `ix-themes` (`@agent-ix/ix-themes`). ix-ui and ix-themes share a conceptual design language but have no runtime dependency on each other. The `semantic` package provides the shared TypeScript contract that both sides can reference.
 
 ---
 
@@ -40,21 +38,18 @@ This document is the **top-level requirements artifact** for the repository.
 ### 2.1 In Scope
 
 This specification governs:
-- The `semantic` package: platform-agnostic state model, glyph vocabulary, and shared type contracts
+- The `semantic` package: platform-agnostic state types, glyph vocabulary, phase model — no runtime deps
 - The `cli` package: terminal UI components (phase-table, task-list, prompts, spinners) using ANSI/cursor control
-- The `web` package: React component equivalents of cli components, CSS custom property tokens
-- The design language contract shared across all Agent IX CLI tools and web dashboards
 - Non-TTY / CI mode output contracts for all terminal components
 - Component consumption API for first-party and third-party CLI packages
 
 ### 2.2 Out of Scope
 
 This specification does not govern:
+- React components or CSS tokens — owned by `ix-themes`
 - Application-specific business logic in consuming CLIs
 - The `ix-cli` command tree or plugin system
-- Deployment concerns
-- Branding and naming conventions (deferred to future versions)
-- Storybook configuration and visual regression testing (deferred)
+- Branding and naming conventions (deferred)
 
 ---
 
@@ -62,23 +57,21 @@ This specification does not govern:
 
 ### 3.1 System Description
 
-ix-ui is a **multi-package TypeScript design system** providing a consistent visual and interaction language across Agent IX terminal (CLI) and web surfaces.
-
-The system is organized into three published packages:
+ix-ui is a **two-package TypeScript monorepo** providing terminal output components and the shared state vocabulary for the Agent IX CLI ecosystem.
 
 | Package | Name | Purpose |
 |---------|------|---------|
 | `packages/semantic` | `@agent-ix/ix-ui-semantic` | Platform-agnostic state types, glyph vocabulary, phase model |
 | `packages/cli` | `@agent-ix/ix-ui-cli` | Terminal components: phase-table, task-list, clack wrappers |
-| `packages/web` | `@agent-ix/ix-ui-web` | React components mirroring CLI components; CSS tokens |
 
-`semantic` has no runtime dependencies. `cli` and `web` both depend on `semantic` and render the same conceptual states on their respective surfaces.
+`semantic` has no runtime dependencies. `cli` depends on `semantic`.
+
+`ix-themes` owns the web/React side and mirrors the same design language independently.
 
 ### 3.2 Intended Users
 
-- **First-party CLI package authors** — `ix-cli` packages (`core`, `local`, `elements`, `spec`) import `@agent-ix/ix-ui-cli` for all terminal output
+- **First-party CLI package authors** — `ix-cli` packages import `@agent-ix/ix-ui-cli` for all terminal output
 - **Third-party plugin authors** — teams building CLI plugins for the Agent IX ecosystem
-- **Web dashboard authors** — teams building React UIs that reflect the same phase/state model as the CLI
 
 ---
 
@@ -100,7 +93,7 @@ spec/
 ## 5. Requirement Classes
 
 ### 5.1 Stakeholder Requirements (`StR-XXX`)
-Authoritative needs from CLI authors, plugin authors, and dashboard authors.
+Authoritative needs from CLI authors and plugin authors.
 
 ### 5.2 User Stories (`US-XXX`)
 Usage scenarios describing developer intent when consuming the design system.
@@ -109,7 +102,7 @@ Usage scenarios describing developer intent when consuming the design system.
 Testable behavioral contracts for each package and component.
 
 ### 5.4 Non-Functional Requirements (`NFR-XXX`)
-Quality constraints: accessibility, performance, consistency, and API stability.
+Quality constraints: consistency, API stability, TTY/non-TTY correctness.
 
 ---
 
@@ -141,7 +134,7 @@ All functional requirements SHALL:
 
 ### 8.1 Phase State Model (`semantic`)
 
-The canonical phase state vocabulary is defined in `@agent-ix/ix-ui-semantic`. All components in `cli` and `web` MUST use these types exclusively — no local state enumerations are permitted.
+The canonical phase state vocabulary is defined in `@agent-ix/ix-ui-semantic`. All CLI components MUST use these types exclusively — no local state enumerations are permitted in consuming packages.
 
 ```
 PhaseState: pending | queued | running | done | failed
@@ -159,9 +152,9 @@ The canonical glyph mapping is defined in `@agent-ix/ix-ui-semantic`:
 | `done` | `✓` | `done` | No |
 | `failed` | `✗` | `failed` | No |
 
-### 8.3 Rendering Platform Contract
+### 8.3 Platform Boundary
 
-`cli` renders using ANSI escape codes and cursor-up sequences. `web` renders using React and CSS custom properties. Both derive state semantics from `semantic` — the rendering layer is platform-specific, the state model is not.
+ix-ui is terminal-only. Web rendering (CSS tokens, React components) is owned by `ix-themes`. The design language is kept in sync through shared conceptual vocabulary, not a shared runtime dependency.
 
 ---
 
@@ -174,20 +167,6 @@ The canonical glyph mapping is defined in `@agent-ix/ix-ui-semantic`:
 | `PhaseTable` | Concurrent multi-item progress with phase columns, live cursor-up redraws, and frozen final state | ix-local-cli FR-022 |
 | `TaskList` | Listr2-based reactive task spinner with `@clack/prompts` intro/outro framing | ix-local-cli FR-005 |
 | `intro` / `outro` | `@clack/prompts` wrappers for consistent command framing | ix-local-cli NFR-001 |
-
-### 9.2 Web Components (`@agent-ix/ix-ui-web`)
-
-React equivalents of the CLI components, sharing the `semantic` state model:
-
-| Component | CLI equivalent |
-|-----------|---------------|
-| `PhaseTable` | `cli/PhaseTable` |
-| `StatusBadge` | Phase glyph inline display |
-| `TaskProgress` | `cli/TaskList` |
-
-### 9.3 CSS Token Contract
-
-`@agent-ix/ix-ui-web` publishes CSS custom properties for all semantic states. Tokens are NOT shared with `cli` (terminal uses ANSI, not CSS).
 
 ---
 
@@ -211,7 +190,6 @@ Bidirectional traceability SHALL be maintained between:
 
 - `semantic`: unit tests for type contracts and glyph mapping
 - `cli`: unit tests with TTY mock; snapshot tests for rendered output
-- `web`: React Testing Library unit tests; visual snapshot tests
 
 ---
 
@@ -222,3 +200,4 @@ Bidirectional traceability SHALL be maintained between:
 - ix-local-cli FR-022 — Phase-column table reference implementation
 - ix-local-cli FR-005 — Reactive output display reference implementation
 - ix-local-cli NFR-001 — CLI output style consistency
+- ix-themes — web/React design token system
