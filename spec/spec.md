@@ -78,13 +78,18 @@ ix-ui is a **two-package TypeScript monorepo** providing terminal output compone
 
 ## 4. Requirements Architecture
 
+FRs and NFRs are organized by package within each artifact directory (Option B artifact-first):
+
 ```
 spec/
 ├── spec.md                     # This document
-├── stakeholder/                # StR-XXX
-├── usecase/                    # US-XXX
-├── functional/                 # FR-XXX
-├── non-functional/             # NFR-XXX
+├── stakeholder/                # StR-XXX  (cross-cutting)
+├── usecase/                    # US-XXX   (cross-cutting)
+├── functional/
+│   ├── semantic/               # FR-XXX   (@agent-ix/ix-ui-semantic)
+│   └── cli/                    # FR-XXX   (@agent-ix/ix-ui-cli)
+├── non-functional/
+│   └── cli/                    # NFR-XXX  (@agent-ix/ix-ui-cli)
 ├── tests.md                    # Bidirectional requirements ↔ tests mapping
 └── assets/                     # Diagrams, mockups
 ```
