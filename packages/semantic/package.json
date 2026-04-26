@@ -1,0 +1,34 @@
+{
+  "name": "@agent-ix/ix-ui-semantic",
+  "description": "Platform-agnostic state types and glyph vocabulary for the Agent IX design system.",
+  "version": "0.1.0",
+  "type": "module",
+  "files": [
+    "dist/",
+    "README.md"
+  ],
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "packageManager": "pnpm@10.10.0",
+  "scripts": {
+    "test": "vitest run",
+    "test:json": "vitest run --reporter=json --outputFile=report.json || true",
+    "lint": "eslint \"src/**/*.ts\" \"tests/**/*.ts\" && pnpm run format:check",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "build": "vite build",
+    "clean": "rm -rf dist coverage"
+  },
+  "publishConfig": {
+    "registry": "http://npm.ix/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/agent-ix/ix-ui.git"
+  },
+  "devDependencies": {
+    "vite": ">=6.3.4",
+    "vite-plugin-dts": ">=4.5.3",
+    "vitest": ">=3.1.2"
+  }
+}
