@@ -10,6 +10,7 @@ tags:
   - listr2
   - ansi
 implementation_language: typescript
+depends_on: []
 relationships:
   - target: "ix://agent-ix/ix-themes"
     type: "requires"
