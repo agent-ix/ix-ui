@@ -119,3 +119,48 @@ describe("PhaseTable colors", () => {
     expect(colors.red("x")).toContain("\x1b[38;5;167m");
   });
 });
+
+// TC-013: FR-001-AC-1 — initial state is all pending
+describe("PhaseTable initial state", () => {
+  let output: string;
+
+  beforeEach(() => {
+    output = "";
+    vi.spyOn(process.stdout, "write").mockImplementation((chunk) => {
+      output += typeof chunk === "string" ? chunk : chunk.toString();
+      return true;
+    });
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("initial state is pending for all services and phases", () => {
+    const table = new PhaseTable<TestPhase>(["svc-a", "svc-b"], {
+      phases: TEST_PHASES,
+      isTTY: false,
+    });
+    table.start();
+    // No transitions — finish should show "ready in" (all pending treated as not-failed)
+    // No running/done/failed lines should have been emitted
+    const before = output;
+    table.finish();
+    // The only output should be the finish summary — no transition lines
+    expect(before).toBe("");
+    // Services appear in finish output
+    expect(output).toContain("svc-a");
+    expect(output).toContain("svc-b");
+  });
+
+  // TC-015: FR-001-AC-3 — isPlain forces non-TTY
+  it("isPlain:true forces non-TTY mode even without isTTY", () => {
+    const table = new PhaseTable<TestPhase>(["svc-a"], {
+      phases: TEST_PHASES,
+      isPlain: true,
+    });
+    table.start();
+    table.transition("svc-a", "build", "running");
+    expect(output).toMatch(/svc-a: build running/);
+  });
+});

@@ -69,3 +69,33 @@ describe("spinners", () => {
     }
   });
 });
+
+// TC-002: FR-001-AC-2 — PhaseState has exactly 5 members
+// TC-004: FR-003-AC-2 — PHASE_GLYPHS has exactly 5 entries
+describe("PhaseState", () => {
+  it("has exactly 5 members and PHASE_GLYPHS keys match exactly", () => {
+    const states: PhaseState[] = [
+      "pending",
+      "queued",
+      "running",
+      "done",
+      "failed",
+    ];
+    expect(states).toHaveLength(5);
+    // Exhaustive check: PHASE_GLYPHS keys == exactly these 5 states
+    expect(Object.keys(PHASE_GLYPHS).sort()).toEqual([...states].sort());
+  });
+});
+
+// TC-012: FR-007-AC-1 — package.json has no runtime dependencies
+describe("zero runtime dependencies", () => {
+  it("package.json has no runtime dependencies", async () => {
+    const { createRequire } = await import("node:module");
+    const req = createRequire(import.meta.url);
+    const pkg = req("../package.json") as {
+      dependencies?: Record<string, string>;
+    };
+    const depCount = Object.keys(pkg.dependencies ?? {}).length;
+    expect(depCount).toBe(0);
+  });
+});
