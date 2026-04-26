@@ -375,29 +375,31 @@ export class PhaseTable<P extends string = string> {
         "\n\n"
       : "";
 
-    const rows = this.rows.map((row) => {
-      const { phase, state } = this.rowCurrentState(row.phases);
-      let label = this.rowLabel(phase, state);
-      let podsDone = false;
-      if (phase === lastPhase && row.podStatus) {
-        label = row.podStatus;
-        const parts = row.podStatus.split("/");
-        const r = parseInt(parts[0], 10);
-        const t = parseInt(parts[1], 10);
-        podsDone = r > 0 && r === t;
-      }
-      const g = podsDone
-        ? blue("●")
-        : stateGlyph(state, this.spinnerFrame, true);
-      const elapsedMs =
-        row.endMs != null ? row.endMs - row.startMs : now - row.startMs;
-      const elapsed = (elapsedMs / 1000).toFixed(1) + "s";
-      const isPodStatus = phase === lastPhase && !!row.podStatus;
-      const labelPadded = isPodStatus
-        ? colorPods(label.padEnd(LABEL_W))
-        : label.padEnd(LABEL_W);
-      return `  ${g} ${row.name.padEnd(nameW)}  ${labelPadded}  ${elapsed}`;
-    });
+    const rows = this.rows
+      .filter((row) => this.rowCurrentState(row.phases).state !== "pending")
+      .map((row) => {
+        const { phase, state } = this.rowCurrentState(row.phases);
+        let label = this.rowLabel(phase, state);
+        let podsDone = false;
+        if (phase === lastPhase && row.podStatus) {
+          label = row.podStatus;
+          const parts = row.podStatus.split("/");
+          const r = parseInt(parts[0], 10);
+          const t = parseInt(parts[1], 10);
+          podsDone = r > 0 && r === t;
+        }
+        const g = podsDone
+          ? blue("●")
+          : stateGlyph(state, this.spinnerFrame, true);
+        const elapsedMs =
+          row.endMs != null ? row.endMs - row.startMs : now - row.startMs;
+        const elapsed = (elapsedMs / 1000).toFixed(1) + "s";
+        const isPodStatus = phase === lastPhase && !!row.podStatus;
+        const labelPadded = isPodStatus
+          ? colorPods(label.padEnd(LABEL_W))
+          : label.padEnd(LABEL_W);
+        return `  ${g} ${row.name.padEnd(nameW)}  ${labelPadded}  ${elapsed}`;
+      });
 
     const footer = pc.dim(
       `  elapsed ${totalElapsedS}s · ${readyCount}/${this.rows.length} ready`,
