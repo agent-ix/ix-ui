@@ -40,13 +40,19 @@ export interface Listing {
   note(text: string): void;
   /** Render a raw, un-indented body line (escape hatch — use sparingly). */
   raw(text: string): void;
+  /**
+   * Stop the header animation and commit the header line + `└──┐` opener to
+   * scrollback. Use before handing the cursor to listr/clack — anything
+   * those libs print lands beneath the opener as body content.
+   */
+  commit(): void;
   /** Pause animation, run an interactive callback (e.g. clack prompt), resume. */
   pause<T>(fn: () => Promise<T> | T): Promise<T>;
-  /** Freeze header to PHASE_PASS, emit `└──•  <green msg>`. */
+  /** Freeze header (PHASE_PASS) and emit `└──•  <green msg>`. */
   success(message: string): void;
-  /** Freeze header to PHASE_PASS, emit `└──•  <yellow msg>`. */
+  /** Freeze header (PHASE_PASS) and emit `└──•  <yellow msg>`. */
   warn(message: string): void;
-  /** Freeze header to PHASE_FAIL, emit `└──•  ⊗  <red msg>`. */
+  /** Freeze header (PHASE_FAIL) and emit `└──•  ⊗  <red msg>`. */
   error(message: string): void;
 }
 
@@ -71,7 +77,6 @@ class TTYListing implements Listing {
   private spinnerFrame = 0;
   private ticker: ReturnType<typeof setInterval> | null = null;
   private committed = false;
-  private bodyLines = 0;
   private finished = false;
 
   constructor(private header: string) {
@@ -98,13 +103,12 @@ class TTYListing implements Listing {
 
   /**
    * Commit the animated header to the scrollback and write the └──┐ opener.
-   * Called lazily on the first body write so animation runs as long as
-   * possible.
+   * Called lazily on the first body write, or explicitly before handing off
+   * the cursor to listr/clack.
    */
-  private commit(): void {
+  commit(): void {
     if (this.committed) return;
     this.stopTicker();
-    // Re-draw with the current frame, then newline to commit, then opener.
     process.stdout.write(
       `\r${phaseRun(this.spinnerFrame)}${renderHeader(this.header)}${CLEAR_EOL}\n${ROUTE_INDENT}${CLEAR_EOL}\n`,
     );
@@ -114,7 +118,6 @@ class TTYListing implements Listing {
   private writeBody(line: string): void {
     this.commit();
     process.stdout.write(line + "\n");
-    this.bodyLines += line.split("\n").length;
   }
 
   group(name: string): void {
@@ -164,27 +167,25 @@ class TTYListing implements Listing {
     }
   }
 
-  private freezeHeader(headerGlyph: string): void {
-    if (!this.committed) {
-      this.stopTicker();
-      process.stdout.write(
-        `${SYNC_BEGIN}\r${headerGlyph}${renderHeader(this.header)}${CLEAR_EOL}\n${ROUTE_INDENT}${CLEAR_EOL}\n${SYNC_END}`,
-      );
-      this.committed = true;
-      return;
-    }
-    // Body committed — walk up past opener + bodyLines to the header line,
-    // rewrite the glyph, return to current position.
-    const up = 1 + this.bodyLines; // opener + body
+  /**
+   * Freeze the (still in-place) animated header with a final glyph and commit
+   * it to scrollback. Only meaningful before commit() — once the header is
+   * committed we can't reliably walk back up over arbitrary body content
+   * (listr / clack / external writers move the cursor however they want).
+   */
+  private freezeUncommitted(headerGlyph: string): void {
+    if (this.committed) return;
+    this.stopTicker();
     process.stdout.write(
-      `${SYNC_BEGIN}\x1b[${up}A\r${headerGlyph}${CLEAR_EOL}\x1b[${up}B\r${SYNC_END}`,
+      `${SYNC_BEGIN}\r${headerGlyph}${renderHeader(this.header)}${CLEAR_EOL}\n${ROUTE_INDENT}${CLEAR_EOL}\n${SYNC_END}`,
     );
+    this.committed = true;
   }
 
   private finish(headerGlyph: string, tail: string): void {
     if (this.finished) return;
     this.finished = true;
-    this.freezeHeader(headerGlyph);
+    this.freezeUncommitted(headerGlyph);
     process.stdout.write(`\n${ROUTE_OUT}${tail}\n${SHOW_CURSOR}`);
   }
 
@@ -223,6 +224,10 @@ class PlainListing implements Listing {
 
   raw(text: string): void {
     process.stdout.write(`${text}\n`);
+  }
+
+  commit(): void {
+    /* no-op in plain mode — header was already written eagerly */
   }
 
   async pause<T>(fn: () => Promise<T> | T): Promise<T> {
