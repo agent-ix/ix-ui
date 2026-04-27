@@ -11,11 +11,11 @@ build:
 	pnpm run build
 
 .PHONY: test
-test:
+test: build
 	pnpm run test
 
 .PHONY: test-json
-test-json:
+test-json: build
 	pnpm run test:json
 
 .PHONY: lint
