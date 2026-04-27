@@ -41,6 +41,9 @@ interface ServiceRow<P extends string> {
 const LABEL_W = 14;
 // Advance header glyph every 3 ticks (3 × 80 ms = 240 ms).
 export const HEADER_TICK_DIV = 3;
+// Routing connectors — dim gray box-drawing chars that form the snake path.
+const ROUTE_INDENT = pc.dim("└──┐");
+const ROUTE_OUT = pc.dim("└──");
 
 export function colorOrbitFrame(frame: string): string {
   return [...frame]
@@ -197,7 +200,11 @@ export class PhaseTable<P extends string = string> {
    * @param entry  Optional entry-point service name (used to render the app URL).
    * @param baseDomain  Optional domain for URL generation (e.g. "ix.internal").
    */
-  finish(entry: string | null = null, baseDomain?: string): void {
+  finish(
+    entry: string | null = null,
+    baseDomain?: string,
+    tail?: string,
+  ): void {
     if (this.ticker) {
       clearInterval(this.ticker);
       this.ticker = null;
@@ -209,9 +216,9 @@ export class PhaseTable<P extends string = string> {
     );
 
     if (this.isTTY) {
-      this.finishTTY(totalMs, failed, entry, baseDomain);
+      this.finishTTY(totalMs, failed, entry, baseDomain, tail);
     } else {
-      this.finishPlain(totalMs, failed, entry, baseDomain);
+      this.finishPlain(totalMs, failed, entry, baseDomain, tail);
     }
     this.lineCount = 0;
   }
@@ -221,6 +228,7 @@ export class PhaseTable<P extends string = string> {
     failed: ServiceRow<P>[],
     entry: string | null,
     baseDomain?: string,
+    tail?: string,
   ): void {
     const nameW = this.maxNameLen();
     const preflightBlock = this.preflightLines.join("\n");
@@ -228,7 +236,10 @@ export class PhaseTable<P extends string = string> {
     const frozenHeader = this.header
       ? (failed.length === 0
           ? `${colorOrbitFrame("⦿")} ${renderHeader(this.header)}`
-          : `${colors.red("⊗")} ${renderHeader(this.header)}`) + "\n\n"
+          : `${colors.red("⊗")} ${renderHeader(this.header)}`) +
+        "\n" +
+        ROUTE_INDENT +
+        "\n"
       : "";
 
     const frozenRows = this.rows.flatMap((row) => {
@@ -242,9 +253,9 @@ export class PhaseTable<P extends string = string> {
           ? `  ${colorPods(row.podStatus.padEnd(5))}`
           : "       ";
         const lines = [
-          `  ${colors.red("○")} ${row.name.padEnd(nameW)}${pods}  ${sS}`,
+          `   ${colors.red("○")} ${row.name.padEnd(nameW)}${pods}  ${sS}`,
         ];
-        if (row.error) lines.push(`      ${pc.dim(row.error)}`);
+        if (row.error) lines.push(`       ${pc.dim(row.error)}`);
         return lines;
       }
       const pods = row.podStatus
@@ -254,22 +265,20 @@ export class PhaseTable<P extends string = string> {
         ? `  →  ${pc.cyan(`https://${row.name}.${baseDomain}`)}`
         : "";
       return [
-        `  ${blue("●")} ${row.name.padEnd(nameW)}${pods}  ${sS.padEnd(7)}${urlSuffix}`,
+        `   ${blue("●")} ${row.name.padEnd(nameW)}${pods}  ${sS.padEnd(7)}${urlSuffix}`,
       ];
     });
 
     const lines = [...frozenRows];
-    if (failed.length === 0 && entry && baseDomain) {
-      lines.push("");
+    if (tail) {
+      lines.push(`${ROUTE_OUT}${blue("●")} ${tail}`);
+    } else if (failed.length === 0 && entry && baseDomain) {
       lines.push(
-        `  app:  ${pc.cyan(pc.underline(`https://${entry}.${baseDomain}`))}`,
+        `${ROUTE_OUT}${blue("●")} ${pc.cyan(pc.underline(`https://${entry}.${baseDomain}`))}`,
       );
     } else if (failed.length > 0) {
-      lines.push("");
       lines.push(
-        colors.red(
-          `  ⊗ ${failed.length} service${failed.length === 1 ? "" : "s"} failed`,
-        ),
+        `${ROUTE_OUT}${colors.red("⊗")} ${colors.red(`${failed.length} service${failed.length === 1 ? "" : "s"} failed`)}`,
       );
     }
 
@@ -298,6 +307,7 @@ export class PhaseTable<P extends string = string> {
     failed: ServiceRow<P>[],
     entry: string | null,
     baseDomain?: string,
+    tail?: string,
   ): void {
     const totalS = (totalMs / 1000).toFixed(1);
     const lines: string[] = [];
@@ -313,13 +323,14 @@ export class PhaseTable<P extends string = string> {
       for (const row of this.rows) {
         const sMs = row.endMs != null ? row.endMs - row.startMs : totalMs;
         lines.push(
-          `  ${blue("●")} ${row.name.padEnd(nameW)}  ${(sMs / 1000).toFixed(1)}s`,
+          `   ${blue("●")} ${row.name.padEnd(nameW)}  ${(sMs / 1000).toFixed(1)}s`,
         );
       }
-      if (entry && baseDomain) {
-        lines.push("");
+      if (tail) {
+        lines.push(`└──● ${tail}`);
+      } else if (entry && baseDomain) {
         lines.push(
-          `  app:  ${pc.cyan(pc.underline(`https://${entry}.${baseDomain}`))}`,
+          `└──● ${pc.cyan(pc.underline(`https://${entry}.${baseDomain}`))}`,
         );
       }
     } else {
@@ -335,15 +346,18 @@ export class PhaseTable<P extends string = string> {
             ? `  ${row.podStatus.padEnd(5)}`
             : "       ";
           lines.push(
-            `  ${colors.red("○")} ${row.name.padEnd(nameW)}${pods}  ${(sMs / 1000).toFixed(1)}s`,
+            `   ${colors.red("○")} ${row.name.padEnd(nameW)}${pods}  ${(sMs / 1000).toFixed(1)}s`,
           );
-          if (row.error) lines.push(`      ${pc.dim(row.error)}`);
+          if (row.error) lines.push(`       ${pc.dim(row.error)}`);
         } else {
           lines.push(
-            `  ${blue("●")} ${row.name.padEnd(nameW)}  ${(sMs / 1000).toFixed(1)}s`,
+            `   ${blue("●")} ${row.name.padEnd(nameW)}  ${(sMs / 1000).toFixed(1)}s`,
           );
         }
       }
+      lines.push(
+        `└──⊗ ${colors.red(`${failed.length} service${failed.length === 1 ? "" : "s"} failed`)}`,
+      );
     }
 
     process.stdout.write(lines.join("\n") + "\n");
@@ -392,7 +406,9 @@ export class PhaseTable<P extends string = string> {
             )) +
         " " +
         renderHeader(this.header) +
-        "\n\n"
+        "\n" +
+        ROUTE_INDENT +
+        "\n"
       : "";
 
     const rows = this.rows
@@ -418,7 +434,7 @@ export class PhaseTable<P extends string = string> {
         const labelPadded = isPodStatus
           ? colorPods(label.padEnd(LABEL_W))
           : label.padEnd(LABEL_W);
-        return `  ${g} ${row.name.padEnd(nameW)}  ${labelPadded}  ${elapsed}`;
+        return `   ${g} ${row.name.padEnd(nameW)}  ${labelPadded}  ${elapsed}`;
       });
 
     const footer = pc.dim(
