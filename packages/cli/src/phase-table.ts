@@ -278,7 +278,8 @@ export class PhaseTable<P extends string = string> {
       );
     } else if (failed.length > 0) {
       lines.push(
-        `${ROUTE_OUT}${colors.red("⊗")} ${colors.red(`${failed.length} service${failed.length === 1 ? "" : "s"} failed`)}`,
+        "",
+        ` ${colors.red("⊗")}  ${colors.red(`${failed.length} service${failed.length === 1 ? "" : "s"} failed`)}`,
       );
     }
 
@@ -356,7 +357,8 @@ export class PhaseTable<P extends string = string> {
         }
       }
       lines.push(
-        `└──⊗ ${colors.red(`${failed.length} service${failed.length === 1 ? "" : "s"} failed`)}`,
+        "",
+        ` ⊗  ${colors.red(`${failed.length} service${failed.length === 1 ? "" : "s"} failed`)}`,
       );
     }
 
