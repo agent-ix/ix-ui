@@ -44,7 +44,7 @@ describe("PHASE_GLYPHS", () => {
 
 describe("STATUS_DOTS", () => {
   it("has done, failed, pending entries", () => {
-    expect(STATUS_DOTS.done).toBe("●");
+    expect(STATUS_DOTS.done).toBe("•");
     expect(STATUS_DOTS.failed).toBe("○");
     expect(STATUS_DOTS.pending).toBe("·");
   });

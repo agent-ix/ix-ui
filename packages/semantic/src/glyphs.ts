@@ -9,7 +9,7 @@ export const PHASE_GLYPHS: Record<PhaseState, PhaseGlyph> = {
 };
 
 export const STATUS_DOTS = {
-  done: "●",
+  done: "•",
   failed: "○",
   pending: "·",
 } as const;

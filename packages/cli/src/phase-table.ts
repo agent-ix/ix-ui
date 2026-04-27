@@ -47,7 +47,7 @@ export const HEADER_TICK_DIV = 3;
 // to align with the planet. Header phase indicators are exactly 4 chars wide
 // so the bracketed header text starts at the same column in every state.
 export const PLANET_COL = 1;
-// 4 spaces — row glyphs (●, ○) sit at col 4, one indent past the planet.
+// 4 spaces — row glyphs (•, ○) sit at col 4, one indent past the planet.
 export const ROW_INDENT = "    ";
 // 8 spaces — error messages align under the row name (past glyph + space).
 export const ERROR_INDENT = "        ";
@@ -116,7 +116,7 @@ function stateGlyph(
         ? pc.cyan(BRAILLE_SPINNER[spinnerIdx % BRAILLE_SPINNER.length])
         : "running";
     case "done":
-      return blue("●");
+      return blue("•");
     case "failed":
       return colors.red("○");
   }
@@ -298,16 +298,16 @@ export class PhaseTable<P extends string = string> {
         ? `  →  ${pc.cyan(`https://${row.name}.${baseDomain}`)}`
         : "";
       return [
-        `${ROW_INDENT}${blue("●")} ${row.name.padEnd(nameW)}${pods}  ${sS.padEnd(7)}${urlSuffix}`,
+        `${ROW_INDENT}${blue("•")} ${row.name.padEnd(nameW)}${pods}  ${sS.padEnd(7)}${urlSuffix}`,
       ];
     });
 
     const lines = [...frozenRows];
     if (tail) {
-      lines.push(`${ROUTE_OUT}${blue("●")} ${tail}`);
+      lines.push(`${ROUTE_OUT}${blue("•")} ${tail}`);
     } else if (failed.length === 0 && entry && baseDomain) {
       lines.push(
-        `${ROUTE_OUT}${blue("●")} ${pc.cyan(pc.underline(`https://${entry}.${baseDomain}`))}`,
+        `${ROUTE_OUT}${blue("•")} ${pc.cyan(pc.underline(`https://${entry}.${baseDomain}`))}`,
       );
     } else if (failed.length > 0) {
       lines.push(
@@ -357,14 +357,14 @@ export class PhaseTable<P extends string = string> {
       for (const row of this.rows) {
         const sMs = row.endMs != null ? row.endMs - row.startMs : totalMs;
         lines.push(
-          `${ROW_INDENT}${blue("●")} ${row.name.padEnd(nameW)}  ${(sMs / 1000).toFixed(1)}s`,
+          `${ROW_INDENT}${blue("•")} ${row.name.padEnd(nameW)}  ${(sMs / 1000).toFixed(1)}s`,
         );
       }
       if (tail) {
-        lines.push(`${ROW_INDENT}└──● ${tail}`);
+        lines.push(`${ROW_INDENT}└──• ${tail}`);
       } else if (entry && baseDomain) {
         lines.push(
-          `${ROW_INDENT}└──● ${pc.cyan(pc.underline(`https://${entry}.${baseDomain}`))}`,
+          `${ROW_INDENT}└──• ${pc.cyan(pc.underline(`https://${entry}.${baseDomain}`))}`,
         );
       }
     } else {
@@ -385,7 +385,7 @@ export class PhaseTable<P extends string = string> {
           if (row.error) lines.push(`${ERROR_INDENT}${pc.dim(row.error)}`);
         } else {
           lines.push(
-            `${ROW_INDENT}${blue("●")} ${row.name.padEnd(nameW)}  ${(sMs / 1000).toFixed(1)}s`,
+            `${ROW_INDENT}${blue("•")} ${row.name.padEnd(nameW)}  ${(sMs / 1000).toFixed(1)}s`,
           );
         }
       }
@@ -452,7 +452,7 @@ export class PhaseTable<P extends string = string> {
           podsDone = r > 0 && r === t;
         }
         const g = podsDone
-          ? blue("●")
+          ? blue("•")
           : stateGlyph(state, this.spinnerFrame, true);
         const elapsedMs =
           row.endMs != null ? row.endMs - row.startMs : now - row.startMs;
