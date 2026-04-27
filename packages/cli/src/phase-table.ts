@@ -39,8 +39,8 @@ interface ServiceRow<P extends string> {
 
 // Width to pad the phase-label column ("install failed" is the longest at 14).
 const LABEL_W = 14;
-// Advance header glyph every 2 ticks (2 × 80 ms = 160 ms).
-const HEADER_TICK_DIV = 2;
+// Advance header glyph every 3 ticks (3 × 80 ms = 240 ms).
+export const HEADER_TICK_DIV = 3;
 
 export function colorOrbitFrame(frame: string): string {
   return [...frame]
