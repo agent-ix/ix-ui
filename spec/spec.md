@@ -148,15 +148,18 @@ PhaseState: pending | queued | running | done | failed
 
 ### 8.2 Glyph Vocabulary
 
-The canonical glyph mapping is defined in `@agent-ix/ix-ui-semantic`:
+The canonical glyph mapping is defined in `@agent-ix/ix-ui-semantic` and re-exported with rendering helpers from `@agent-ix/ix-ui-cli/style` (FR-016).
 
-| State | TTY glyph | Non-TTY text | Animated |
-|-------|-----------|--------------|----------|
-| `pending` | `·` | `pending` | No |
-| `queued` | `⏳` | `queued` | Yes (spinner) |
-| `running` | `⟳` | `running` | Yes (spinner) |
-| `done` | `✓` | `done` | No |
-| `failed` | `✗` | `failed` | No |
+| State | TTY glyph | Non-TTY text | Animated | Token |
+|-------|-----------|--------------|----------|-------|
+| `pending` | `·` | `pending` | No | (literal) |
+| `queued` | braille spinner frame | `queued` | Yes | `BRAILLE_SPINNER` |
+| `running` | braille spinner frame | `running` | Yes | `BRAILLE_SPINNER` |
+| `done` | `•` | `done` | No | `GLYPH_DONE` |
+| `failed` | `○` | `failed` | No | `GLYPH_FAIL` |
+| header (running) | orbit frame | `⊕` | Yes (240ms) | `ORBIT_SPINNER` / `phaseRun` |
+| header (passed) | `⊙` | `⊕` | No | `PHASE_PASS` |
+| header (failed) | `⊗` | `⊕` | No | `PHASE_FAIL` / `GLYPH_FAIL_MARK` |
 
 ### 8.3 Platform Boundary
 
@@ -168,11 +171,13 @@ ix-ui is terminal-only. Web rendering (CSS tokens, React components) is owned by
 
 ### 9.1 CLI Components (`@agent-ix/ix-ui-cli`)
 
-| Component | Description | Reference |
-|-----------|-------------|-----------|
-| `PhaseTable` | Concurrent multi-item progress with phase columns, live cursor-up redraws, and frozen final state | ix-local-cli FR-022 |
-| `TaskList` | Listr2-based reactive task spinner with `@clack/prompts` intro/outro framing | ix-local-cli FR-005 |
-| `intro` / `outro` | `@clack/prompts` wrappers for consistent command framing | ix-local-cli NFR-001 |
+| Component | Description | Spec |
+|-----------|-------------|------|
+| `PhaseTable` | Concurrent multi-item progress with phase columns, live cursor-up redraws, and frozen final state | FR-001 – FR-008 |
+| `Listing` (`startListing`) | Orbit-framed renderer for static listings, status views, and short flows that mix in clack prompts. Same visual vocabulary as `PhaseTable` (orbit header, `└──┐` opener, `└──•` tail) | FR-013 – FR-015 |
+| `style` module | Single source of truth for all visual layout tokens (glyphs, indents, connectors, header rendering, TTY control codes). Every renderer imports from here — no inline literals. | FR-016, NFR-003 |
+| `colors` | Semantic color helpers (cyan, green, yellow, dim, bold, IX-blue alias) | FR-009 – FR-010 |
+| `prompts` re-exports | `@clack/prompts` primitives (`text`, `password`, `confirm`, `select`, `multiselect`, `isCancel`, `log`, `spinner`) — used inside `Listing.pause()` for interactive input | n/a |
 
 ---
 

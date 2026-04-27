@@ -21,7 +21,7 @@ Packages covered:
 
 | Stakeholder Req | Title | Trace to FR | Coverage Status |
 |---|---|---|---|
-| StR-001 | Consistent Terminal Design Language | semantic/FR-001, semantic/FR-003, cli/FR-010, cli/FR-012 | ✅ Complete |
+| StR-001 | Consistent Terminal Design Language | semantic/FR-001, semantic/FR-003, cli/FR-010, cli/FR-013, cli/FR-016 | ✅ Complete |
 | StR-002 | Platform-Agnostic Semantic Vocabulary With Zero Runtime Deps | semantic/FR-001, semantic/FR-007 | ✅ Complete |
 
 ---
@@ -32,7 +32,8 @@ Packages covered:
 |---|---|---|---|
 | US-001 | Consume Phase State Types in a CLI Package | semantic/FR-001, FR-002, FR-003 | ✅ Complete |
 | US-002 | Display Concurrent Multi-Service Progress With Phase Columns | cli/FR-001 – FR-008 | ✅ Complete |
-| US-003 | Frame a CLI Command With Consistent Intro and Outro | cli/FR-011, FR-012 | ✅ Complete |
+| US-003 | Frame a CLI Command With a Listing | cli/FR-013, FR-014, FR-015 | ✅ Complete |
+| US-004 | Retheme the Entire CLI From One Module | cli/FR-016, NFR-003 | ✅ Complete |
 
 ---
 
@@ -103,12 +104,17 @@ Packages covered:
 | cli/FR-010 | AC-2: `colors` has all required keys: cyan, green, yellow, red, dim, bold, underline, bgCyan, black | TC-036 | ✅ Complete |
 | cli/FR-010 | AC-3: `blue` is a function | TC-037 (existing) | ✅ Complete |
 | cli/FR-010 | AC-4: Every `colors` value is a `(string) => string` function | TC-038 | ✅ Complete |
-| cli/FR-011 | AC-1: Successful `runTaskList` — intro + tasks + green outro | TC-039 | ✅ Complete |
-| cli/FR-011 | AC-2: Failing task — red outro + re-throw | TC-040 | ✅ Complete |
-| cli/FR-011 | AC-3: Outro always rendered before throw | TC-041 | ✅ Complete |
-| cli/FR-012 | AC-1: `introCommand("ix up")` output contains "ix up" and ANSI codes | TC-042 | ✅ Complete |
-| cli/FR-012 | AC-2: `outroSuccess("Done.")` output contains "Done." and green codes | TC-043 | ✅ Complete |
-| cli/FR-012 | AC-3: `outroError("Failed.")` output contains "Failed." and red codes | TC-044 | ✅ Complete |
+| cli/FR-013 | AC-1: `startListing()` returns a `Listing` handle with all required methods | TC-046 | ✅ Complete |
+| cli/FR-013 | AC-2: TTY constructor draws header in place via `\r` (no newline) | TC-047 | ✅ Complete |
+| cli/FR-013 | AC-3: TTY ticker animates orbit at the standard redraw interval | TC-048 | Review |
+| cli/FR-013 | AC-4: Non-TTY constructor writes `⊕  <header>\n` and starts no ticker | TC-049 | ✅ Complete |
+| cli/FR-013 | AC-5–8: `commit()` is idempotent, writes opener, called by body helpers | TC-050 | ✅ Complete |
+| cli/FR-013 | AC-9–12: `pause()` runs callback, manages ticker before/after commit | TC-051 | ✅ Complete |
+| cli/FR-014 | AC-1–9: `group`/`item`/`note`/`raw` write correctly indented rows and call `commit()` | TC-052 | ✅ Complete |
+| cli/FR-015 | AC-1–7: Finalizers freeze header glyph and write `└──•` tail in correct color | TC-053 | ✅ Complete |
+| cli/FR-015 | AC-8: Repeated finalizer calls are no-ops | TC-054 | ✅ Complete |
+| cli/FR-016 | AC-1, AC-14, AC-15: All layout tokens exported from `style.ts`; renderers import exclusively | TC-055 (static grep) | ✅ Complete |
+| cli/FR-016 | AC-2–13: Layout invariants and TTY control sequences match documented values | TC-056 | Review |
 
 ---
 
@@ -120,7 +126,12 @@ Packages covered:
 | NFR-001 | AC-2: No alternative redraw path exists | (static review — no `setTimeout` loop in phase-table.ts) | Review |
 | NFR-002 | AC-1: No `console.log/error/warn` or `process.stderr.write` in `packages/cli/src/` | TC-045 | ✅ Complete |
 | NFR-002 | AC-2: PhaseTable writes exclusively to `process.stdout.write` | (implied by spy-based tests capturing all output) | ✅ Complete |
-| NFR-002 | AC-3: `introCommand`/`outroSuccess`/`outroError` delegate to clack, not `console.*` | TC-045 (grep) | ✅ Complete |
+| NFR-002 | AC-3: Listing writes exclusively to `process.stdout.write` | (implied by spy-based tests capturing all output) | ✅ Complete |
+| NFR-003 | AC-1: No inline ASCII whitespace indents outside `style.ts` | TC-057 | Review |
+| NFR-003 | AC-2: No connector substrings outside `style.ts` | TC-057 | Review |
+| NFR-003 | AC-3: No TTY control sequences outside `style.ts` | TC-057 | Review |
+| NFR-003 | AC-4: No standard glyphs outside `style.ts` re-exports | TC-057 | Review |
+| NFR-003 | AC-5: `PhaseTable`/`Listing` only import layout tokens, never declare them | TC-058 | Review |
 
 ---
 
@@ -166,13 +177,20 @@ Packages covered:
 | TC-036 | colors exports all required keys | Unit | P1 | cli/FR-010-AC-2 | ✅ Complete |
 | TC-037 | blue is exported and wraps strings | Unit | P2 | cli/FR-010-AC-3 | ✅ Complete |
 | TC-038 | Every colors value is a (string) => string function | Unit | P1 | cli/FR-010-AC-4 | ✅ Complete |
-| TC-039 | runTaskList success: intro + tasks + green outro | Unit | P1 | cli/FR-011-AC-1 | ✅ Complete |
-| TC-040 | runTaskList failure: red outro + re-throw | Unit | P1 | cli/FR-011-AC-2 | ✅ Complete |
-| TC-041 | runTaskList outro always rendered before throw | Unit | P1 | cli/FR-011-AC-3 | ✅ Complete |
-| TC-042 | introCommand output contains command name and ANSI codes | Unit | P2 | cli/FR-012-AC-1 | ✅ Complete |
-| TC-043 | outroSuccess output contains message and green codes | Unit | P2 | cli/FR-012-AC-2 | ✅ Complete |
-| TC-044 | outroError output contains message and red codes | Unit | P2 | cli/FR-012-AC-3 | ✅ Complete |
 | TC-045 | No console.log/error/warn in packages/cli/src/ | Static | P1 | NFR-002-AC-1, AC-3 | ✅ Complete |
+| TC-046 | startListing returns a handle with all required methods | Unit | P1 | cli/FR-013-AC-1 | ✅ Complete |
+| TC-047 | TTY constructor draws header in place via `\r` | Unit | P1 | cli/FR-013-AC-2 | ✅ Complete |
+| TC-048 | TTY ticker fires at the standard redraw interval | Unit | P2 | cli/FR-013-AC-3, NFR-001-AC-1 | Review |
+| TC-049 | Plain-mode constructor emits ⊕ header line | Unit | P1 | cli/FR-013-AC-4 | ✅ Complete |
+| TC-050 | commit() is idempotent and writes opener | Unit | P1 | cli/FR-013-AC-5, AC-6, AC-7, AC-8 | ✅ Complete |
+| TC-051 | pause() runs callback and manages ticker correctly | Unit | P1 | cli/FR-013-AC-9–12 | ✅ Complete |
+| TC-052 | Body helpers render correctly indented rows and call commit() | Unit | P1 | cli/FR-014-AC-1–9 | ✅ Complete |
+| TC-053 | Finalizers freeze header glyph and write └──• tail | Unit | P1 | cli/FR-015-AC-1–7 | ✅ Complete |
+| TC-054 | Repeated finalizer calls are no-ops | Unit | P1 | cli/FR-015-AC-8 | ✅ Complete |
+| TC-055 | All layout tokens exported from `style.ts` | Static | P1 | cli/FR-016-AC-1, AC-14, AC-15 | ✅ Complete |
+| TC-056 | Layout invariants (PLANET_COL, ROW_INDENT, etc.) match documented values | Unit | P2 | cli/FR-016-AC-2–13 | Review |
+| TC-057 | No inline literals (indents, connectors, escapes, glyphs) outside style.ts | Static | P1 | NFR-003-AC-1–4 | Review |
+| TC-058 | PhaseTable/Listing import all layout tokens, declare none | Static | P1 | NFR-003-AC-5 | Review |
 
 ---
 

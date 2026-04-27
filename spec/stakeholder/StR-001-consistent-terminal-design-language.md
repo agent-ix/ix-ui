@@ -12,7 +12,10 @@ relationships:
   - target: "ix://agent-ix/ix-ui/spec/functional/cli/FR-010"
     type: "satisfied_by"
     cardinality: "1:N"
-  - target: "ix://agent-ix/ix-ui/spec/functional/cli/FR-012"
+  - target: "ix://agent-ix/ix-ui/spec/functional/cli/FR-013"
+    type: "satisfied_by"
+    cardinality: "1:N"
+  - target: "ix://agent-ix/ix-ui/spec/functional/cli/FR-016"
     type: "satisfied_by"
     cardinality: "1:N"
 ---
