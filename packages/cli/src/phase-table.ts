@@ -52,9 +52,10 @@ export const ROW_INDENT = "    ";
 // 8 spaces — error messages align under the row name (past glyph + space).
 export const ERROR_INDENT = "        ";
 // Routing connectors — dim gray box-drawing chars that form the snake path.
-// Both lead with one space so └ aligns with the planet at col 1.
+// Top connector aligns with the planet (col 1). Tail aligns with rows (col 4)
+// because the tail line is output produced by the last task row.
 const ROUTE_INDENT = pc.dim(" └──┐");
-const ROUTE_OUT = pc.dim(" └──");
+const ROUTE_OUT = pc.dim(ROW_INDENT + "└──");
 
 export function colorOrbitFrame(frame: string): string {
   return [...frame]
@@ -360,10 +361,10 @@ export class PhaseTable<P extends string = string> {
         );
       }
       if (tail) {
-        lines.push(` └──● ${tail}`);
+        lines.push(`${ROW_INDENT}└──● ${tail}`);
       } else if (entry && baseDomain) {
         lines.push(
-          ` └──● ${pc.cyan(pc.underline(`https://${entry}.${baseDomain}`))}`,
+          `${ROW_INDENT}└──● ${pc.cyan(pc.underline(`https://${entry}.${baseDomain}`))}`,
         );
       }
     } else {
