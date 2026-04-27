@@ -41,9 +41,20 @@ interface ServiceRow<P extends string> {
 const LABEL_W = 14;
 // Advance header glyph every 3 ticks (3 × 80 ms = 240 ms).
 export const HEADER_TICK_DIV = 3;
+
+// Layout invariant: the planet/marker is always at column 1, preceded by
+// exactly one character (a satellite glyph or a space). All other lines pad
+// to align with the planet. Header phase indicators are exactly 4 chars wide
+// so the bracketed header text starts at the same column in every state.
+export const PLANET_COL = 1;
+// 4 spaces — row glyphs (●, ○) sit at col 4, one indent past the planet.
+export const ROW_INDENT = "    ";
+// 8 spaces — error messages align under the row name (past glyph + space).
+export const ERROR_INDENT = "        ";
 // Routing connectors — dim gray box-drawing chars that form the snake path.
-const ROUTE_INDENT = pc.dim("└──┐");
-const ROUTE_OUT = pc.dim("└──");
+// Both lead with one space so └ aligns with the planet at col 1.
+const ROUTE_INDENT = pc.dim(" └──┐");
+const ROUTE_OUT = pc.dim(" └──");
 
 export function colorOrbitFrame(frame: string): string {
   return [...frame]
@@ -53,6 +64,28 @@ export function colorOrbitFrame(frame: string): string {
       return ch;
     })
     .join("");
+}
+
+/**
+ * Header phase indicators — STANDARD ix CLI style.
+ *
+ * Every indicator is exactly 4 chars wide with the planet/marker at column 1,
+ * so `[ header ]` starts at the same column regardless of run/pass/fail state
+ * and across animation frames. Use these whenever you render an ix header
+ * line; never hand-roll the spacing.
+ */
+export const PHASE_WIDTH = 4;
+/** Frozen "passed" frame — orbit at rest, planet at col 1. */
+export const PHASE_PASS: string = colorOrbitFrame(ORBIT_SPINNER[4]);
+/** Frozen "failed" frame — red ⊗ at col 1, padded to 4 chars. */
+export const PHASE_FAIL: string = " " + colors.red("⊗") + "  ";
+/** Animated "running" frame — pick the orbit frame for the current tick. */
+export function phaseRun(spinnerFrame: number): string {
+  return colorOrbitFrame(
+    ORBIT_SPINNER[
+      Math.floor(spinnerFrame / HEADER_TICK_DIV) % ORBIT_SPINNER.length
+    ],
+  );
 }
 
 /**
@@ -234,9 +267,8 @@ export class PhaseTable<P extends string = string> {
     const preflightBlock = this.preflightLines.join("\n");
 
     const frozenHeader = this.header
-      ? (failed.length === 0
-          ? colorOrbitFrame(ORBIT_SPINNER[4]) + renderHeader(this.header)
-          : " " + colors.red("⊗") + "  " + renderHeader(this.header)) +
+      ? (failed.length === 0 ? PHASE_PASS : PHASE_FAIL) +
+        renderHeader(this.header) +
         "\n" +
         ROUTE_INDENT +
         "\n"
@@ -253,9 +285,9 @@ export class PhaseTable<P extends string = string> {
           ? `  ${colorPods(row.podStatus.padEnd(5))}`
           : "       ";
         const lines = [
-          `   ${colors.red("○")} ${row.name.padEnd(nameW)}${pods}  ${sS}`,
+          `${ROW_INDENT}${colors.red("○")} ${row.name.padEnd(nameW)}${pods}  ${sS}`,
         ];
-        if (row.error) lines.push(`       ${pc.dim(row.error)}`);
+        if (row.error) lines.push(`${ERROR_INDENT}${pc.dim(row.error)}`);
         return lines;
       }
       const pods = row.podStatus
@@ -265,7 +297,7 @@ export class PhaseTable<P extends string = string> {
         ? `  →  ${pc.cyan(`https://${row.name}.${baseDomain}`)}`
         : "";
       return [
-        `   ${blue("●")} ${row.name.padEnd(nameW)}${pods}  ${sS.padEnd(7)}${urlSuffix}`,
+        `${ROW_INDENT}${blue("●")} ${row.name.padEnd(nameW)}${pods}  ${sS.padEnd(7)}${urlSuffix}`,
       ];
     });
 
@@ -279,7 +311,7 @@ export class PhaseTable<P extends string = string> {
     } else if (failed.length > 0) {
       lines.push(
         "",
-        ` ${colors.red("⊗")}  ${colors.red(`${failed.length} service${failed.length === 1 ? "" : "s"} failed`)}`,
+        `${PHASE_FAIL}${colors.red(`${failed.length} service${failed.length === 1 ? "" : "s"} failed`)}`,
       );
     }
 
@@ -324,14 +356,14 @@ export class PhaseTable<P extends string = string> {
       for (const row of this.rows) {
         const sMs = row.endMs != null ? row.endMs - row.startMs : totalMs;
         lines.push(
-          `   ${blue("●")} ${row.name.padEnd(nameW)}  ${(sMs / 1000).toFixed(1)}s`,
+          `${ROW_INDENT}${blue("●")} ${row.name.padEnd(nameW)}  ${(sMs / 1000).toFixed(1)}s`,
         );
       }
       if (tail) {
-        lines.push(`└──● ${tail}`);
+        lines.push(` └──● ${tail}`);
       } else if (entry && baseDomain) {
         lines.push(
-          `└──● ${pc.cyan(pc.underline(`https://${entry}.${baseDomain}`))}`,
+          ` └──● ${pc.cyan(pc.underline(`https://${entry}.${baseDomain}`))}`,
         );
       }
     } else {
@@ -347,12 +379,12 @@ export class PhaseTable<P extends string = string> {
             ? `  ${row.podStatus.padEnd(5)}`
             : "       ";
           lines.push(
-            `   ${colors.red("○")} ${row.name.padEnd(nameW)}${pods}  ${(sMs / 1000).toFixed(1)}s`,
+            `${ROW_INDENT}${colors.red("○")} ${row.name.padEnd(nameW)}${pods}  ${(sMs / 1000).toFixed(1)}s`,
           );
-          if (row.error) lines.push(`       ${pc.dim(row.error)}`);
+          if (row.error) lines.push(`${ERROR_INDENT}${pc.dim(row.error)}`);
         } else {
           lines.push(
-            `   ${blue("●")} ${row.name.padEnd(nameW)}  ${(sMs / 1000).toFixed(1)}s`,
+            `${ROW_INDENT}${blue("●")} ${row.name.padEnd(nameW)}  ${(sMs / 1000).toFixed(1)}s`,
           );
         }
       }
@@ -398,14 +430,7 @@ export class PhaseTable<P extends string = string> {
     );
 
     const headerLine = this.header
-      ? (anyFailed
-          ? " " + colors.red("⊗") + "  "
-          : colorOrbitFrame(
-              ORBIT_SPINNER[
-                Math.floor(this.spinnerFrame / HEADER_TICK_DIV) %
-                  ORBIT_SPINNER.length
-              ],
-            )) +
+      ? (anyFailed ? PHASE_FAIL : phaseRun(this.spinnerFrame)) +
         renderHeader(this.header) +
         "\n" +
         ROUTE_INDENT +
@@ -435,7 +460,7 @@ export class PhaseTable<P extends string = string> {
         const labelPadded = isPodStatus
           ? colorPods(label.padEnd(LABEL_W))
           : label.padEnd(LABEL_W);
-        return `   ${g} ${row.name.padEnd(nameW)}  ${labelPadded}  ${elapsed}`;
+        return `${ROW_INDENT}${g} ${row.name.padEnd(nameW)}  ${labelPadded}  ${elapsed}`;
       });
 
     const footer = pc.dim(
