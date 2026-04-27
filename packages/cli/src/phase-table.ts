@@ -8,7 +8,7 @@
 import pc from "picocolors";
 import {
   BRAILLE_SPINNER,
-  HEADER_SPINNER,
+  ORBIT_SPINNER,
   type PhaseState,
 } from "@agent-ix/ix-ui-semantic";
 import { colors, blue } from "./colors.js";
@@ -39,8 +39,18 @@ interface ServiceRow<P extends string> {
 
 // Width to pad the phase-label column ("install failed" is the longest at 14).
 const LABEL_W = 14;
-// Advance header glyph every 4 ticks (4 × 80 ms = 320 ms).
-const HEADER_TICK_DIV = 4;
+// Advance header glyph every 2 ticks (2 × 80 ms = 160 ms).
+const HEADER_TICK_DIV = 2;
+
+function colorOrbitFrame(frame: string): string {
+  return [...frame]
+    .map((ch) => {
+      if (ch === "⦿" || ch === "⊚") return pc.gray(ch);
+      if (ch === "∘" || ch === "⋅") return blue(ch);
+      return ch;
+    })
+    .join("");
+}
 
 function stateGlyph(
   state: PhaseState,
@@ -207,8 +217,8 @@ export class PhaseTable<P extends string = string> {
 
     const frozenHeader = this.header
       ? (failed.length === 0
-          ? `${blue("●")}  ${this.header}`
-          : `${colors.red("⊗")}  ${this.header}`) + "\n\n"
+          ? `${colorOrbitFrame(" ⦿   ")} ${this.header}`
+          : `${colors.red(" ⊗   ")} ${this.header}`) + "\n\n"
       : "";
 
     const frozenRows = this.rows.flatMap((row) => {
@@ -363,14 +373,14 @@ export class PhaseTable<P extends string = string> {
 
     const headerLine = this.header
       ? (anyFailed
-          ? colors.red("⊗")
-          : pc.cyan(
-              HEADER_SPINNER[
+          ? colors.red(" ⊗   ")
+          : colorOrbitFrame(
+              ORBIT_SPINNER[
                 Math.floor(this.spinnerFrame / HEADER_TICK_DIV) %
-                  HEADER_SPINNER.length
+                  ORBIT_SPINNER.length
               ],
             )) +
-        "  " +
+        " " +
         this.header +
         "\n\n"
       : "";

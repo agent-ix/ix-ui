@@ -4,6 +4,7 @@ import {
   STATUS_DOTS,
   BRAILLE_SPINNER,
   HEADER_SPINNER,
+  ORBIT_SPINNER,
 } from "../src/index.js";
 import type { PhaseState } from "../src/index.js";
 
@@ -58,12 +59,26 @@ describe("spinners", () => {
     expect(HEADER_SPINNER).toHaveLength(4);
   });
 
+  it("ORBIT_SPINNER has 6 frames", () => {
+    expect(ORBIT_SPINNER).toHaveLength(6);
+  });
+
+  it("ORBIT_SPINNER frames are all 5 chars wide", () => {
+    for (const frame of ORBIT_SPINNER) {
+      expect(frame).toHaveLength(5);
+    }
+  });
+
   it("spinner frames are non-empty strings", () => {
     for (const frame of BRAILLE_SPINNER) {
       expect(typeof frame).toBe("string");
       expect(frame.length).toBeGreaterThan(0);
     }
     for (const frame of HEADER_SPINNER) {
+      expect(typeof frame).toBe("string");
+      expect(frame.length).toBeGreaterThan(0);
+    }
+    for (const frame of ORBIT_SPINNER) {
       expect(typeof frame).toBe("string");
       expect(frame.length).toBeGreaterThan(0);
     }
