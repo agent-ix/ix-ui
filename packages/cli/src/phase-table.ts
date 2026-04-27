@@ -6,14 +6,36 @@
  */
 
 import pc from "picocolors";
-import {
-  BRAILLE_SPINNER,
-  ORBIT_SPINNER,
-  type PhaseState,
-} from "@agent-ix/ix-ui-semantic";
+import { BRAILLE_SPINNER } from "@agent-ix/ix-ui-semantic";
 import { colors, blue } from "./colors.js";
+import {
+  PHASE_PASS,
+  PHASE_FAIL,
+  ROW_INDENT,
+  ERROR_INDENT,
+  ROUTE_INDENT,
+  ROUTE_OUT,
+  phaseRun,
+  renderHeader,
+  type PhaseState,
+} from "./style.js";
 
 export type { PhaseState };
+// Back-compat re-exports — consumers (and prior phase-table imports) can keep
+// pulling style tokens from this module.
+export {
+  HEADER_TICK_DIV,
+  PHASE_PASS,
+  PHASE_FAIL,
+  PHASE_WIDTH,
+  PLANET_COL,
+  ROW_INDENT,
+  ERROR_INDENT,
+  colorOrbitFrame,
+  phaseRun,
+  renderHeader,
+  ORBIT_SPINNER,
+} from "./style.js";
 
 export interface PhaseTableOptions<P extends string = string> {
   /** Ordered list of phase column names. */
@@ -39,65 +61,6 @@ interface ServiceRow<P extends string> {
 
 // Width to pad the phase-label column ("install failed" is the longest at 14).
 const LABEL_W = 14;
-// Advance header glyph every 3 ticks (3 × 80 ms = 240 ms).
-export const HEADER_TICK_DIV = 3;
-
-// Layout invariant: the planet/marker is always at column 1, preceded by
-// exactly one character (a satellite glyph or a space). All other lines pad
-// to align with the planet. Header phase indicators are exactly 4 chars wide
-// so the bracketed header text starts at the same column in every state.
-export const PLANET_COL = 1;
-// 4 spaces — row glyphs (•, ○) sit at col 4, one indent past the planet.
-export const ROW_INDENT = "    ";
-// 8 spaces — error messages align under the row name (past glyph + space).
-export const ERROR_INDENT = "        ";
-// Routing connectors — dim gray box-drawing chars that form the snake path.
-// Top connector aligns with the planet (col 1). Tail aligns with rows (col 4)
-// because the tail line is output produced by the last task row.
-const ROUTE_INDENT = pc.dim(" └──┐");
-const ROUTE_OUT = pc.dim(ROW_INDENT + "└──");
-
-export function colorOrbitFrame(frame: string): string {
-  return [...frame]
-    .map((ch) => {
-      if (ch === "⊙" || ch === "⊚") return pc.gray(ch);
-      if (ch === "∘" || ch === "⋅" || ch === "⚬") return blue(ch);
-      return ch;
-    })
-    .join("");
-}
-
-/**
- * Header phase indicators — STANDARD ix CLI style.
- *
- * Every indicator is exactly 4 chars wide with the planet/marker at column 1,
- * so `[ header ]` starts at the same column regardless of run/pass/fail state
- * and across animation frames. Use these whenever you render an ix header
- * line; never hand-roll the spacing.
- */
-export const PHASE_WIDTH = 4;
-/** Frozen "passed" frame — orbit at rest, planet at col 1. */
-export const PHASE_PASS: string = colorOrbitFrame(ORBIT_SPINNER[5]);
-/** Frozen "failed" frame — red ⊗ at col 1, padded to 4 chars. */
-export const PHASE_FAIL: string = " " + colors.red("⊗") + "  ";
-/** Animated "running" frame — pick the orbit frame for the current tick. */
-export function phaseRun(spinnerFrame: number): string {
-  return colorOrbitFrame(
-    ORBIT_SPINNER[
-      Math.floor(spinnerFrame / HEADER_TICK_DIV) % ORBIT_SPINNER.length
-    ],
-  );
-}
-
-/**
- * Wrap a header string in gray brackets with gray · separators.
- * Used by PhaseTable for every header context (spinner, pass, fail).
- */
-export function renderHeader(text: string): string {
-  return (
-    pc.gray("[") + " " + text.replace(/·/g, pc.gray("·")) + " " + pc.gray("]")
-  );
-}
 
 function stateGlyph(
   state: PhaseState,
