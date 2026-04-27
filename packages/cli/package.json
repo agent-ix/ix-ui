@@ -1,7 +1,7 @@
 {
   "name": "@agent-ix/ix-ui-cli",
   "description": "Terminal UI components for the Agent IX CLI ecosystem.",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "type": "module",
   "files": [
     "dist/",

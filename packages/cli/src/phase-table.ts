@@ -235,8 +235,8 @@ export class PhaseTable<P extends string = string> {
 
     const frozenHeader = this.header
       ? (failed.length === 0
-          ? `${colorOrbitFrame("⦿")} ${renderHeader(this.header)}`
-          : `${colors.red("⊗")} ${renderHeader(this.header)}`) +
+          ? colorOrbitFrame(ORBIT_SPINNER[4]) + renderHeader(this.header)
+          : " " + colors.red("⊗") + "  " + renderHeader(this.header)) +
         "\n" +
         ROUTE_INDENT +
         "\n"
@@ -397,14 +397,13 @@ export class PhaseTable<P extends string = string> {
 
     const headerLine = this.header
       ? (anyFailed
-          ? colors.red("⊗")
+          ? " " + colors.red("⊗") + "  "
           : colorOrbitFrame(
               ORBIT_SPINNER[
                 Math.floor(this.spinnerFrame / HEADER_TICK_DIV) %
                   ORBIT_SPINNER.length
               ],
             )) +
-        " " +
         renderHeader(this.header) +
         "\n" +
         ROUTE_INDENT +

@@ -63,9 +63,9 @@ describe("spinners", () => {
     expect(ORBIT_SPINNER).toHaveLength(6);
   });
 
-  it("ORBIT_SPINNER frames are all 5 chars wide", () => {
+  it("ORBIT_SPINNER frames are all 4 chars wide", () => {
     for (const frame of ORBIT_SPINNER) {
-      expect(frame).toHaveLength(5);
+      expect(frame).toHaveLength(4);
     }
   });
 
