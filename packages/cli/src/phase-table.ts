@@ -42,7 +42,7 @@ const LABEL_W = 14;
 // Advance header glyph every 2 ticks (2 × 80 ms = 160 ms).
 const HEADER_TICK_DIV = 2;
 
-function colorOrbitFrame(frame: string): string {
+export function colorOrbitFrame(frame: string): string {
   return [...frame]
     .map((ch) => {
       if (ch === "⦿" || ch === "⊚") return pc.gray(ch);
@@ -50,6 +50,16 @@ function colorOrbitFrame(frame: string): string {
       return ch;
     })
     .join("");
+}
+
+/**
+ * Wrap a header string in gray brackets with gray · separators.
+ * Used by PhaseTable for every header context (spinner, pass, fail).
+ */
+export function renderHeader(text: string): string {
+  return (
+    pc.gray("[") + " " + text.replace(/·/g, pc.gray("·")) + " " + pc.gray("]")
+  );
 }
 
 function stateGlyph(
@@ -217,8 +227,8 @@ export class PhaseTable<P extends string = string> {
 
     const frozenHeader = this.header
       ? (failed.length === 0
-          ? `${colorOrbitFrame(" ⦿   ")} ${this.header}`
-          : `${colors.red(" ⊗   ")} ${this.header}`) + "\n\n"
+          ? `${colorOrbitFrame(" ⦿   ")} ${renderHeader(this.header)}`
+          : `${colors.red(" ⊗   ")} ${renderHeader(this.header)}`) + "\n\n"
       : "";
 
     const frozenRows = this.rows.flatMap((row) => {
@@ -381,7 +391,7 @@ export class PhaseTable<P extends string = string> {
               ],
             )) +
         " " +
-        this.header +
+        renderHeader(this.header) +
         "\n\n"
       : "";
 
