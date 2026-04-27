@@ -59,8 +59,8 @@ describe("spinners", () => {
     expect(HEADER_SPINNER).toHaveLength(4);
   });
 
-  it("ORBIT_SPINNER has 6 frames", () => {
-    expect(ORBIT_SPINNER).toHaveLength(6);
+  it("ORBIT_SPINNER has 7 frames", () => {
+    expect(ORBIT_SPINNER).toHaveLength(7);
   });
 
   it("ORBIT_SPINNER frames are all 4 chars wide", () => {

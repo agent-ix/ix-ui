@@ -60,8 +60,8 @@ const ROUTE_OUT = pc.dim(ROW_INDENT + "└──");
 export function colorOrbitFrame(frame: string): string {
   return [...frame]
     .map((ch) => {
-      if (ch === "⦿" || ch === "⊚") return pc.gray(ch);
-      if (ch === "∘" || ch === "⋅") return blue(ch);
+      if (ch === "⊙" || ch === "⊚") return pc.gray(ch);
+      if (ch === "∘" || ch === "⋅" || ch === "⚬") return blue(ch);
       return ch;
     })
     .join("");
@@ -77,7 +77,7 @@ export function colorOrbitFrame(frame: string): string {
  */
 export const PHASE_WIDTH = 4;
 /** Frozen "passed" frame — orbit at rest, planet at col 1. */
-export const PHASE_PASS: string = colorOrbitFrame(ORBIT_SPINNER[4]);
+export const PHASE_PASS: string = colorOrbitFrame(ORBIT_SPINNER[5]);
 /** Frozen "failed" frame — red ⊗ at col 1, padded to 4 chars. */
 export const PHASE_FAIL: string = " " + colors.red("⊗") + "  ";
 /** Animated "running" frame — pick the orbit frame for the current tick. */
