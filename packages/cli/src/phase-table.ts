@@ -227,8 +227,8 @@ export class PhaseTable<P extends string = string> {
 
     const frozenHeader = this.header
       ? (failed.length === 0
-          ? `${colorOrbitFrame(" ⦿   ")} ${renderHeader(this.header)}`
-          : `${colors.red(" ⊗   ")} ${renderHeader(this.header)}`) + "\n\n"
+          ? `${colorOrbitFrame("⦿")} ${renderHeader(this.header)}`
+          : `${colors.red("⊗")} ${renderHeader(this.header)}`) + "\n\n"
       : "";
 
     const frozenRows = this.rows.flatMap((row) => {
@@ -383,7 +383,7 @@ export class PhaseTable<P extends string = string> {
 
     const headerLine = this.header
       ? (anyFailed
-          ? colors.red(" ⊗   ")
+          ? colors.red("⊗")
           : colorOrbitFrame(
               ORBIT_SPINNER[
                 Math.floor(this.spinnerFrame / HEADER_TICK_DIV) %
