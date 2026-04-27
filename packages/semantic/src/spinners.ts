@@ -20,7 +20,7 @@ export const ORBIT_SPINNER = [
   "∘⦿   ", // near left
   " ⊚   ", // transiting (satellite in front of planet)
   " ⦿ ∘ ", // near right (gap between planet and satellite)
-  " ⦿  ⋅", // receding right (satellite one step further)
+  " ⦿ ⋅ ", // receding right
   " ⦿   ", // behind
   "⋅⦿   ", // approaching left
 ];

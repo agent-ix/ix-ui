@@ -1,7 +1,7 @@
 {
   "name": "@agent-ix/ix-ui-semantic",
   "description": "Platform-agnostic state types and glyph vocabulary for the Agent IX design system.",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "type": "module",
   "files": [
     "dist/",
