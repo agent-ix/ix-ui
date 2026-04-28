@@ -50,17 +50,21 @@ export const GLYPH_FAIL_MARK = colors.red("⊗");
 // ── Header rendering ────────────────────────────────────────────────────────
 
 export function colorOrbitFrame(frame: string): string {
+  // Frame 5 (" ⊙⋅ ") is the "going behind" tween — render the satellite dimmer.
+  const dimSatellite = frame === ORBIT_SPINNER[5];
   return [...frame]
     .map((ch) => {
       if (ch === "⊙" || ch === "⊚") return pc.gray(ch);
-      if (ch === "∘" || ch === "⋅" || ch === "⚬") return blue(ch);
+      if (ch === "∘" || ch === "⋅" || ch === "⚬") {
+        return dimSatellite ? pc.dim(blue(ch)) : blue(ch);
+      }
       return ch;
     })
     .join("");
 }
 
 /** Frozen "passed" header indicator — orbit at rest. */
-export const PHASE_PASS: string = colorOrbitFrame(ORBIT_SPINNER[5]);
+export const PHASE_PASS: string = colorOrbitFrame(ORBIT_SPINNER[6]);
 /** Frozen "failed" header indicator — red ⊗. */
 export const PHASE_FAIL: string = " " + colors.red("⊗") + "  ";
 
