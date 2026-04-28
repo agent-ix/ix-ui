@@ -46,6 +46,13 @@ export interface Listing {
    * those libs print lands beneath the opener as body content.
    */
   commit(): void;
+  /**
+   * Stop the header animation and erase the in-place line without committing.
+   * Use before handing off to PhaseTable — leaves the cursor at column 0 so
+   * the table can start from a clean position with initialLineCount: 0.
+   * No-op if already committed or finished.
+   */
+  stop(): void;
   /** Pause animation, run an interactive callback (e.g. clack prompt), resume. */
   pause<T>(fn: () => Promise<T> | T): Promise<T>;
   /** Freeze header (PHASE_PASS) and emit `└──•  <green msg>`. */
@@ -113,6 +120,13 @@ class TTYListing implements Listing {
       `\r${phaseRun(this.spinnerFrame)}${renderHeader(this.header)}${CLEAR_EOL}\n${ROUTE_INDENT}${CLEAR_EOL}\n`,
     );
     this.committed = true;
+  }
+
+  stop(): void {
+    if (this.finished || this.committed) return;
+    this.finished = true;
+    this.stopTicker();
+    process.stdout.write(`\r${CLEAR_EOL}${SHOW_CURSOR}`);
   }
 
   private writeBody(line: string): void {
@@ -228,6 +242,10 @@ class PlainListing implements Listing {
 
   commit(): void {
     /* no-op in plain mode — header was already written eagerly */
+  }
+
+  stop(): void {
+    /* no-op in plain mode — nothing to erase */
   }
 
   async pause<T>(fn: () => Promise<T> | T): Promise<T> {

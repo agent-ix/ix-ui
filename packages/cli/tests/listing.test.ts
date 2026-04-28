@@ -55,6 +55,13 @@ describe("Listing (plain mode)", () => {
     expect(result).toBe("token");
     list.success("ok");
   });
+
+  it("stop() is a no-op in plain mode", () => {
+    const list = startListing("hdr", { isTTY: false });
+    const before = output.length;
+    list.stop();
+    expect(output.length).toBe(before);
+  });
 });
 
 describe("Listing (TTY mode)", () => {
@@ -97,5 +104,24 @@ describe("Listing (TTY mode)", () => {
     list.error("boom");
     expect(output).toContain("└──");
     expect(output).toContain("boom");
+  });
+
+  it("stop() erases the in-place line and prevents further output", () => {
+    const list = startListing("hdr", { isTTY: true });
+    const before = output.length;
+    list.stop();
+    const stopOutput = output.slice(before);
+    expect(stopOutput).toContain("\r");
+    expect(stopOutput).toContain("\x1b[K");
+    list.success("should not appear");
+    expect(output).not.toContain("should not appear");
+  });
+
+  it("stop() after commit() is a no-op", () => {
+    const list = startListing("hdr", { isTTY: true });
+    list.commit();
+    const before = output.length;
+    list.stop();
+    expect(output.length).toBe(before);
   });
 });
