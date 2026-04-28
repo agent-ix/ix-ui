@@ -6,21 +6,49 @@
  * Never call `new Listr(...)` directly in consumer packages.
  */
 
-import { Listr } from "listr2";
+import { Listr, Spinner } from "listr2";
 import type { ListrTask, ListrOptions } from "listr2";
-import pc from "picocolors";
-import { GLYPH_DONE, GLYPH_FAIL } from "./style.js";
+import {
+  ROW_INDENT,
+  GLYPH_DONE,
+  GLYPH_FAIL,
+  GLYPH_WAITING,
+  GLYPH_CANCELLED,
+} from "./style.js";
+
+/**
+ * Spinner whose frames are prefixed with ROW_INDENT so the running-task
+ * spinner lands at the same column as WAITING/COMPLETED/FAILED glyphs.
+ * (listr2 passes the spinner frame as a direct icon override, bypassing
+ * the rendererOptions.icon map — so the indent must live in the frame itself.)
+ */
+class IndentedSpinner extends Spinner {
+  override fetch(): string {
+    return ROW_INDENT + super.fetch();
+  }
+}
 
 export const IX_LISTR_RENDERER_OPTIONS = {
   collapseSubtasks: false,
+  spinner: new IndentedSpinner(),
   icon: {
-    COMPLETED: GLYPH_DONE,
-    FAILED: GLYPH_FAIL,
-    WAITING: pc.dim("·"),
-    SKIPPED_WITH_COLLAPSE: pc.dim("·"),
-    SKIPPED_WITHOUT_COLLAPSE: pc.dim("·"),
-    // Tasks that didn't run because a sibling failed — show as dim open circle.
-    COMPLETED_WITH_SISTER_TASKS_FAILED: pc.dim("○"),
+    COMPLETED: ROW_INDENT + GLYPH_DONE,
+    FAILED: ROW_INDENT + GLYPH_FAIL,
+    WAITING: ROW_INDENT + GLYPH_WAITING,
+    SKIPPED_WITH_COLLAPSE: ROW_INDENT + GLYPH_WAITING,
+    SKIPPED_WITHOUT_COLLAPSE: ROW_INDENT + GLYPH_WAITING,
+    // Tasks that didn't run because a sibling failed.
+    COMPLETED_WITH_SISTER_TASKS_FAILED: ROW_INDENT + GLYPH_CANCELLED,
+  },
+  color: {
+    // Icons are pre-colored via tokens; these passthroughs prevent
+    // Listr2's per-state color from overriding them.
+    COMPLETED: (s: string | undefined) => s ?? "",
+    FAILED: (s: string | undefined) => s ?? "",
+    WAITING: (s: string | undefined) => s ?? "",
+    SKIPPED_WITH_COLLAPSE: (s: string | undefined) => s ?? "",
+    SKIPPED_WITHOUT_COLLAPSE: (s: string | undefined) => s ?? "",
+    COMPLETED_WITH_SISTER_TASKS_FAILED: (s: string | undefined) => s ?? "",
   },
 };
 
