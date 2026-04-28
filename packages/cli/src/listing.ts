@@ -59,7 +59,7 @@ export interface Listing {
   success(message: string): void;
   /** Freeze header (PHASE_PASS) and emit `└──•  <yellow msg>`. */
   warn(message: string): void;
-  /** Freeze header (PHASE_FAIL) and emit `└──•  ⊗  <red msg>`. */
+  /** Freeze header (PHASE_FAIL) and emit `⊗  <red msg>`. */
   error(message: string): void;
 }
 
@@ -212,7 +212,12 @@ class TTYListing implements Listing {
   }
 
   error(message: string): void {
-    this.finish(PHASE_FAIL, `${GLYPH_FAIL_MARK}  ${colors.red(message)}`);
+    if (this.finished) return;
+    this.finished = true;
+    this.freezeUncommitted(PHASE_FAIL);
+    process.stdout.write(
+      `\n${GLYPH_FAIL_MARK}  ${colors.red(message)}\n${SHOW_CURSOR}`,
+    );
   }
 }
 

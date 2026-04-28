@@ -17,7 +17,10 @@ export const IX_LISTR_RENDERER_OPTIONS = {
     COMPLETED: GLYPH_DONE,
     FAILED: GLYPH_FAIL,
     WAITING: pc.dim("·"),
-    SKIPPED: pc.dim("·"),
+    SKIPPED_WITH_COLLAPSE: pc.dim("·"),
+    SKIPPED_WITHOUT_COLLAPSE: pc.dim("·"),
+    // Tasks that didn't run because a sibling failed — show as dim open circle.
+    COMPLETED_WITH_SISTER_TASKS_FAILED: pc.dim("○"),
   },
 };
 
