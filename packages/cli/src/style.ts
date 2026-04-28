@@ -46,25 +46,25 @@ export const GLYPH_DONE = blue("•");
 export const GLYPH_FAIL = colors.red("○");
 /** Header fail marker — used inline (e.g. `⊗ 1 service failed`). */
 export const GLYPH_FAIL_MARK = colors.red("⊗");
+/** Waiting / not-yet-started task indicator. */
+export const GLYPH_WAITING = pc.dim("·");
+/** Cancelled — task didn't run because a sibling failed. */
+export const GLYPH_CANCELLED = pc.dim("○");
 
 // ── Header rendering ────────────────────────────────────────────────────────
 
 export function colorOrbitFrame(frame: string): string {
-  // Frame 5 (" ⊙⋅ ") is the "going behind" tween — render the satellite dimmer.
-  const dimSatellite = frame === ORBIT_SPINNER[5];
   return [...frame]
     .map((ch) => {
       if (ch === "⊙" || ch === "⊚") return pc.gray(ch);
-      if (ch === "∘" || ch === "⋅" || ch === "⚬") {
-        return dimSatellite ? pc.dim(blue(ch)) : blue(ch);
-      }
+      if (ch === "∘" || ch === "⋅" || ch === "⚬") return blue(ch);
       return ch;
     })
     .join("");
 }
 
 /** Frozen "passed" header indicator — orbit at rest. */
-export const PHASE_PASS: string = colorOrbitFrame(ORBIT_SPINNER[6]);
+export const PHASE_PASS: string = colorOrbitFrame(ORBIT_SPINNER[5]);
 /** Frozen "failed" header indicator — red ⊗. */
 export const PHASE_FAIL: string = " " + colors.red("⊗") + "  ";
 

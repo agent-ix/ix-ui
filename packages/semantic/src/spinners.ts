@@ -24,7 +24,6 @@ export const ORBIT_SPINNER = [
   " ⊙⚬ ", // near right (adjacent)
   " ⊙ ∘", // receding right
   " ⊙ ⋅", // far right (fading)
-  " ⊙⋅ ", // farther away, about to go behind (rendered dimmer)
   " ⊙  ", // behind
   "⋅⊙  ", // approaching left
 ];
