@@ -403,11 +403,11 @@ export class PhaseTable<P extends string = string> {
 
     const rows = this.rows
       .filter((row) => this.rowCurrentState(row.phases).state !== "pending")
-      .map((row) => {
+      .flatMap((row) => {
         const { phase, state } = this.rowCurrentState(row.phases);
         let label = this.rowLabel(phase, state);
         let podsDone = false;
-        if (phase === lastPhase && row.podStatus) {
+        if (phase === lastPhase && row.podStatus && state !== "failed") {
           label = row.podStatus;
           const parts = row.podStatus.split("/");
           const r = parseInt(parts[0], 10);
@@ -420,11 +420,18 @@ export class PhaseTable<P extends string = string> {
         const elapsedMs =
           row.endMs != null ? row.endMs - row.startMs : now - row.startMs;
         const elapsed = (elapsedMs / 1000).toFixed(1) + "s";
-        const isPodStatus = phase === lastPhase && !!row.podStatus;
+        const isPodStatus =
+          phase === lastPhase && !!row.podStatus && state !== "failed";
         const labelPadded = isPodStatus
           ? colorPods(label.padEnd(LABEL_W))
           : label.padEnd(LABEL_W);
-        return `${ROW_INDENT}${g} ${row.name.padEnd(nameW)}  ${labelPadded}  ${elapsed}`;
+        const out = [
+          `${ROW_INDENT}${g} ${row.name.padEnd(nameW)}  ${labelPadded}  ${elapsed}`,
+        ];
+        if (state === "failed" && row.error) {
+          out.push(`${ERROR_INDENT}${pc.dim(row.error)}`);
+        }
+        return out;
       });
 
     const footer = pc.dim(
