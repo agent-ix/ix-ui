@@ -19,9 +19,6 @@
     "build": "vite build",
     "clean": "rm -rf dist coverage"
   },
-  "publishConfig": {
-    "registry": "http://npm.ix/"
-  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/agent-ix/ix-ui.git"
