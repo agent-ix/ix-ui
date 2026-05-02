@@ -15,6 +15,7 @@
 import pc from "picocolors";
 import {
   ROW_INDENT,
+  NOTE_INDENT,
   ROUTE_INDENT,
   ROUTE_OUT,
   PHASE_PASS,
@@ -144,7 +145,7 @@ class TTYListing implements Listing {
   }
 
   note(text: string): void {
-    this.writeBody(`${ROW_INDENT}${pc.dim(text)}`);
+    this.writeBody(`${NOTE_INDENT}${pc.dim(text)}`);
   }
 
   raw(text: string): void {
@@ -238,7 +239,7 @@ class PlainListing implements Listing {
   }
 
   note(text: string): void {
-    process.stdout.write(`${ROW_INDENT}${text}\n`);
+    process.stdout.write(`${NOTE_INDENT}${text}\n`);
   }
 
   raw(text: string): void {

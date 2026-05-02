@@ -22,6 +22,9 @@ export { ORBIT_SPINNER };
 export const PLANET_COL = 1;
 /** Indent for body rows (•, ○ glyphs). */
 export const ROW_INDENT = "    ";
+/** Indent for note/info text — sits 2 cols past ROW_INDENT, lined up under
+ *  the body of the row above (after the bullet glyph and its space). */
+export const NOTE_INDENT = "      ";
 /** Indent for error messages — aligns under the row name. */
 export const ERROR_INDENT = "        ";
 /** Header indicator width — keeps `[ … ]` aligned across spinner/pass/fail. */
