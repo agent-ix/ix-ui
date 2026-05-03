@@ -205,7 +205,7 @@ class TTYListing implements Listing {
   }
 
   success(message: string): void {
-    this.finish(PHASE_PASS, `${GLYPH_DONE}  ${pc.green(message)}`);
+    this.finish(PHASE_PASS, `${GLYPH_DONE}  ${pc.white(message)}`);
   }
 
   warn(message: string): void {
