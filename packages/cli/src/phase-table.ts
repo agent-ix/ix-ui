@@ -21,6 +21,18 @@ import {
 } from "./style.js";
 
 export type { PhaseState };
+
+const ANSI_RE = /\x1b\[[0-9;]*m/g;
+
+function stripAnsi(s: string): string {
+  return s.replace(ANSI_RE, "");
+}
+
+function padDisplayName(displayName: string, width: number): string {
+  const visual = stripAnsi(displayName).length;
+  return displayName + " ".repeat(Math.max(0, width - visual));
+}
+
 // Back-compat re-exports — consumers (and prior phase-table imports) can keep
 // pulling style tokens from this module.
 export {
@@ -42,6 +54,8 @@ export interface PhaseTableOptions<P extends string = string> {
   phases: readonly P[];
   /** Human-readable label shown while a phase is active (defaults to phase name). */
   phaseLabels?: Partial<Record<P, string>>;
+  /** Optional display labels (may contain ANSI codes) keyed by service name. */
+  serviceLabels?: Record<string, string>;
   isTTY?: boolean;
   isPlain?: boolean;
   /** Header text rendered above the rows with an animated glyph. */
@@ -52,6 +66,7 @@ export interface PhaseTableOptions<P extends string = string> {
 
 interface ServiceRow<P extends string> {
   name: string;
+  displayName: string;
   phases: Record<P, PhaseState>;
   startMs: number;
   endMs: number | null;
@@ -122,6 +137,7 @@ export class PhaseTable<P extends string = string> {
 
     this.rows = serviceNames.map((name) => ({
       name,
+      displayName: opts.serviceLabels?.[name] ?? name,
       phases: { ...initialPhases },
       startMs: now,
       endMs: null,
@@ -249,7 +265,7 @@ export class PhaseTable<P extends string = string> {
           ? `  ${colorPods(row.podStatus.padEnd(5))}`
           : "       ";
         const lines = [
-          `${ROW_INDENT}${colors.red("○")} ${row.name.padEnd(nameW)}${pods}  ${sS}`,
+          `${ROW_INDENT}${colors.red("○")} ${padDisplayName(row.displayName, nameW)}${pods}  ${sS}`,
         ];
         if (row.error) lines.push(`${ERROR_INDENT}${pc.dim(row.error)}`);
         return lines;
@@ -261,7 +277,7 @@ export class PhaseTable<P extends string = string> {
         ? `  →  ${pc.cyan(`https://${row.name}.${baseDomain}`)}`
         : "";
       return [
-        `${ROW_INDENT}${blue("•")} ${row.name.padEnd(nameW)}${pods}  ${sS.padEnd(7)}${urlSuffix}`,
+        `${ROW_INDENT}${blue("•")} ${padDisplayName(row.displayName, nameW)}${pods}  ${sS.padEnd(7)}${urlSuffix}`,
       ];
     });
 
@@ -320,7 +336,7 @@ export class PhaseTable<P extends string = string> {
       for (const row of this.rows) {
         const sMs = row.endMs != null ? row.endMs - row.startMs : totalMs;
         lines.push(
-          `${ROW_INDENT}${blue("•")} ${row.name.padEnd(nameW)}  ${(sMs / 1000).toFixed(1)}s`,
+          `${ROW_INDENT}${blue("•")} ${padDisplayName(row.displayName, nameW)}  ${(sMs / 1000).toFixed(1)}s`,
         );
       }
       if (tail) {
@@ -343,12 +359,12 @@ export class PhaseTable<P extends string = string> {
             ? `  ${row.podStatus.padEnd(5)}`
             : "       ";
           lines.push(
-            `${ROW_INDENT}${colors.red("○")} ${row.name.padEnd(nameW)}${pods}  ${(sMs / 1000).toFixed(1)}s`,
+            `${ROW_INDENT}${colors.red("○")} ${padDisplayName(row.displayName, nameW)}${pods}  ${(sMs / 1000).toFixed(1)}s`,
           );
           if (row.error) lines.push(`${ERROR_INDENT}${pc.dim(row.error)}`);
         } else {
           lines.push(
-            `${ROW_INDENT}${blue("•")} ${row.name.padEnd(nameW)}  ${(sMs / 1000).toFixed(1)}s`,
+            `${ROW_INDENT}${blue("•")} ${padDisplayName(row.displayName, nameW)}  ${(sMs / 1000).toFixed(1)}s`,
           );
         }
       }
@@ -362,7 +378,10 @@ export class PhaseTable<P extends string = string> {
   }
 
   private maxNameLen(): number {
-    return Math.max(...this.rows.map((r) => r.name.length), 0);
+    return Math.max(
+      ...this.rows.map((r) => stripAnsi(r.displayName).length),
+      0,
+    );
   }
 
   private rowCurrentState(phases: Record<P, PhaseState>): {
@@ -426,7 +445,7 @@ export class PhaseTable<P extends string = string> {
           ? colorPods(label.padEnd(LABEL_W))
           : label.padEnd(LABEL_W);
         const out = [
-          `${ROW_INDENT}${g} ${row.name.padEnd(nameW)}  ${labelPadded}  ${elapsed}`,
+          `${ROW_INDENT}${g} ${padDisplayName(row.displayName, nameW)}  ${labelPadded}  ${elapsed}`,
         ];
         if (state === "failed" && row.error) {
           out.push(`${ERROR_INDENT}${pc.dim(row.error)}`);

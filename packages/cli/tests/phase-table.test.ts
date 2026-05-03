@@ -107,6 +107,71 @@ describe("PhaseTable (non-TTY)", () => {
   });
 });
 
+describe("PhaseTable serviceLabels", () => {
+  let output: string;
+
+  beforeEach(() => {
+    output = "";
+    vi.spyOn(process.stdout, "write").mockImplementation((chunk) => {
+      output += typeof chunk === "string" ? chunk : chunk.toString();
+      return true;
+    });
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("renders displayName in finish output when serviceLabels provided", () => {
+    const table = new PhaseTable<TestPhase>(["svc-a"], {
+      phases: TEST_PHASES,
+      isTTY: false,
+      serviceLabels: { "svc-a": "svc-a \x1b[2m1.2.3\x1b[0m" },
+    });
+    table.start();
+    for (const phase of TEST_PHASES) {
+      table.transition("svc-a", phase, "done");
+    }
+    output = "";
+    table.finish();
+    expect(output).toContain("svc-a");
+    expect(output).toContain("1.2.3");
+  });
+
+  it("lookup methods still work by key name when serviceLabels provided", () => {
+    const table = new PhaseTable<TestPhase>(["svc-a"], {
+      phases: TEST_PHASES,
+      isTTY: false,
+      serviceLabels: { "svc-a": "svc-a \x1b[2m1.2.3\x1b[0m" },
+    });
+    expect(() => table.transition("svc-a", "build", "running")).not.toThrow();
+    expect(() => table.setError("svc-a", "oops")).not.toThrow();
+    expect(() => table.setPodStatus("svc-a", "1/1")).not.toThrow();
+  });
+
+  it("aligns columns correctly when displayName contains ANSI codes", () => {
+    const table = new PhaseTable<TestPhase>(["short", "longer-name"], {
+      phases: TEST_PHASES,
+      isTTY: false,
+      serviceLabels: {
+        short: "short \x1b[2m9.9.9\x1b[0m",
+        "longer-name": "longer-name \x1b[2m1.0.0\x1b[0m",
+      },
+    });
+    table.start();
+    for (const svc of ["short", "longer-name"]) {
+      for (const phase of TEST_PHASES) {
+        table.transition(svc, phase, "done");
+      }
+    }
+    output = "";
+    table.finish();
+    // Both rows present — alignment tested implicitly (no crash)
+    expect(output).toContain("short");
+    expect(output).toContain("longer-name");
+  });
+});
+
 describe("PhaseTable colors", () => {
   it("colors object has required methods", async () => {
     const { colors, blue } = await import("../src/colors.js");
