@@ -21,6 +21,7 @@ import {
   PHASE_PASS,
   PHASE_FAIL,
   GLYPH_DONE,
+  GLYPH_RESULT,
   GLYPH_FAIL_MARK,
   phaseRun,
   renderHeader,
@@ -201,15 +202,15 @@ class TTYListing implements Listing {
     if (this.finished) return;
     this.finished = true;
     this.freezeUncommitted(headerGlyph);
-    process.stdout.write(`\n${ROUTE_OUT}${tail}\n${SHOW_CURSOR}`);
+    process.stdout.write(`${ROUTE_OUT}${tail}\n${SHOW_CURSOR}`);
   }
 
   success(message: string): void {
-    this.finish(PHASE_PASS, `${GLYPH_DONE}  ${pc.white(message)}`);
+    this.finish(PHASE_PASS, `${GLYPH_RESULT}  ${pc.white(message)}`);
   }
 
   warn(message: string): void {
-    this.finish(PHASE_PASS, `${GLYPH_DONE}  ${pc.yellow(message)}`);
+    this.finish(PHASE_PASS, `${GLYPH_RESULT}  ${pc.yellow(message)}`);
   }
 
   error(message: string): void {

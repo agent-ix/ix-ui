@@ -38,13 +38,15 @@ export const HEADER_TICK_DIV = 3;
 
 /** Opener: `' └──┐'` under the orbit header. */
 export const ROUTE_INDENT = pc.dim(" └──┐");
-/** Tail prefix (no glyph): indented under content + `└──`, glyph appended by caller. */
-export const ROUTE_OUT = pc.dim(ROW_INDENT + "   └──");
+/** Tail prefix: same indent as body rows, glyph appended by caller. */
+export const ROUTE_OUT = ROW_INDENT;
 
 // ── Glyphs ──────────────────────────────────────────────────────────────────
 
-/** Done bullet — also used for tail summaries. */
+/** Done bullet — used for completed task rows. */
 export const GLYPH_DONE = blue("•");
+/** Result glyph — used for the tail summary line. */
+export const GLYPH_RESULT = "✧";
 /** Failed bullet — outline circle. */
 export const GLYPH_FAIL = colors.red("○");
 /** Header fail marker — used inline (e.g. `⊗ 1 service failed`). */

@@ -267,10 +267,10 @@ export class PhaseTable<P extends string = string> {
 
     const lines = [...frozenRows];
     if (tail) {
-      lines.push(`${ROUTE_OUT}${blue("•")} ${tail}`);
+      lines.push(`${ROUTE_OUT}✧ ${tail}`);
     } else if (failed.length === 0 && entry && baseDomain) {
       lines.push(
-        `${ROUTE_OUT}${blue("•")} ${pc.cyan(pc.underline(`https://${entry}.${baseDomain}`))}`,
+        `${ROUTE_OUT}✧ ${pc.cyan(pc.underline(`https://${entry}.${baseDomain}`))}`,
       );
     } else if (failed.length > 0) {
       lines.push(
