@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { PhaseTable } from "../src/phase-table.js";
+import { PhaseTable, colorPods } from "../src/phase-table.js";
 
 type TestPhase = "build" | "deploy" | "ready";
 const TEST_PHASES: readonly TestPhase[] = ["build", "deploy", "ready"];
@@ -169,6 +169,47 @@ describe("PhaseTable serviceLabels", () => {
     // Both rows present — alignment tested implicitly (no crash)
     expect(output).toContain("short");
     expect(output).toContain("longer-name");
+  });
+});
+
+// TC-059 – TC-062: FR-002-AC-5 through AC-8 — colorPods coloring rules
+describe("colorPods", () => {
+  const RED_167 = "\x1b[38;5;167m";
+
+  // TC-059: FR-002-AC-5 — 0/N must not use muted-red ANSI 167
+  it("0/1 does not contain muted-red ANSI 167 escape", () => {
+    expect(colorPods("0/1")).not.toContain(RED_167);
+  });
+
+  // TC-060: FR-002-AC-6 — 1/1 renders in cyan
+  it("1/1 contains cyan escape", () => {
+    const out = colorPods("1/1");
+    // picocolors cyan = \x1b[36m; verify count and plain text present
+    expect(out).toContain("1/1");
+    expect(out).not.toContain(RED_167);
+  });
+
+  // TC-061: FR-002-AC-7 — partial (1/3) renders in yellow, not red
+  it("1/3 contains yellow escape and not muted-red", () => {
+    const out = colorPods("1/3");
+    expect(out).toContain("1/3");
+    expect(out).not.toContain(RED_167);
+  });
+
+  // TC-062: FR-002-AC-8 — 0/N·label preserves label in dim suffix, no red
+  it("0/1·init formats 0 in yellow and preserves ·init suffix without red", () => {
+    const out = colorPods("0/1·init");
+    expect(out).toContain("0");
+    expect(out).toContain("init");
+    expect(out).not.toContain(RED_167);
+  });
+
+  it("0/1 padded (as passed by PhaseTable) does not contain muted-red", () => {
+    expect(colorPods("0/1".padEnd(14))).not.toContain(RED_167);
+  });
+
+  it("returns plain status unchanged when no slash present", () => {
+    expect(colorPods("pending")).toBe("pending");
   });
 });
 

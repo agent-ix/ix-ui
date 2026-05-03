@@ -74,6 +74,10 @@ Packages covered:
 | cli/FR-002 | AC-2: setInterval called with 80 ms delay | TC-017 | ✅ Complete |
 | cli/FR-002 | AC-3: Frame output contains synchronized output markers | TC-018 | ✅ Complete |
 | cli/FR-002 | AC-4: No further stdout writes after `finish()` | TC-019 | ✅ Complete |
+| cli/FR-002 | AC-5: `colorPods("0/1")` does not contain muted-red `\x1b[38;5;167m` | TC-059 | ✅ Complete |
+| cli/FR-002 | AC-6: `colorPods("1/1")` contains cyan, no red | TC-060 | ✅ Complete |
+| cli/FR-002 | AC-7: `colorPods("1/3")` contains yellow, no red | TC-061 | ✅ Complete |
+| cli/FR-002 | AC-8: `colorPods("0/1·init")` preserves `·init` suffix, no red | TC-062 | ✅ Complete |
 | cli/FR-003 | AC-1: `transition()` in non-TTY writes one `[T+Ns] svc: phase state` line | TC-014 (existing) | ✅ Complete |
 | cli/FR-003 | AC-2: No setInterval in non-TTY mode | TC-020 | ✅ Complete |
 | cli/FR-003 | AC-3: `start()` with header in non-TTY writes `⊕  <header>` | TC-021 | ✅ Complete |
@@ -177,6 +181,10 @@ Packages covered:
 | TC-036 | colors exports all required keys | Unit | P1 | cli/FR-010-AC-2 | ✅ Complete |
 | TC-037 | blue is exported and wraps strings | Unit | P2 | cli/FR-010-AC-3 | ✅ Complete |
 | TC-038 | Every colors value is a (string) => string function | Unit | P1 | cli/FR-010-AC-4 | ✅ Complete |
+| TC-059 | colorPods("0/1") does not contain muted-red ANSI 167 escape | Unit | P1 | cli/FR-002-AC-5 | ✅ Complete |
+| TC-060 | colorPods("1/1") contains count and no red | Unit | P1 | cli/FR-002-AC-6 | ✅ Complete |
+| TC-061 | colorPods("1/3") contains count and no red | Unit | P1 | cli/FR-002-AC-7 | ✅ Complete |
+| TC-062 | colorPods("0/1·init") preserves ·init suffix without red | Unit | P1 | cli/FR-002-AC-8 | ✅ Complete |
 | TC-045 | No console.log/error/warn in packages/cli/src/ | Static | P1 | NFR-002-AC-1, AC-3 | ✅ Complete |
 | TC-046 | startListing returns a handle with all required methods | Unit | P1 | cli/FR-013-AC-1 | ✅ Complete |
 | TC-047 | TTY constructor draws header in place via `\r` | Unit | P1 | cli/FR-013-AC-2 | ✅ Complete |

@@ -100,14 +100,24 @@ function stateGlyph(
   }
 }
 
-function colorPods(status: string): string {
-  const i = status.indexOf("/");
-  if (i === -1) return status;
-  const r = status.slice(0, i);
-  const rest = status.slice(i);
-  const ready = parseInt(r, 10);
-  if (ready > 0) return pc.cyan(r) + pc.cyan(rest);
-  return colors.red(r) + pc.dim(rest);
+export function colorPods(status: string): string {
+  const dotIdx = status.indexOf("·");
+  const countPart =
+    dotIdx !== -1 ? status.slice(0, dotIdx) : status.replace(/\s+$/, "");
+  const tail = status.slice(countPart.length);
+
+  const slashIdx = countPart.indexOf("/");
+  if (slashIdx === -1) return status;
+
+  const ready = parseInt(countPart, 10);
+  const total = parseInt(countPart.slice(slashIdx + 1), 10);
+
+  if (ready > 0 && ready === total) return pc.cyan(countPart) + pc.dim(tail);
+  if (ready > 0) return pc.yellow(countPart) + pc.dim(tail);
+  return (
+    pc.yellow(countPart.slice(0, slashIdx)) +
+    pc.dim(countPart.slice(slashIdx) + tail)
+  );
 }
 
 export class PhaseTable<P extends string = string> {
