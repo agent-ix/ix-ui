@@ -62,6 +62,8 @@ export interface PhaseTableOptions<P extends string = string> {
   header?: string;
   /** Lines already written before start() — erased on first draw. */
   initialLineCount?: number;
+  /** Omit rows that never leave the pending state from live/final output. */
+  hidePendingRows?: boolean;
 }
 
 interface ServiceRow<P extends string> {
@@ -98,6 +100,7 @@ function stateGlyph(
     case "failed":
       return colors.red("○");
   }
+  return state satisfies never;
 }
 
 export function colorPods(status: string): string {
@@ -127,6 +130,7 @@ export class PhaseTable<P extends string = string> {
   private readonly globalStartMs: number;
   private readonly isTTY: boolean;
   private readonly header: string | null;
+  private readonly hidePendingRows: boolean;
   private spinnerFrame = 0;
   private lineCount = 0;
   private ticker: ReturnType<typeof setInterval> | null = null;
@@ -136,6 +140,7 @@ export class PhaseTable<P extends string = string> {
     this.globalStartMs = Date.now();
     this.isTTY = (opts.isTTY ?? process.stdout.isTTY ?? false) && !opts.isPlain;
     this.header = opts.header ?? null;
+    this.hidePendingRows = opts.hidePendingRows ?? false;
     this.lineCount = opts.initialLineCount ?? 0;
     this.phaseList = opts.phases;
     this.phaseLabels = opts.phaseLabels ?? {};
@@ -163,6 +168,16 @@ export class PhaseTable<P extends string = string> {
       this.preflightLines.push(line);
     } else {
       process.stdout.write(`🔑 ${label}\n`);
+    }
+  }
+
+  /** Record a plain entry line shown above the service rows. */
+  entry(label: string): void {
+    const line = `${ROW_INDENT}${blue("•")} ${label}`;
+    if (this.isTTY) {
+      this.preflightLines.push(line);
+    } else {
+      process.stdout.write(`${line}\n`);
     }
   }
 
@@ -234,20 +249,22 @@ export class PhaseTable<P extends string = string> {
     }
 
     const totalMs = Date.now() - this.globalStartMs;
-    const failed = this.rows.filter((r) =>
+    const visibleRows = this.visibleRows();
+    const failed = visibleRows.filter((r) =>
       (Object.values(r.phases) as PhaseState[]).some((s) => s === "failed"),
     );
 
     if (this.isTTY) {
-      this.finishTTY(totalMs, failed, entry, baseDomain, tail);
+      this.finishTTY(totalMs, visibleRows, failed, entry, baseDomain, tail);
     } else {
-      this.finishPlain(totalMs, failed, entry, baseDomain, tail);
+      this.finishPlain(totalMs, visibleRows, failed, entry, baseDomain, tail);
     }
     this.lineCount = 0;
   }
 
   private finishTTY(
     totalMs: number,
+    visibleRows: ServiceRow<P>[],
     failed: ServiceRow<P>[],
     entry: string | null,
     baseDomain?: string,
@@ -264,7 +281,7 @@ export class PhaseTable<P extends string = string> {
         "\n"
       : "";
 
-    const frozenRows = this.rows.flatMap((row) => {
+    const frozenRows = visibleRows.flatMap((row) => {
       const sMs = row.endMs != null ? row.endMs - row.startMs : totalMs;
       const sS = (sMs / 1000).toFixed(1) + "s";
       const anyFailed = (Object.values(row.phases) as PhaseState[]).some(
@@ -327,6 +344,7 @@ export class PhaseTable<P extends string = string> {
 
   private finishPlain(
     totalMs: number,
+    visibleRows: ServiceRow<P>[],
     failed: ServiceRow<P>[],
     entry: string | null,
     baseDomain?: string,
@@ -339,11 +357,11 @@ export class PhaseTable<P extends string = string> {
     if (failed.length === 0) {
       lines.push(
         blue(
-          `✓ ${this.rows.length} service${this.rows.length === 1 ? "" : "s"} ready in ${totalS}s`,
+          `✓ ${visibleRows.length} service${visibleRows.length === 1 ? "" : "s"} ready in ${totalS}s`,
         ),
       );
       lines.push("");
-      for (const row of this.rows) {
+      for (const row of visibleRows) {
         const sMs = row.endMs != null ? row.endMs - row.startMs : totalMs;
         lines.push(
           `${ROW_INDENT}${blue("•")} ${padDisplayName(row.displayName, nameW)}  ${(sMs / 1000).toFixed(1)}s`,
@@ -359,7 +377,7 @@ export class PhaseTable<P extends string = string> {
     } else {
       lines.push(colors.red(`⊗ ${failed.length} failed in ${totalS}s`));
       lines.push("");
-      for (const row of this.rows) {
+      for (const row of visibleRows) {
         const anyFailed = (Object.values(row.phases) as PhaseState[]).some(
           (s) => s === "failed",
         );
@@ -414,11 +432,12 @@ export class PhaseTable<P extends string = string> {
     const now = Date.now();
     const totalElapsedS = ((now - this.globalStartMs) / 1000).toFixed(1);
     const lastPhase = this.phaseList[this.phaseList.length - 1];
-    const readyCount = this.rows.filter(
+    const visibleRows = this.visibleRows();
+    const readyCount = visibleRows.filter(
       (r) => r.phases[lastPhase] === "done",
     ).length;
     const nameW = this.maxNameLen();
-    const anyFailed = this.rows.some((r) =>
+    const anyFailed = visibleRows.some((r) =>
       (Object.values(r.phases) as PhaseState[]).some((s) => s === "failed"),
     );
 
@@ -430,7 +449,7 @@ export class PhaseTable<P extends string = string> {
         "\n"
       : "";
 
-    const rows = this.rows
+    const rows = visibleRows
       .filter((row) => this.rowCurrentState(row.phases).state !== "pending")
       .flatMap((row) => {
         const { phase, state } = this.rowCurrentState(row.phases);
@@ -464,7 +483,7 @@ export class PhaseTable<P extends string = string> {
       });
 
     const footer = pc.dim(
-      `  elapsed ${totalElapsedS}s · ${readyCount}/${this.rows.length} ready`,
+      `  elapsed ${totalElapsedS}s · ${readyCount}/${visibleRows.length} ready`,
     );
 
     const preflightBlock = this.preflightLines.join("\n");
@@ -491,5 +510,12 @@ export class PhaseTable<P extends string = string> {
       `\x1b[?2026h\x1b[?25l${moveUp}${frame}\x1b[?25h\x1b[?2026l`,
     );
     this.lineCount = newCount;
+  }
+
+  private visibleRows(): ServiceRow<P>[] {
+    if (!this.hidePendingRows) return this.rows;
+    return this.rows.filter(
+      (row) => this.rowCurrentState(row.phases).state !== "pending",
+    );
   }
 }

@@ -38,6 +38,15 @@ describe("PhaseTable (non-TTY)", () => {
     expect(output).toContain("logged in as bot");
   });
 
+  it("emits plain entry lines above the table in non-TTY mode", () => {
+    const table = new PhaseTable<TestPhase>(["svc-a"], {
+      phases: TEST_PHASES,
+      isTTY: false,
+    });
+    table.entry("build 0.1.5");
+    expect(output).toContain("build 0.1.5");
+  });
+
   it("finish prints success summary when all services done", () => {
     const table = new PhaseTable<TestPhase>(["svc-a", "svc-b"], {
       phases: TEST_PHASES,
@@ -104,6 +113,22 @@ describe("PhaseTable (non-TTY)", () => {
     table.start();
     output = "";
     expect(() => table.finish()).not.toThrow();
+  });
+
+  it("hides rows that never leave pending when hidePendingRows is enabled", () => {
+    const table = new PhaseTable<TestPhase>(["app", "svc-a"], {
+      phases: TEST_PHASES,
+      isTTY: false,
+      hidePendingRows: true,
+    });
+    table.start();
+    for (const phase of TEST_PHASES) {
+      table.transition("svc-a", phase, "done");
+    }
+    output = "";
+    table.finish();
+    expect(output).toContain("svc-a");
+    expect(output).not.toContain("app");
   });
 });
 
