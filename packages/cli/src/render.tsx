@@ -1,6 +1,26 @@
 import React, { createContext, useContext, useEffect, useRef } from "react";
 import { render as inkRender, useApp } from "ink";
 
+/**
+ * Convenience for "render one frame and exit" — used for final-state listings
+ * (status=passed/failed with a tail) that don't need user interaction or
+ * progressive updates. Mounts the tree, waits one microtask tick so the frame
+ * paints, then unmounts.
+ */
+const ExitAfterPaint: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
+  const { exit } = useApp();
+  useEffect(() => {
+    // One microtask + one timer tick gives Ink a chance to flush the frame
+    // before we tear down. Empirically necessary for ink-testing-library
+    // and real terminals.
+    const t = setTimeout(exit, 0);
+    return () => clearTimeout(t);
+  }, [exit]);
+  return <>{children}</>;
+};
+
 export interface RenderOptions {
   plain?: boolean;
   exitOnCtrlC?: boolean;
@@ -153,4 +173,16 @@ export async function render<T = void>(
       },
     );
   });
+}
+
+/**
+ * Convenience: render a final-state tree once and resolve. Equivalent to
+ * `render(element)` where the element auto-exits after the first paint.
+ * Use for non-interactive listings (status=passed/failed, no pending async).
+ */
+export async function renderStatic(
+  element: React.ReactElement,
+  opts: RenderOptions = {},
+): Promise<RenderResult<void>> {
+  return render(<ExitAfterPaint>{element}</ExitAfterPaint>, opts);
 }
