@@ -76,7 +76,10 @@ export function useExecaPhase(
             }
           }
         }, KILL_GRACE_MS);
-        proc.finally(() => clearTimeout(killTimer));
+        proc.then(
+          () => clearTimeout(killTimer),
+          () => clearTimeout(killTimer),
+        );
       }
     };
     // We intentionally re-run only when enable flips. command/args changes

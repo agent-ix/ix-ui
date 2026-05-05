@@ -1,6 +1,7 @@
 // Re-exports of Ink primitives consumers may need for ad-hoc layout
 // (avoids requiring `ink` as a direct dependency of every consumer pkg).
 export { Box, Text } from "ink";
+export { useEffect, useState } from "react";
 
 // Components
 export {
