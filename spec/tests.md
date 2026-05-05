@@ -63,12 +63,12 @@ TC ID conventions:
 | FR | Title | AC count | Planned TCs |
 |---|---|---|---|
 | FR-001 | Ink renderer foundation | 12 | TC-100 – TC-111 |
-| FR-002 | Frame component | 11 | TC-112 – TC-122 |
+| FR-002 | Frame component | 12 | TC-112 – TC-122, TC-122a |
 | FR-003 | Listing component | 9 | TC-123 – TC-131 |
 | FR-004 | PhaseTable component | 16 | TC-132 – TC-147 |
-| FR-005 | TaskList component | 16 | TC-148 – TC-163 |
-| FR-006 | Prompt components | 20 | TC-164 – TC-183 |
-| FR-007 | Async work hooks | 15 | TC-184 – TC-198 |
+| FR-005 | TaskList component | 18 | TC-148 – TC-163, TC-163a – TC-163b |
+| FR-006 | Prompt components | 23 | TC-164 – TC-183, TC-183a – TC-183c |
+| FR-007 | Async work hooks | 16 | TC-184 – TC-198, TC-198a |
 | FR-008 | render() entry point | 12 | TC-199 – TC-210 |
 | FR-009 | colors.red | 3 | TC-211 – TC-213 |
 | FR-010 | colors palette object | 4 | TC-214 – TC-217 |
@@ -120,6 +120,7 @@ TC ID conventions:
 | TC-120 | AC-9 | Blank line above tail. |
 | TC-121 | AC-10 | Frame composes into Frame. |
 | TC-122 | AC-11 | Frame forwards layout props. |
+| TC-122a | AC-12 | Empty header renders bracketed `[  ]` without crash. |
 
 ### FR-003 — Listing component
 
@@ -176,6 +177,8 @@ TC ID conventions:
 | TC-161 | AC-14 | Empty tasks array. |
 | TC-162 | AC-15 | helpers post-settle no-op. |
 | TC-163 | AC-16 | onError concurrent: first error only. |
+| TC-163a | AC-17 | Tasks identified by array position; reorder without ref change swaps state. |
+| TC-163b | AC-18 | Throwing onComplete / onError propagates; schedule doesn't retry. |
 
 ### FR-006 — Prompt components
 
@@ -201,6 +204,9 @@ TC ID conventions:
 | TC-181 | AC-18 | Unmount before submit fires nothing. |
 | TC-182 | AC-19 | Multiple Enter within tick fires once. |
 | TC-183 | AC-20 | Non-TTY stdin → graceful cancel summary. |
+| TC-183a | AC-21 | Throwing onSubmit propagates; prompt still renders summary. |
+| TC-183b | AC-22 | Validate purity is documented (review-only — no automated test). |
+| TC-183c | AC-23 | Duplicate option values render as separate rows; first match wins. |
 
 ### FR-007 — Async work hooks
 
@@ -220,7 +226,8 @@ TC ID conventions:
 | TC-195 | AC-11 | useHelmHookWatcher polls jobs. |
 | TC-196 | AC-12 | Failed hook keeps reporting. |
 | TC-197 | AC-13 | Multiple hooks compose. |
-| TC-198 | AC-15 | Missing binary → failed state. |
+| TC-198 | AC-15 | useExecaPhase: missing binary → failed state. |
+| TC-198a | AC-16 | useKubectlRollout / useHelmHookWatcher: missing kubectl → silent retry, no failed state. |
 
 ### FR-008 — render() entry point
 
@@ -291,10 +298,109 @@ TC ID conventions:
 
 ---
 
-## 6. Coverage Status Legend
+## 6. Option Permutation Matrix
+
+Each row is a distinct render scenario verified against snapshot output. `🔘` = planned.
+
+### Frame status × tail variant × body presence
+
+| Test | status | tailVariant | children | tail | Expected |
+|---|---|---|---|---|---|
+| TC-OP-01 | running | — | yes | — | Animated header, opener, body, no tail. |
+| TC-OP-02 | running | success | yes | yes | Animated header, opener, body, `└──•` success tail. |
+| TC-OP-03 | passed | success | yes | yes | Frozen `⊙`, opener, body, `└──•` cyan tail. |
+| TC-OP-04 | passed | warn | yes | yes | Frozen `⊙`, opener, body, `└──•` yellow tail. |
+| TC-OP-05 | failed | error | yes | yes | Frozen `⊗`, opener, body, ` ⊗` red tail at column 1. |
+| TC-OP-06 | running | — | no | — | Header-only, no opener, no tail. |
+| TC-OP-07 | passed | success | no | yes | Header + tail (no opener) — tail-only frame. |
+| TC-OP-08 | failed | success → coerced error | yes | yes | Variant auto-coerces to `error` per Frame.tsx logic. |
+
+Trace: TC-OP-01 – TC-OP-08 → FR-002-AC-1..AC-9.
+
+### TaskList scheduling
+
+| Test | concurrent | exitOnError | tasks | Expected |
+|---|---|---|---|---|
+| TC-OP-10 | false | true (default) | [pass, fail, pass] | First pass, second fail, third skipped. |
+| TC-OP-11 | false | false | [pass, fail, pass] | First pass, second fail, third runs anyway. |
+| TC-OP-12 | true | true | [pass, fail, pass] | All three run; aggregate fails because of #2. |
+| TC-OP-13 | true | false | [pass, fail, pass] | All three run; aggregate fails because of #2. |
+
+Trace: TC-OP-10 – TC-OP-13 → FR-005-AC-5..AC-6, AC-16.
+
+### PhaseTable visibility
+
+| Test | hidePending | rows | Expected |
+|---|---|---|---|
+| TC-OP-20 | undefined / false | 3 (1 all-pending, 2 running) | All 3 rows visible; 0/3 ready. |
+| TC-OP-21 | true | 3 (1 all-pending, 2 running) | 2 rows visible; 0/2 ready. |
+| TC-OP-22 | true | 3 (all pending) | No rows; summary shows 0/0 ready. |
+
+Trace: TC-OP-20 – TC-OP-22 → FR-004-AC-4, AC-12, AC-15.
+
+### Prompt: validation × default × required
+
+| Test | Component | validate | defaultValue | required | Expected |
+|---|---|---|---|---|---|
+| TC-OP-30 | TextPrompt | none | "x" | n/a | submit → ok value="x". |
+| TC-OP-31 | TextPrompt | rejects "" | "" | n/a | empty submit → error rendered, re-arms. |
+| TC-OP-32 | TextPrompt | throws | any | n/a | thrown error.message rendered as validation error. |
+| TC-OP-33 | ConfirmPrompt | n/a | true | n/a | Enter → true. |
+| TC-OP-34 | ConfirmPrompt | n/a | false | n/a | Enter → false. |
+| TC-OP-35 | MultiSelect | n/a | [] | true | submit with 0 selected → error, re-arms. |
+| TC-OP-36 | MultiSelect | n/a | [] | false | submit with 0 selected → ok value=[]. |
+
+Trace: TC-OP-30 – TC-OP-36 → FR-006-AC-3, AC-9..AC-10, AC-13..AC-14.
+
+---
+
+## 7. Constraint Boundary Tests
+
+| Constraint | Boundary | Test value | TC | Expected |
+|---|---|---|---|---|
+| NFR-001: tick interval = 80 ms | exact | `useInterval(cb, 80)` | TC-CB-01 | Fires every 80 ms. |
+| NFR-001: tick interval = 80 ms | below | `useInterval(cb, 79)` | TC-CB-02 | Static check fails (NFR-001-AC-4: only 80 ms is permitted). |
+| FR-016-AC-12: HEADER_TICK_DIV = 3 | exact | 240 ms per orbit frame | TC-CB-03 | Orbit advances at 240 ms cadence. |
+| FR-016-AC-6: PHASE_WIDTH = 4 | exact | header indicator | TC-CB-04 | All three indicators (run/pass/fail) measure 4 cells. |
+| FR-007-AC-7: SIGTERM grace = 1 s | exact | unmount + wait 1.0 s | TC-CB-05 | SIGKILL fires after 1 s if process still alive. |
+| FR-007-AC-7: SIGTERM grace boundary | below | unmount + wait 0.9 s, kill self via SIGTERM | TC-CB-06 | No SIGKILL needed. |
+| FR-007-AC-8: poll interval default | unspecified | omit `intervalMs` | TC-CB-07 | Hook polls every 1000 ms. |
+| FR-006-AC-8: password summary = 8 bullets | exact | submit "x" / "xxxxxxxxxx" | TC-CB-08 | Summary renders `••••••••` regardless of input length. |
+| FR-002-AC-4: header indicator width | constant across states | render running/passed/failed | TC-CB-09 | All 3 frames have same width. |
+| Terminal width — resize narrowing | mock useStdout to columns=40 | TC-CB-10 | PhaseTable status cell truncates, no wrap. |
+| Terminal width — resize widening | mock useStdout to columns=200 | TC-CB-11 | Frame re-flows; status cell expands. |
+
+---
+
+## 8. Edge Cases
+
+| ID | Description | Trace | TC | Risk if untested |
+|---|---|---|---|---|
+| EC-01 | PhaseTable: services=[]; phases=[] | FR-004-AC-12, AC-15 | TC-143, TC-146 | Crash on `Math.max(...[])`. |
+| EC-02 | PhaseTable: 100 services, all running | FR-004-AC-2 | TC-EC-02 | Render lag; ensure scrolls correctly. |
+| EC-03 | TaskList: tasks=[] | FR-005-AC-14 | TC-161 | Schedule doesn't fire onComplete. |
+| EC-04 | TaskList: synchronous task throws (no await) | FR-005-AC-4 | TC-EC-04 | Error must still render, not crash. |
+| EC-05 | TaskList: setStatus called from completed task | FR-005-AC-15 | TC-162 | Stale-state warning or crash. |
+| EC-06 | Prompt: stdin not TTY | FR-006-AC-20 | TC-183 | "Raw mode not supported" thrown. |
+| EC-07 | Prompt: option list empty (SelectPrompt) | FR-006-AC-11 | TC-EC-07 | No items to render — should show empty list, accept Enter as cancel. |
+| EC-08 | Frame: header is empty string | FR-002-AC-12 | TC-122a | `[ ]` collapses or layout breaks. |
+| EC-09 | render(): tree throws synchronously on first render | FR-008-AC-8 | TC-206 | Cursor left hidden; promise hangs. |
+| EC-10 | render(): called twice concurrently | FR-008-AC-11 | TC-209 | Two trees fight for stdout. |
+| EC-11 | render(): SIGTERM during pending hook | FR-008-AC-12 | TC-210 | Hook's subprocess leaks. |
+| EC-12 | useExecaPhase: enabled flips false → true twice | FR-007-AC-6 | TC-EC-12 | Re-spawn behavior verified. |
+| EC-13 | Polling hooks: kubectl absent for 30 s, then appears | FR-007-AC-10, AC-16 | TC-EC-13 | Recovery: hook starts succeeding. |
+| EC-14 | Listing children include null/false (React idiom) | FR-001-AC-9 | TC-EC-14 | Crash on null map. |
+| EC-15 | Long status string in PhaseTable: 200 chars | FR-004-AC-3 | TC-134 | Truncation works at narrow widths. |
+| EC-16 | Terminal closed mid-render (stdout.destroyed) | FR-001-AC-10 | TC-109 | EPIPE handled, render() resolves. |
+| EC-17 | TERM=dumb / no-color terminal | FR-001-AC-11 | TC-110 | Colors suppressed, layout intact. |
+| EC-18 | Header contains newline `\n` | FR-001-AC-12 | TC-111 | Newline coerced to space. |
+
+---
+
+## 9. Coverage Status Legend
 
 - ✅ Complete: TC implemented and passing.
 - 🟡 In progress: TC implemented; assertions partial.
 - 🔘 Planned: TC defined in this matrix; not yet implemented.
 
-All cli TCs (TC-100 – TC-333) are 🔘 Planned at spec-authoring time. Phase 3 implements them.
+All cli TCs (TC-100 – TC-333, TC-OP-*, TC-CB-*, TC-EC-*) are 🔘 Planned at spec-authoring time. Phase 3 implements them.

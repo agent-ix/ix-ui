@@ -67,7 +67,7 @@ function useHelmHookWatcher(
 ### useExecaPhase
 
 - **FR-007-AC-5**: `useExecaPhase` SHALL return `{ state: "idle" }` when `opts.enabled === false` AND not yet started; `{ state: "running", pid }` once execa is spawned; `{ state: "done", stdout }` on success; `{ state: "failed", error, stderr }` on non-zero exit or spawn error.
-- **FR-007-AC-6**: Changing `command` or `args` SHALL NOT auto-restart a running subprocess. The hook supports a stable lifecycle: spawn once on enable.
+- **FR-007-AC-6**: Changing `command` or `args` between renders SHALL NOT auto-restart a running subprocess. The hook spawns when `enabled` transitions from `false` (or `undefined`) to `true`. A subsequent transition `false → true` (e.g. retry) SHALL spawn a fresh subprocess; the prior subprocess's state is replaced.
 - **FR-007-AC-7**: On unmount, the subprocess SHALL receive `SIGTERM` via `subprocess.kill()`. If the process does not exit within 1 s, `SIGKILL`.
 
 ### useKubectlRollout
@@ -85,7 +85,8 @@ function useHelmHookWatcher(
 
 - **FR-007-AC-13**: A component MAY use multiple async hooks simultaneously; cleanup is independent. Unmount cancels all of them.
 - **FR-007-AC-14**: Hooks SHALL NOT directly call `process.stdout.write` or render output. They expose state; rendering is the consumer's responsibility (per FR-001-AC-3).
-- **FR-007-AC-15**: When a binary required by a hook is not available in `PATH` (e.g. `kubectl` for `useKubectlRollout`, `helm` for `useHelmHookWatcher`, the requested `command` for `useExecaPhase`), the hook SHALL transition into a `failed` state with `error.message` containing `"<binary> not found in PATH"` (or the underlying execa spawn error message). It SHALL NOT throw or crash the surrounding render.
+- **FR-007-AC-15**: For `useExecaPhase`, when the requested `command` is not available in `PATH` (or any other spawn error occurs), the hook SHALL transition to `{ state: "failed", error, stderr }` where `error.message` contains the underlying execa spawn error message. It SHALL NOT throw or crash the surrounding render.
+- **FR-007-AC-16**: For `useKubectlRollout` and `useHelmHookWatcher`, when `kubectl` is not in `PATH` (or any poll error occurs), the hook SHALL keep returning the previous successful value (`null` / `[]` until the first successful poll, otherwise the last good result) per FR-007-AC-10 / AC-12. The hook SHALL NOT throw, crash, or expose a "failed" state — these polling hooks degrade silently and continue retrying.
 
 ## Constraints
 

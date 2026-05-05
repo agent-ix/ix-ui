@@ -125,7 +125,7 @@ Output:
 ```
  ⊗  [ ix elements new ]
 
-  ⊗  Element directory already exists.
+ ⊗  Element directory already exists.
 ```
 
 ## Constraints

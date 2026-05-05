@@ -5,7 +5,7 @@ import {
   PHASE_FAIL,
   ROUTE_INDENT,
   ROUTE_OUT,
-  GLYPH_RESULT,
+  GLYPH_DONE,
   GLYPH_FAIL_MARK,
   renderHeader,
   colors,
@@ -46,30 +46,25 @@ const Tail: React.FC<{ tail: React.ReactNode; variant: TailVariant }> = ({
   if (variant === "error") {
     return (
       <Box flexDirection="row">
-        <Text>{ROUTE_OUT}</Text>
-        <Text>{GLYPH_FAIL_MARK}</Text>
-        <Text>{"  "}</Text>
+        <Text> {GLYPH_FAIL_MARK}  </Text>
         <Text color="red">{tail}</Text>
       </Box>
     );
   }
-  const colored = variant === "warn"
-    ? <Text color="yellow">{tail}</Text>
-    : <Text>{tail}</Text>;
+  const glyph = variant === "warn" ? colors.yellow("•") : GLYPH_DONE;
+  const colored =
+    variant === "warn" ? <Text color="yellow">{tail}</Text> : <Text>{tail}</Text>;
   return (
     <Box flexDirection="row">
-      <Text>{ROUTE_OUT}</Text>
-      <Text>   </Text>
-      <Text>{GLYPH_RESULT}</Text>
-      <Text>{"  "}</Text>
+      <Text>{ROUTE_OUT}{glyph}  </Text>
       {colored}
     </Box>
   );
 };
 
 /**
- * Base layout: animated/frozen orbit header, `└──┐` opener, body, optional
- * `└──•` tail. Used by Listing, PhaseTable, TaskList. (FR-002)
+ * Base layout: orbit header, opener (ROUTE_INDENT), body, optional tail
+ * (ROUTE_OUT). Used by Listing, PhaseTable, TaskList. (FR-002)
  */
 export const Frame: React.FC<FrameProps> = ({
   header,
@@ -80,7 +75,7 @@ export const Frame: React.FC<FrameProps> = ({
   marginTop,
   marginLeft,
 }) => {
-  const showBody = hasChildren(children) || tail != null;
+  const childrenPresent = hasChildren(children);
   // Prefer error tail when status is failed and a plain text tail was provided.
   const variant: TailVariant =
     status === "failed" && tailVariant === "success" ? "error" : tailVariant;
@@ -91,8 +86,8 @@ export const Frame: React.FC<FrameProps> = ({
         <HeaderIndicator status={status} />
         <Text>{renderHeader(header)}</Text>
       </Box>
-      {showBody && <Text>{ROUTE_INDENT}</Text>}
-      {showBody && <Box flexDirection="column">{children}</Box>}
+      {childrenPresent && <Text>{ROUTE_INDENT}</Text>}
+      {childrenPresent && <Box flexDirection="column">{children}</Box>}
       {tail != null && (
         <>
           <Text> </Text>

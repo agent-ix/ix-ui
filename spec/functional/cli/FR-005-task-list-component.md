@@ -96,6 +96,11 @@ const TaskList: FC<TaskListProps>;
 - **FR-005-AC-15**: Calling `helpers.setStatus(...)` or `helpers.log(...)` after a task has settled SHALL be a no-op (no console warning, no rendered change).
 - **FR-005-AC-16**: When `concurrent === true`, `onError(err)` fires once at completion with the first thrown error encountered (in array order). Other failures are reflected in the per-row state but do not fire additional `onError` calls.
 
+### Identity and callback contracts
+
+- **FR-005-AC-17**: Tasks are identified by their position in the `tasks` array. React keys for task rows SHALL use the array index. Consumers who reorder tasks across renders without changing the array reference SHALL expect rows to swap state (since identity is positional, not by `title`).
+- **FR-005-AC-18**: If `onComplete` or `onError` callbacks throw (synchronously or return a rejected Promise), the error SHALL propagate up to the surrounding error boundary or `render()` (FR-008-AC-8). The schedule SHALL NOT retry or swallow the error. The schedule's settled rows remain rendered.
+
 ## Rendered Example
 
 ### Sequential, all passing
@@ -131,7 +136,7 @@ const TaskList: FC<TaskListProps>;
         identity returned 503: backend unavailable
     ○ Writing token to clipboard · skipped: upstream task failed
 
-       ⊗  1/3 task(s) failed in 1.9s
+ ⊗  1/3 task(s) failed in 1.9s
 ```
 
 ## Constraints

@@ -28,7 +28,7 @@ The `cli` package SHALL expose a single style module containing every visual lay
 |---|---|
 | Layout | `PLANET_COL`, `ROW_INDENT`, `NOTE_INDENT`, `ERROR_INDENT`, `PHASE_WIDTH`, `HEADER_TICK_DIV` |
 | Connectors | `ROUTE_INDENT`, `ROUTE_OUT` |
-| Glyphs | `GLYPH_DONE`, `GLYPH_RESULT`, `GLYPH_FAIL`, `GLYPH_FAIL_MARK`, `GLYPH_WAITING`, `GLYPH_CANCELLED` |
+| Glyphs | `GLYPH_DONE`, `GLYPH_FAIL`, `GLYPH_FAIL_MARK`, `GLYPH_WAITING`, `GLYPH_CANCELLED` |
 | Header | `PHASE_PASS`, `PHASE_FAIL`, `colorOrbitFrame(frame)`, `renderHeader(text)`, `ORBIT_SPINNER` |
 | Colors | `colors.{cyan,green,yellow,red,dim,bold,underline,bgCyan,black}`, `blue` |
 | Pod-status helper | `colorPods(status)` |
@@ -41,7 +41,7 @@ The `cli` package SHALL expose a single style module containing every visual lay
 - **FR-016-AC-5**: `ERROR_INDENT = "        "` (8 spaces) — error messages sit under the row name (past glyph + space).
 - **FR-016-AC-6**: `PHASE_WIDTH = 4` — every header indicator (animated spinner, frozen pass, frozen fail) is exactly 4 columns wide so the bracketed `[ … ]` text starts at the same column in every state.
 - **FR-016-AC-7**: `ROUTE_INDENT` is `dim(" └──┐")` — the opener under the header. The `└` aligns with the planet (column 1).
-- **FR-016-AC-8**: `ROUTE_OUT` is `ROW_INDENT` — the tail prefix uses the standard body indent. The tail glyph (`✧`, `⊗`) is appended by the renderer.
+- **FR-016-AC-8**: `ROUTE_OUT` is `dim(ROW_INDENT + "   └──")` — the tail connector. Combined with the trailing glyph (`•` for success/warn, the error path does NOT use `ROUTE_OUT`), the success tail renders as `       └──•  <text>` (10 cols indent + connector + glyph + 2 spaces + text). The `└` aligns with the body content's left padding so the tail visually closes back over the rows above.
 
 ### Header rendering
 
@@ -52,7 +52,7 @@ The `cli` package SHALL expose a single style module containing every visual lay
 
 ### Renderer compliance
 
-- **FR-016-AC-13**: A static check across `packages/cli/src/` (excluding `style.ts`) SHALL find no inline literals for the standardized indents (`"    "`, `"      "`, `"        "`), connectors (`"└──┐"`), or glyphs (`"•"`, `"○"`, `"⊗"`, `"✧"`, `"⊙"`, `"⊕"`).
+- **FR-016-AC-13**: A static check across `packages/cli/src/` (excluding `style.ts`) SHALL find no inline literals for the standardized indents (`"    "`, `"      "`, `"        "`), connectors (`"└──┐"`, `"└──"`), or glyphs (`"•"`, `"○"`, `"⊗"`, `"⊙"`, `"⊕"`).
 - **FR-016-AC-14**: All components import every glyph, indent, connector, and color from the style module. Bumping a value in `style.ts` changes all consumers with no other source edits.
 
 ## Constraints

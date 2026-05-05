@@ -46,14 +46,14 @@ interface PhaseTableProps<P extends string> {
   tailEntry?: { name: string; baseDomain: string }; // renders "https://<name>.<domain>" tail
 }
 
-const PhaseTable: <P extends string>(props: PhaseTableProps<P>) => JSX.Element;
+const PhaseTable: <P extends string>(props: PhaseTableProps<P>) => ReactElement;
 ```
 
 ## Acceptance Criteria
 
 ### Layout
 
-- **FR-004-AC-1**: `<PhaseTable>` SHALL render inside `<Frame header={header} status={...}>` with the body containing (in order): optional `preflight` content, a blank line, one `<PhaseRow>` per visible service, a blank line, and a dim summary line `elapsed {totalElapsedS}s · {readyCount}/{total} ready`.
+- **FR-004-AC-1**: `<PhaseTable>` SHALL render inside `<Frame header={header} status={...}>` with the body containing (in order): optional `preflight` content, a blank line, one row per visible service, a blank line, and a dim summary line `elapsed {totalElapsedS}s · {readyCount}/{total} ready`.
 - **FR-004-AC-2**: Each row SHALL be a flexbox `<Box flexDirection="row">` with three cells:
   1. **Name cell** — width = max display-name length across visible rows; left-aligned.
   2. **Status/label cell** — `flexGrow={1}`; truncates with `wrap="truncate-end"` when narrow.
@@ -64,7 +64,7 @@ const PhaseTable: <P extends string>(props: PhaseTableProps<P>) => JSX.Element;
 ### Glyphs and animation
 
 - **FR-004-AC-5**: The leading glyph for each row reflects the current phase state, drawn from `PHASE_GLYPHS` (semantic) — for `running` and `queued` the braille spinner advances every NFR-001 tick.
-- **FR-004-AC-6**: The header status defaults to:
+- **FR-004-AC-6**: The aggregate status (passed to `<Frame>` and used by AC-7, AC-9, AC-10) defaults to:
   - `"failed"` if any visible row has a `failed` phase or the `status` prop is `"failed"`.
   - `"passed"` if all visible rows have all phases `done` or the `status` prop is `"passed"`.
   - `"running"` otherwise.
@@ -140,7 +140,7 @@ const PhaseTable: <P extends string>(props: PhaseTableProps<P>) => JSX.Element;
 
   elapsed 4.2s · 2/3 ready
 
-  ⊗  1 service failed
+ ⊗  1 service failed
 ```
 
 ## Constraints

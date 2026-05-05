@@ -35,15 +35,16 @@ export const HEADER_TICK_DIV = 3;
 
 /** Opener: `' └──┐'` under the orbit header. */
 export const ROUTE_INDENT = pc.dim(" └──┐");
-/** Tail prefix: same indent as body rows; glyph appended by caller. */
-export const ROUTE_OUT = ROW_INDENT;
+/** Tail connector: 4-space indent + 3 padding + dim `└──` (3 chars). The
+ *  caller appends the tail glyph (`•` for success/warn) so the visible result
+ *  is `       └──•`. The error tail does NOT use `ROUTE_OUT` — it sits at
+ *  column 1 with `GLYPH_FAIL_MARK` for prominence (FR-002-AC-8). */
+export const ROUTE_OUT = ROW_INDENT + pc.dim("   └──");
 
 // ── Glyphs ──────────────────────────────────────────────────────────────────
 
-/** Done bullet — completed task rows. */
+/** Done bullet — completed task rows AND success/warn tail glyph (after `└──`). */
 export const GLYPH_DONE = blue("•");
-/** Result glyph — tail summary line. */
-export const GLYPH_RESULT = "✧";
 /** Failed bullet — outline circle. */
 export const GLYPH_FAIL = colors.red("○");
 /** Header fail marker — used inline (e.g. `⊗ 1 service failed`). */

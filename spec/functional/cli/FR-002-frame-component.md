@@ -45,22 +45,23 @@ const Frame: FC<FrameProps>;
 
 ### Opener and body
 
-- **FR-002-AC-5**: A `└──┐` opener line (using `ROUTE_INDENT` from FR-016) SHALL be rendered immediately beneath the header whenever `children` is non-empty OR `tail` is set.
-- **FR-002-AC-6**: When `children` is empty and `tail` is unset, the opener and tail SHALL NOT render — the frame collapses to header-only.
-- **FR-002-AC-7**: Body content (`children`) SHALL be rendered as direct children of an Ink `<Box flexDirection="column">` placed beneath the opener. `<Frame>` SHALL NOT impose padding on body content beyond the standard `ROW_INDENT` left margin (FR-016) when `children` are non-component strings; component children manage their own indentation.
+- **FR-002-AC-5**: A `└──┐` opener line (using `ROUTE_INDENT` from FR-016) SHALL be rendered immediately beneath the header when `children` is non-empty. When the frame has only a `tail` (no body children), the opener SHALL NOT render.
+- **FR-002-AC-6**: When `children` is empty AND `tail` is unset, the frame SHALL collapse to header-only (no opener, no tail).
+- **FR-002-AC-7**: Body content (`children`) SHALL be rendered as direct children of an Ink `<Box flexDirection="column">` placed beneath the opener. `<Frame>` itself SHALL NOT impose any indentation on body children — body components (`<Item>`, `<Group>`, `<PhaseRow>`, etc.) own their own `ROW_INDENT` from FR-016.
 
 ### Tail
 
-- **FR-002-AC-8**: When `tail` is set, a tail line SHALL be rendered beneath the body using `ROUTE_OUT` + glyph + text. The glyph and color are determined by `tailVariant`:
-  - `"success"` (default): `GLYPH_RESULT` (`✧`) in the default text color.
-  - `"warn"`: `GLYPH_RESULT` in yellow.
-  - `"error"`: `GLYPH_FAIL_MARK` (red `⊗`) plus the tail text in red.
-- **FR-002-AC-9**: A blank line SHALL appear between the last body row and the tail line.
+- **FR-002-AC-8**: When `tail` is set, a tail line SHALL be rendered beneath the body. The exact glyph and indent depend on `tailVariant`:
+  - `"success"` (default): `ROUTE_OUT + GLYPH_DONE + "  " + <text>` — the connector `└──` plus the cyan `•` glyph (which together form `└──•`) followed by two spaces and the text.
+  - `"warn"`: `ROUTE_OUT + colors.yellow("•") + "  " + colors.yellow(<text>)` — same connector, yellow bullet and text.
+  - `"error"`: `" " + GLYPH_FAIL_MARK + "  " + colors.red(<text>)` — at column 1 (no `ROUTE_OUT`), the red `⊗` plus two spaces and red text. Error tails read as a callout outside the frame's body indentation.
+- **FR-002-AC-9**: A blank line SHALL appear between the last body row (or the header, if no children) and the tail line.
 
 ### Composition
 
-- **FR-002-AC-10**: `<Frame>` SHALL accept any Ink-renderable React node as `children`, including other `<Frame>`s, `<Box>`s, `<Text>`s, `<PhaseTable>`s, and `<TaskList>`s.
-- **FR-002-AC-11**: `<Frame>` SHALL forward all standard Ink layout props (`marginTop`, `marginLeft`, etc.) to its outer `<Box>` so callers can position the frame within larger layouts.
+- **FR-002-AC-10**: `<Frame>` SHALL accept any Ink-renderable React node as `children`. Composing already-framed components (e.g. nesting a `<Listing>` inside another `<Frame>`'s body) is permitted but produces a nested-frame visual; consumers typically embed unframed primitives (`<Item>`, `<Group>`, `<PhaseRow>`, `<Text>`, `<Box>`, prompt components) instead.
+- **FR-002-AC-11**: `<Frame>` SHALL forward `marginTop` and `marginLeft` props to its outer `<Box>` so callers can position the frame within larger layouts.
+- **FR-002-AC-12**: When `header` is an empty string, the bracketed area SHALL still render (`[  ]`) — the indicator + opener layout is preserved. Consumers SHOULD provide a non-empty header; empty is supported but discouraged.
 
 ## Rendered Examples
 
@@ -103,7 +104,7 @@ const Frame: FC<FrameProps>;
  └──┐
     ○ identity 0.10.2  install failed  4.2s
 
-       ⊗  1 service failed
+ ⊗  1 service failed
 ```
 
 ## Constraints

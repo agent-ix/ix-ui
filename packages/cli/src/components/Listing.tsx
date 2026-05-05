@@ -48,5 +48,8 @@ export interface NoteProps {
 }
 
 export const Note: React.FC<NoteProps> = ({ children }) => (
-  <Text>{NOTE_INDENT}{colors.dim(children)}</Text>
+  <Box flexDirection="row">
+    <Text>{NOTE_INDENT}</Text>
+    <Text dimColor>{children}</Text>
+  </Box>
 );

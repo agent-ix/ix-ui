@@ -66,7 +66,7 @@ const MultiSelectPrompt: <T>(props: MultiSelectPromptProps<T>) => JSX.Element;
 
 ### Common behavior
 
-- **FR-006-AC-1**: All prompts render their `message` on a header line prefixed by a cyan `?` glyph at column 1, followed by the input row beneath, optionally followed by a dim `hint` line.
+- **FR-006-AC-1**: All prompts render their `message` on a header line prefixed by a cyan `?` glyph at the prompt's left margin (column 1 when `render()` is the parent; column `ROW_INDENT` when rendered inside a `<Frame>` / `<Listing>` body, since the parent body box places children at that indent). The input row sits beneath, optionally followed by a dim `hint` line.
 - **FR-006-AC-2**: All prompts SHALL handle Ctrl-C / Esc by calling `onSubmit({ ok: false, cancelled: true })` and unmounting their input.
 - **FR-006-AC-3**: All prompts SHALL handle Enter as confirmation, validate (where applicable), and call `onSubmit({ ok: true, value })` when valid. Validation errors render dim red beneath the input row and re-arm the prompt. If `validate()` throws, the thrown error's `.message` is rendered as the validation error and the prompt re-arms.
 - **FR-006-AC-4**: After submission (success or cancel), the prompt SHALL render a frozen one-line summary: `? <message>  <result-or-«cancelled»>`. The input row, hint, and any validation message SHALL be removed.
@@ -98,7 +98,7 @@ const MultiSelectPrompt: <T>(props: MultiSelectPromptProps<T>) => JSX.Element;
 
 ### Composition and focus
 
-- **FR-006-AC-15**: Prompts MAY be rendered as children of `<Listing>`, `<Frame>`, or other layout containers. Their visual region (header + input + hint) SHALL fit within the parent's body without breaking the frame.
+- **FR-006-AC-15**: Prompts MAY be rendered as children of `<Listing>` or `<Frame>`. When nested, the prompt's header (`?` glyph + message) sits at the parent's body left margin (`ROW_INDENT`); the input field and hint line sit beneath, aligned with the message text.
 - **FR-006-AC-16**: When multiple prompts are present in a tree, only the most recently mounted prompt receives input. Submitted prompts render their frozen summary and do not consume input.
 
 ### Resize and unmount
@@ -110,6 +110,15 @@ const MultiSelectPrompt: <T>(props: MultiSelectPromptProps<T>) => JSX.Element;
 ### Non-interactive environments
 
 - **FR-006-AC-20**: When `process.stdin` is not a TTY OR does not support raw mode, mounting any prompt component SHALL fire `onSubmit({ ok: false, cancelled: true })` immediately and render a frozen `? <message>  «no interactive stdin»` summary line. The package SHALL NOT throw "Raw mode is not supported" — it gracefully reports cancel.
+
+### Callback contracts (extension points)
+
+- **FR-006-AC-21**: If the consumer-supplied `onSubmit` callback throws (synchronously or returns a rejected Promise), the prompt SHALL still render its frozen summary; the thrown error SHALL propagate up to the surrounding error boundary or `render()` (FR-008-AC-8). The prompt SHALL NOT swallow the error or re-arm itself in response.
+- **FR-006-AC-22**: The `validate(value)` callback SHALL be treated as a pure, read-only function. Consumers SHALL NOT mutate component state or external resources from inside `validate()`. The package does not enforce this; mutating validators are the consumer's responsibility and may produce surprising re-render behavior.
+
+### Option identity (SelectPrompt / MultiSelectPrompt)
+
+- **FR-006-AC-23**: `options[].value` is the canonical identity for each option. Equality is by `===` (reference for objects, value for primitives). Duplicate values SHALL render as separate options but selecting any duplicate behaves as selecting the first matching `value`. Consumers SHOULD ensure values are unique.
 
 ## Rendered Example
 
