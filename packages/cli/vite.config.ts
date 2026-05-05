@@ -21,8 +21,10 @@ export default defineConfig({
         /^ink($|-)/,
         "@agent-ix/ix-ui-semantic",
         "picocolors",
+        "execa",
       ],
     },
+    ssr: true,
   },
   test: {
     globals: true,
