@@ -119,7 +119,7 @@ function PhaseRow<P extends string>({
         <Box width={nameW}>
           <Text>{row.displayName ?? row.name}</Text>
         </Box>
-        <Text>  </Text>
+        <Text> </Text>
         <Box flexGrow={1}>
           <Text wrap="truncate-end">{labelDisplay}</Text>
         </Box>
@@ -128,7 +128,10 @@ function PhaseRow<P extends string>({
         </Box>
       </Box>
       {state === "failed" && row.error ? (
-        <Text>{ERROR_INDENT}{colors.dim(row.error)}</Text>
+        <Text>
+          {ERROR_INDENT}
+          {colors.dim(row.error)}
+        </Text>
       ) : null}
     </>
   );
@@ -169,9 +172,10 @@ export function PhaseTable<P extends string>(
     () =>
       hidePending
         ? services.filter((r) => {
-            const all = phases.length > 0
-              ? phases.every((p) => r.phases[p] === "pending")
-              : true;
+            const all =
+              phases.length > 0
+                ? phases.every((p) => r.phases[p] === "pending")
+                : true;
             return !all;
           })
         : services,
@@ -181,25 +185,33 @@ export function PhaseTable<P extends string>(
   const aggregateStatus: FrameStatus = useMemo(() => {
     if (status) return status;
     if (visibleRows.some((r) => rowFailed(r.phases))) return "failed";
-    if (visibleRows.length > 0 && visibleRows.every((r) => rowDone(r.phases, phases))) {
+    if (
+      visibleRows.length > 0 &&
+      visibleRows.every((r) => rowDone(r.phases, phases))
+    ) {
       return "passed";
     }
     if (phases.length === 0) return "passed";
     return "running";
   }, [status, visibleRows, phases]);
 
-  const readyCount = visibleRows.filter((r) => rowDone(r.phases, phases)).length;
+  const readyCount = visibleRows.filter((r) =>
+    rowDone(r.phases, phases),
+  ).length;
   const totalElapsedS = ((Date.now() - startRef.current) / 1000).toFixed(1);
   const nameW = visibleNameWidth(visibleRows);
 
   const failureCount = visibleRows.filter((r) => rowFailed(r.phases)).length;
   const computedTail =
     tail ??
-    (aggregateStatus === "failed"
-      ? `${failureCount} service${failureCount === 1 ? "" : "s"} failed`
-      : aggregateStatus === "passed" && tailEntry
-        ? <Text color="cyan" underline>{`https://${tailEntry.name}.${tailEntry.baseDomain}`}</Text>
-        : undefined);
+    (aggregateStatus === "failed" ? (
+      `${failureCount} service${failureCount === 1 ? "" : "s"} failed`
+    ) : aggregateStatus === "passed" && tailEntry ? (
+      <Text
+        color="cyan"
+        underline
+      >{`https://${tailEntry.name}.${tailEntry.baseDomain}`}</Text>
+    ) : undefined);
   const computedTailVariant: TailVariant =
     tailVariant ?? (aggregateStatus === "failed" ? "error" : "success");
 

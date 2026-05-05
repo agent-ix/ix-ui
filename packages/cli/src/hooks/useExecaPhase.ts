@@ -81,7 +81,6 @@ export function useExecaPhase(
     };
     // We intentionally re-run only when enable flips. command/args changes
     // do NOT auto-restart per FR-007-AC-6. Mount once per enable cycle.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [enabled]);
 
   return state;

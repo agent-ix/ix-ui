@@ -1,5 +1,10 @@
 // Components
-export { Frame, type FrameProps, type FrameStatus, type TailVariant } from "./components/Frame.js";
+export {
+  Frame,
+  type FrameProps,
+  type FrameStatus,
+  type TailVariant,
+} from "./components/Frame.js";
 export { HeaderSpinner } from "./components/HeaderSpinner.js";
 export {
   Listing,
@@ -46,7 +51,10 @@ export {
   type MultiSelectPromptProps,
   type MultiSelectOption,
 } from "./components/prompts/MultiSelectPrompt.js";
-export type { PromptResult, BasePromptProps } from "./components/prompts/shared.js";
+export type {
+  PromptResult,
+  BasePromptProps,
+} from "./components/prompts/shared.js";
 
 // Hooks
 export { useInterval } from "./hooks/useInterval.js";

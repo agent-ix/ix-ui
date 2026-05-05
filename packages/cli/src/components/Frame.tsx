@@ -44,19 +44,25 @@ const Tail: React.FC<{ tail: React.ReactNode; variant: TailVariant }> = ({
   variant,
 }) => {
   if (variant === "error") {
+    // 1-space lead + GLYPH_FAIL_MARK + 2 trailing spaces (FR-002-AC-8 error).
     return (
       <Box flexDirection="row">
-        <Text> {GLYPH_FAIL_MARK}  </Text>
+        <Text>{` ${GLYPH_FAIL_MARK}  `}</Text>
         <Text color="red">{tail}</Text>
       </Box>
     );
   }
+  // ROUTE_OUT + glyph + 2 spaces produces the success/warn tail line.
   const glyph = variant === "warn" ? colors.yellow("•") : GLYPH_DONE;
   const colored =
-    variant === "warn" ? <Text color="yellow">{tail}</Text> : <Text>{tail}</Text>;
+    variant === "warn" ? (
+      <Text color="yellow">{tail}</Text>
+    ) : (
+      <Text>{tail}</Text>
+    );
   return (
     <Box flexDirection="row">
-      <Text>{ROUTE_OUT}{glyph}  </Text>
+      <Text>{`${ROUTE_OUT}${glyph}  `}</Text>
       {colored}
     </Box>
   );

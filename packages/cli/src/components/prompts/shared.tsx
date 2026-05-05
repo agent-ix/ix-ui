@@ -25,11 +25,7 @@ export const PromptHint: React.FC<{ hint?: string }> = ({ hint }) =>
   hint ? <Text>{colors.dim(`  ${hint}`)}</Text> : null;
 
 export const PromptError: React.FC<{ error: string | null }> = ({ error }) =>
-  error ? (
-    <Text>
-      {colors.dim(colors.red(`  ${error}`))}
-    </Text>
-  ) : null;
+  error ? <Text>{colors.dim(colors.red(`  ${error}`))}</Text> : null;
 
 export interface FrozenSummaryProps {
   message: string;
@@ -42,7 +38,7 @@ export const FrozenSummary: React.FC<FrozenSummaryProps> = ({
 }) => (
   <Box flexDirection="row">
     <Text color="cyan">? </Text>
-    <Text>{message}  </Text>
+    <Text>{message} </Text>
     <Text>{rendered}</Text>
   </Box>
 );

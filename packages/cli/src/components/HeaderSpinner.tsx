@@ -13,8 +13,6 @@ export const HeaderSpinner: React.FC = () => {
   const [tick, setTick] = useState(0);
   useInterval(() => setTick((t) => t + 1), ORBIT_TICK_MS);
   const frame =
-    ORBIT_SPINNER[
-      Math.floor(tick / HEADER_TICK_DIV) % ORBIT_SPINNER.length
-    ];
+    ORBIT_SPINNER[Math.floor(tick / HEADER_TICK_DIV) % ORBIT_SPINNER.length];
   return <Text>{colorOrbitFrame(frame)}</Text>;
 };

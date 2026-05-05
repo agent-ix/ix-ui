@@ -50,7 +50,12 @@ export interface TaskListProps {
 
 type RowState =
   | { kind: "pending" }
-  | { kind: "running"; status: string | null; logs: string[]; startedAt: number }
+  | {
+      kind: "running";
+      status: string | null;
+      logs: string[];
+      startedAt: number;
+    }
   | { kind: "done"; status: string | null; logs: string[]; durationMs: number }
   | { kind: "failed"; error: string; logs: string[]; durationMs: number }
   | { kind: "skipped"; reason: string };
@@ -128,7 +133,11 @@ export const TaskList: React.FC<TaskListProps> = ({
       log(text) {
         if (settledRef.current[i]) return;
         updateRow(i, (r) => {
-          if (r.kind === "running" || r.kind === "done" || r.kind === "failed") {
+          if (
+            r.kind === "running" ||
+            r.kind === "done" ||
+            r.kind === "failed"
+          ) {
             return { ...r, logs: [...r.logs, text] };
           }
           return r;
@@ -137,7 +146,10 @@ export const TaskList: React.FC<TaskListProps> = ({
       signal: ac.signal,
     });
 
-    const runOne = async (i: number, def: TaskDef): Promise<{ skipped?: string; failed?: Error }> => {
+    const runOne = async (
+      i: number,
+      def: TaskDef,
+    ): Promise<{ skipped?: string; failed?: Error }> => {
       if (def.enabled === false) {
         updateRow(i, () => ({ kind: "skipped", reason: "disabled" }));
         settledRef.current[i] = true;
@@ -182,30 +194,9 @@ export const TaskList: React.FC<TaskListProps> = ({
 
     const finalize = (): void => {
       if (unmounted) return;
-      let passed = 0;
-      let failed = 0;
-      let skipped = 0;
-      setRows((rs) => {
-        for (const r of rs) {
-          if (r.kind === "done") passed++;
-          else if (r.kind === "failed") failed++;
-          else if (r.kind === "skipped") skipped++;
-        }
-        return rs;
-      });
-      // Re-iterate after the closure (setRows is sync in React 18+ for state-only usage,
-      // but to be safe count from settledRef + rows snapshot).
-      // The settled flags + actual rows are the truth.
-      // Compute from rows directly:
-      // (this block runs in same tick as setRows update propagation)
       setDone(true);
-      const result: TaskListResult = {
-        passed: tasks.filter((_, i) => settledRef.current[i]).length - failed - skipped,
-        failed,
-        skipped,
-        durationMs: Date.now() - startedAt,
-      };
-      // Re-derive passed accurately from latest state via setRows pattern:
+      // Compute final counts from the latest row state via setRows updater
+      // pattern (avoids stale-closure reads).
       setRows((latest) => {
         let p = 0;
         let f = 0;
@@ -215,10 +206,14 @@ export const TaskList: React.FC<TaskListProps> = ({
           else if (r.kind === "failed") f++;
           else if (r.kind === "skipped") s++;
         }
-        result.passed = p;
-        result.failed = f;
-        result.skipped = s;
-        if (onComplete) onComplete(result);
+        if (onComplete) {
+          onComplete({
+            passed: p,
+            failed: f,
+            skipped: s,
+            durationMs: Date.now() - startedAt,
+          });
+        }
         return latest;
       });
     };
@@ -269,11 +264,12 @@ export const TaskList: React.FC<TaskListProps> = ({
       unmounted = true;
       ac.abort();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tasks]);
 
   const failed = rows.filter((r) => r.kind === "failed").length;
-  const totalDurationS = ((Date.now() - startedAtRef.current) / 1000).toFixed(1);
+  const totalDurationS = ((Date.now() - startedAtRef.current) / 1000).toFixed(
+    1,
+  );
   const aggregateStatus: FrameStatus = !done
     ? "running"
     : failed > 0
@@ -303,7 +299,8 @@ export const TaskList: React.FC<TaskListProps> = ({
             : r.kind === "done" && r.status
               ? `  ${r.status}`
               : "";
-        const titleColor = r.kind === "skipped" ? colors.dim(def.title) : def.title;
+        const titleColor =
+          r.kind === "skipped" ? colors.dim(def.title) : def.title;
         return (
           <React.Fragment key={i}>
             <Box flexDirection="row">
@@ -320,12 +317,20 @@ export const TaskList: React.FC<TaskListProps> = ({
                 <Text>{elapsed}</Text>
               </Box>
             </Box>
-            {(r.kind === "running" || r.kind === "done" || r.kind === "failed") &&
+            {(r.kind === "running" ||
+              r.kind === "done" ||
+              r.kind === "failed") &&
               r.logs.map((l, li) => (
-                <Text key={li}>{NOTE_INDENT}{colors.dim(l)}</Text>
+                <Text key={li}>
+                  {NOTE_INDENT}
+                  {colors.dim(l)}
+                </Text>
               ))}
             {r.kind === "failed" ? (
-              <Text>{ERROR_INDENT}{colors.dim(r.error)}</Text>
+              <Text>
+                {ERROR_INDENT}
+                {colors.dim(r.error)}
+              </Text>
             ) : null}
           </React.Fragment>
         );
@@ -346,4 +351,3 @@ export const TaskList: React.FC<TaskListProps> = ({
     </Frame>
   );
 };
-

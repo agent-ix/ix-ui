@@ -51,55 +51,60 @@ export function MultiSelectPrompt<T>(
     }
   }, [rawOK, submitted, onSubmit]);
 
-  useInput((input, key) => {
-    if (submitted != null) return;
-    if (key.escape) {
-      setSubmitted({ ok: false });
-      onSubmit({ ok: false, cancelled: true });
-      return;
-    }
-    if (key.upArrow) {
-      setFocus((f) => (f - 1 + options.length) % options.length);
-      return;
-    }
-    if (key.downArrow) {
-      setFocus((f) => (f + 1) % options.length);
-      return;
-    }
-    if (input === " ") {
-      setSelected((prev) => {
-        const next = new Set(prev);
-        if (next.has(focus)) next.delete(focus);
-        else next.add(focus);
-        return next;
-      });
-      if (error) setError(null);
-      return;
-    }
-    if (key.return) {
-      if (required && selected.size === 0) {
-        setError("select at least one option");
+  useInput(
+    (input, key) => {
+      if (submitted != null) return;
+      if (key.escape) {
+        setSubmitted({ ok: false });
+        onSubmit({ ok: false, cancelled: true });
         return;
       }
-      const values: T[] = [];
-      const labels: string[] = [];
-      for (let i = 0; i < options.length; i++) {
-        if (selected.has(i)) {
-          values.push(options[i].value);
-          labels.push(options[i].label);
-        }
+      if (key.upArrow) {
+        setFocus((f) => (f - 1 + options.length) % options.length);
+        return;
       }
-      setSubmitted({ ok: true, values, labels });
-      onSubmit({ ok: true, value: values });
-    }
-  }, { isActive: rawOK && submitted == null });
+      if (key.downArrow) {
+        setFocus((f) => (f + 1) % options.length);
+        return;
+      }
+      if (input === " ") {
+        setSelected((prev) => {
+          const next = new Set(prev);
+          if (next.has(focus)) next.delete(focus);
+          else next.add(focus);
+          return next;
+        });
+        if (error) setError(null);
+        return;
+      }
+      if (key.return) {
+        if (required && selected.size === 0) {
+          setError("select at least one option");
+          return;
+        }
+        const values: T[] = [];
+        const labels: string[] = [];
+        for (let i = 0; i < options.length; i++) {
+          if (selected.has(i)) {
+            values.push(options[i].value);
+            labels.push(options[i].label);
+          }
+        }
+        setSubmitted({ ok: true, values, labels });
+        onSubmit({ ok: true, value: values });
+      }
+    },
+    { isActive: rawOK && submitted == null },
+  );
 
   if (submitted != null) {
     if (submitted.ok === false) {
       return (
         <FrozenSummary
           message={message}
-          rendered={colors.dim(rawOK ? "«cancelled»" : "«no interactive stdin»")}
+          rendered={colors.dim(
+            rawOK ? "«cancelled»" : "«no interactive stdin»",
+          )}
         />
       );
     }
@@ -121,7 +126,9 @@ export function MultiSelectPrompt<T>(
         return (
           <Box key={i} flexDirection="row">
             <Text>{focused ? colors.cyan("› ") : "  "}</Text>
-            <Text>{box} {label}</Text>
+            <Text>
+              {box} {label}
+            </Text>
           </Box>
         );
       })}

@@ -1,11 +1,6 @@
 import React from "react";
 import { Box, Text } from "ink";
-import {
-  ROW_INDENT,
-  NOTE_INDENT,
-  GLYPH_DONE,
-  colors,
-} from "../style.js";
+import { ROW_INDENT, NOTE_INDENT, GLYPH_DONE, colors } from "../style.js";
 import { Frame, type FrameStatus, type TailVariant } from "./Frame.js";
 
 export interface ListingProps {
@@ -26,7 +21,10 @@ export interface GroupProps {
 
 export const Group: React.FC<GroupProps> = ({ name, children }) => (
   <Box flexDirection="column" marginTop={1}>
-    <Text>{ROW_INDENT}{colors.bold(colors.cyan(name))}</Text>
+    <Text>
+      {ROW_INDENT}
+      {colors.bold(colors.cyan(name))}
+    </Text>
     {children}
   </Box>
 );
@@ -38,7 +36,10 @@ export interface ItemProps {
 
 export const Item: React.FC<ItemProps> = ({ name, description }) => (
   <Box flexDirection="row">
-    <Text>{ROW_INDENT}{GLYPH_DONE} {name}</Text>
+    <Text>
+      {ROW_INDENT}
+      {GLYPH_DONE} {name}
+    </Text>
     {description ? <Text>{colors.dim(`  — ${description}`)}</Text> : null}
   </Box>
 );

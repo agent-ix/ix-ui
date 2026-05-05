@@ -142,17 +142,15 @@ export async function render<T = void>(
     };
     process.stdout.on("error", onPipeError);
 
-    app
-      .waitUntilExit()
-      .then(
-        () => {
-          process.stdout.off("error", onPipeError);
-          finish();
-        },
-        (err) => {
-          process.stdout.off("error", onPipeError);
-          finish(err instanceof Error ? err : new Error(String(err)));
-        },
-      );
+    app.waitUntilExit().then(
+      () => {
+        process.stdout.off("error", onPipeError);
+        finish();
+      },
+      (err) => {
+        process.stdout.off("error", onPipeError);
+        finish(err instanceof Error ? err : new Error(String(err)));
+      },
+    );
   });
 }

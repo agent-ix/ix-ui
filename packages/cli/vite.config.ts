@@ -29,5 +29,8 @@ export default defineConfig({
   test: {
     globals: true,
     environment: "node",
+    env: {
+      FORCE_COLOR: "1",
+    },
   },
 });

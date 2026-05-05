@@ -23,7 +23,9 @@ export interface SelectPromptProps<T> extends BasePromptProps {
   onSubmit: (result: PromptResult<T>) => void;
 }
 
-export function SelectPrompt<T>(props: SelectPromptProps<T>): React.ReactElement {
+export function SelectPrompt<T>(
+  props: SelectPromptProps<T>,
+): React.ReactElement {
   const { message, hint, options, defaultValue, onSubmit } = props;
   const [submitted, setSubmitted] = useState<
     null | { ok: true; value: T; label: string } | { ok: false }
@@ -37,13 +39,16 @@ export function SelectPrompt<T>(props: SelectPromptProps<T>): React.ReactElement
     }
   }, [rawOK, submitted, onSubmit]);
 
-  useInput((_input, key) => {
-    if (submitted != null) return;
-    if (key.escape) {
-      setSubmitted({ ok: false });
-      onSubmit({ ok: false, cancelled: true });
-    }
-  }, { isActive: rawOK && submitted == null });
+  useInput(
+    (_input, key) => {
+      if (submitted != null) return;
+      if (key.escape) {
+        setSubmitted({ ok: false });
+        onSubmit({ ok: false, cancelled: true });
+      }
+    },
+    { isActive: rawOK && submitted == null },
+  );
 
   const items = options.map((o) => ({
     label: o.hint ? `${o.label}  ${colors.dim(o.hint)}` : o.label,
@@ -51,16 +56,19 @@ export function SelectPrompt<T>(props: SelectPromptProps<T>): React.ReactElement
     key: String(o.value),
   }));
 
-  const initialIndex = defaultValue !== undefined
-    ? options.findIndex((o) => o.value === defaultValue)
-    : 0;
+  const initialIndex =
+    defaultValue !== undefined
+      ? options.findIndex((o) => o.value === defaultValue)
+      : 0;
 
   if (submitted != null) {
     if (submitted.ok === false) {
       return (
         <FrozenSummary
           message={message}
-          rendered={colors.dim(rawOK ? "«cancelled»" : "«no interactive stdin»")}
+          rendered={colors.dim(
+            rawOK ? "«cancelled»" : "«no interactive stdin»",
+          )}
         />
       );
     }

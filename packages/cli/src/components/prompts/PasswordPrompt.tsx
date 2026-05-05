@@ -37,13 +37,16 @@ export const PasswordPrompt: React.FC<PasswordPromptProps> = ({
     }
   }, [rawOK, submitted, onSubmit]);
 
-  useInput((_input, key) => {
-    if (submitted != null) return;
-    if (key.escape) {
-      setSubmitted({ ok: false });
-      onSubmit({ ok: false, cancelled: true });
-    }
-  }, { isActive: rawOK && submitted == null });
+  useInput(
+    (_input, key) => {
+      if (submitted != null) return;
+      if (key.escape) {
+        setSubmitted({ ok: false });
+        onSubmit({ ok: false, cancelled: true });
+      }
+    },
+    { isActive: rawOK && submitted == null },
+  );
 
   const handleSubmit = (v: string) => {
     if (submitted != null) return;
@@ -80,7 +83,7 @@ export const PasswordPrompt: React.FC<PasswordPromptProps> = ({
     <Box flexDirection="column">
       <PromptHeader message={message} />
       <Box flexDirection="row">
-        <Text>  {colors.cyan("›")} </Text>
+        <Text> {colors.cyan("›")} </Text>
         <TextInput
           value={value}
           onChange={(v: string) => {

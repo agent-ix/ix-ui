@@ -33,41 +33,49 @@ export const ConfirmPrompt: React.FC<ConfirmPromptProps> = ({
     }
   }, [rawOK, submitted, onSubmit]);
 
-  useInput((input, key) => {
-    if (submitted != null) return;
-    if (key.escape) {
-      setSubmitted({ ok: false });
-      onSubmit({ ok: false, cancelled: true });
-      return;
-    }
-    if (key.return) {
-      const v = defaultValue;
-      setSubmitted({ ok: true, value: v });
-      onSubmit({ ok: true, value: v });
-      return;
-    }
-    if (input === "y" || input === "Y") {
-      setSubmitted({ ok: true, value: true });
-      onSubmit({ ok: true, value: true });
-      return;
-    }
-    if (input === "n" || input === "N") {
-      setSubmitted({ ok: true, value: false });
-      onSubmit({ ok: true, value: false });
-    }
-  }, { isActive: rawOK && submitted == null });
+  useInput(
+    (input, key) => {
+      if (submitted != null) return;
+      if (key.escape) {
+        setSubmitted({ ok: false });
+        onSubmit({ ok: false, cancelled: true });
+        return;
+      }
+      if (key.return) {
+        const v = defaultValue;
+        setSubmitted({ ok: true, value: v });
+        onSubmit({ ok: true, value: v });
+        return;
+      }
+      if (input === "y" || input === "Y") {
+        setSubmitted({ ok: true, value: true });
+        onSubmit({ ok: true, value: true });
+        return;
+      }
+      if (input === "n" || input === "N") {
+        setSubmitted({ ok: true, value: false });
+        onSubmit({ ok: true, value: false });
+      }
+    },
+    { isActive: rawOK && submitted == null },
+  );
 
   if (submitted != null) {
     if (submitted.ok === false) {
       return (
         <FrozenSummary
           message={message}
-          rendered={colors.dim(rawOK ? "«cancelled»" : "«no interactive stdin»")}
+          rendered={colors.dim(
+            rawOK ? "«cancelled»" : "«no interactive stdin»",
+          )}
         />
       );
     }
     return (
-      <FrozenSummary message={message} rendered={submitted.value ? "Yes" : "No"} />
+      <FrozenSummary
+        message={message}
+        rendered={submitted.value ? "Yes" : "No"}
+      />
     );
   }
 
@@ -76,7 +84,7 @@ export const ConfirmPrompt: React.FC<ConfirmPromptProps> = ({
     <Box flexDirection="column">
       <PromptHeader message={message} />
       <Box flexDirection="row">
-        <Text>  {colors.cyan("›")} </Text>
+        <Text> {colors.cyan("›")} </Text>
         <Text>{indicator}</Text>
       </Box>
       <PromptHint hint={hint} />

@@ -41,13 +41,16 @@ export const TextPrompt: React.FC<TextPromptProps> = ({
     }
   }, [rawOK, submitted, onSubmit]);
 
-  useInput((_input, key) => {
-    if (submitted != null) return;
-    if (key.escape) {
-      setSubmitted({ ok: false });
-      onSubmit({ ok: false, cancelled: true });
-    }
-  }, { isActive: rawOK && submitted == null });
+  useInput(
+    (_input, key) => {
+      if (submitted != null) return;
+      if (key.escape) {
+        setSubmitted({ ok: false });
+        onSubmit({ ok: false, cancelled: true });
+      }
+    },
+    { isActive: rawOK && submitted == null },
+  );
 
   const handleSubmit = (v: string) => {
     if (submitted != null) return;
@@ -72,11 +75,14 @@ export const TextPrompt: React.FC<TextPromptProps> = ({
       return (
         <FrozenSummary
           message={message}
-          rendered={colors.dim(rawOK ? "«cancelled»" : "«no interactive stdin»")}
+          rendered={colors.dim(
+            rawOK ? "«cancelled»" : "«no interactive stdin»",
+          )}
         />
       );
     }
-    const display = submitted.value === "" ? colors.dim("«empty»") : submitted.value;
+    const display =
+      submitted.value === "" ? colors.dim("«empty»") : submitted.value;
     return <FrozenSummary message={message} rendered={display} />;
   }
 
@@ -84,7 +90,7 @@ export const TextPrompt: React.FC<TextPromptProps> = ({
     <Box flexDirection="column">
       <PromptHeader message={message} />
       <Box flexDirection="row">
-        <Text>  {colors.cyan("›")} </Text>
+        <Text> {colors.cyan("›")} </Text>
         <TextInput
           value={value}
           onChange={(v: string) => {
