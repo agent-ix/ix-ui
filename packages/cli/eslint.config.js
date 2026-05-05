@@ -5,7 +5,7 @@ import prettierPlugin from "eslint-plugin-prettier";
 /** @type {import("eslint").Linter.FlatConfig[]} */
 export default [
   {
-    files: ["src/**/*.{ts,js}", "tests/**/*.{ts,js}"],
+    files: ["src/**/*.{ts,tsx,js}", "tests/**/*.{ts,tsx,js}"],
     languageOptions: {
       parser: typescriptParser,
       parserOptions: {
@@ -13,6 +13,7 @@ export default [
         tsconfigRootDir: process.cwd(),
         sourceType: "module",
         ecmaVersion: "latest",
+        ecmaFeatures: { jsx: true },
       },
     },
     plugins: {
