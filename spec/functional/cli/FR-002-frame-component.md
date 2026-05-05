@@ -54,7 +54,7 @@ const Frame: FC<FrameProps>;
 - **FR-002-AC-8**: When `tail` is set, a tail line SHALL be rendered beneath the body. The exact glyph and indent depend on `tailVariant`:
   - `"success"` (default): `ROUTE_OUT + GLYPH_DONE + "  " + <text>` — the connector `└──` plus the cyan `•` glyph (which together form `└──•`) followed by two spaces and the text.
   - `"warn"`: `ROUTE_OUT + colors.yellow("•") + "  " + colors.yellow(<text>)` — same connector, yellow bullet and text.
-  - `"error"`: `" " + GLYPH_FAIL_MARK + "  " + colors.red(<text>)` — at column 1 (no `ROUTE_OUT`), the red `⊗` plus two spaces and red text. Error tails read as a callout outside the frame's body indentation.
+  - `"error"`: `" " + GLYPH_FAIL_MARK + "  " + colors.red(<text>)` — 1 space of leading so the red `⊗` sits at column 2 (the planet column, vertically aligned with the header indicator), followed by 2 spaces and red text. Error tails read as a callout outside the frame's body indentation.
 - **FR-002-AC-9**: A blank line SHALL appear between the last body row (or the header, if no children) and the tail line.
 
 ### Composition

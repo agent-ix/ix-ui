@@ -99,7 +99,7 @@ TC ID conventions:
 | TC-104 | AC-5 | Layout uses Ink flexbox; no `padEnd`/`padStart` for column alignment. |
 | TC-105 | AC-6 | Resize re-flow within one render cycle. |
 | TC-106 | AC-7 | No `process.stdout.columns` reads. |
-| TC-107 | AC-8 | `<Frame>` accepts `<PhaseTable>` as child without crash. |
+| TC-107 | AC-8 | `<Frame>` accepts arbitrary Ink-renderable React nodes (incl. nested framed components) without crash. |
 | TC-108 | AC-9 | Layout props pass through to outer `<Box>`. |
 | TC-109 | AC-10 | EPIPE on stdout close → render() resolves cleanly. |
 | TC-110 | AC-11 | TERM=dumb suppresses color but preserves layout. |
@@ -113,10 +113,10 @@ TC ID conventions:
 | TC-113 | AC-2 | `<Frame status="passed">` shows PHASE_PASS, no animation. |
 | TC-114 | AC-3 | `<Frame status="failed">` shows PHASE_FAIL. |
 | TC-115 | AC-4 | Header indicator width = PHASE_WIDTH across all states. |
-| TC-116 | AC-5 | `└──┐` opener appears when children OR tail set. |
-| TC-117 | AC-6 | Header-only collapse when both empty. |
+| TC-116 | AC-5 | `└──┐` opener appears when children present; tail-only frames have no opener. |
+| TC-117 | AC-6 | Header-only collapse when children empty AND tail unset. |
 | TC-118 | AC-7 | Body rendered inside flexbox column. |
-| TC-119 | AC-8 | Tail variants render correct glyph + color. |
+| TC-119 | AC-8 | Success/warn tail = `└──•` connector; error tail = ` ⊗` at planet column. |
 | TC-120 | AC-9 | Blank line above tail. |
 | TC-121 | AC-10 | Frame composes into Frame. |
 | TC-122 | AC-11 | Frame forwards layout props. |
@@ -310,7 +310,7 @@ Each row is a distinct render scenario verified against snapshot output. `🔘` 
 | TC-OP-02 | running | success | yes | yes | Animated header, opener, body, `└──•` success tail. |
 | TC-OP-03 | passed | success | yes | yes | Frozen `⊙`, opener, body, `└──•` cyan tail. |
 | TC-OP-04 | passed | warn | yes | yes | Frozen `⊙`, opener, body, `└──•` yellow tail. |
-| TC-OP-05 | failed | error | yes | yes | Frozen `⊗`, opener, body, ` ⊗` red tail at column 1. |
+| TC-OP-05 | failed | error | yes | yes | Frozen `⊗`, opener, body, ` ⊗  text` red tail at planet column (1-space indent). |
 | TC-OP-06 | running | — | no | — | Header-only, no opener, no tail. |
 | TC-OP-07 | passed | success | no | yes | Header + tail (no opener) — tail-only frame. |
 | TC-OP-08 | failed | success → coerced error | yes | yes | Variant auto-coerces to `error` per Frame.tsx logic. |
