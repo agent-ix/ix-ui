@@ -66,18 +66,25 @@ export interface PhaseTableOptions<P extends string = string> {
   hidePendingRows?: boolean;
 }
 
+export interface PhaseTableFinalState {
+  failed?: boolean;
+  error?: string;
+}
+
 interface ServiceRow<P extends string> {
   name: string;
   displayName: string;
   phases: Record<P, PhaseState>;
   startMs: number;
   endMs: number | null;
-  podStatus: string | null;
+  phaseStartMs: Partial<Record<P, number>>;
+  phaseEndMs: Partial<Record<P, number>>;
+  phaseStatus: Partial<Record<P, string | null>>;
   error: string | null;
 }
 
-// Width to pad the phase-label column ("install failed" is the longest at 14).
-const LABEL_W = 14;
+const ELLIPSIS = "...";
+const MIN_LABEL_W = 14;
 
 function stateGlyph(
   state: PhaseState,
@@ -104,23 +111,62 @@ function stateGlyph(
 }
 
 export function colorPods(status: string): string {
-  const dotIdx = status.indexOf("·");
-  const countPart =
-    dotIdx !== -1 ? status.slice(0, dotIdx) : status.replace(/\s+$/, "");
-  const tail = status.slice(countPart.length);
-
+  const parsed = parsePodStatus(status);
+  if (!parsed) return status;
+  const { countPart, tail, hasStateLabel, ready, total } = parsed;
   const slashIdx = countPart.indexOf("/");
-  if (slashIdx === -1) return status;
 
-  const ready = parseInt(countPart, 10);
-  const total = parseInt(countPart.slice(slashIdx + 1), 10);
-
-  if (ready > 0 && ready === total) return pc.cyan(countPart) + pc.dim(tail);
+  if (ready > 0 && ready === total) {
+    return hasStateLabel
+      ? pc.yellow(countPart) + pc.dim(tail)
+      : pc.cyan(countPart) + pc.dim(tail);
+  }
   if (ready > 0) return pc.yellow(countPart) + pc.dim(tail);
   return (
     pc.yellow(countPart.slice(0, slashIdx)) +
     pc.dim(countPart.slice(slashIdx) + tail)
   );
+}
+
+function parsePodStatus(status: string): {
+  countPart: string;
+  tail: string;
+  hasStateLabel: boolean;
+  ready: number;
+  total: number;
+} | null {
+  const dotIdx = status.indexOf("·");
+  const hasStateLabel = dotIdx !== -1;
+  const countPart = hasStateLabel
+    ? status.slice(0, dotIdx)
+    : status.replace(/\s+$/, "");
+  const tail = status.slice(countPart.length);
+
+  const slashIdx = countPart.indexOf("/");
+  if (slashIdx === -1) return null;
+
+  const ready = parseInt(countPart, 10);
+  const total = parseInt(countPart.slice(slashIdx + 1), 10);
+  if (Number.isNaN(ready) || Number.isNaN(total)) return null;
+
+  return { countPart, tail, hasStateLabel, ready, total };
+}
+
+function isSettledReadyPodStatus(status: string): boolean {
+  const parsed = parsePodStatus(status);
+  return (
+    parsed != null &&
+    !parsed.hasStateLabel &&
+    parsed.ready > 0 &&
+    parsed.ready === parsed.total
+  );
+}
+
+function truncatePlain(input: string, width: number): string {
+  const plain = stripAnsi(input);
+  if (plain.length <= width) return input;
+  if (width <= ELLIPSIS.length) return ELLIPSIS.slice(0, width);
+  return plain.slice(0, width - ELLIPSIS.length) + ELLIPSIS;
 }
 
 export class PhaseTable<P extends string = string> {
@@ -156,7 +202,9 @@ export class PhaseTable<P extends string = string> {
       phases: { ...initialPhases },
       startMs: now,
       endMs: null,
-      podStatus: null,
+      phaseStartMs: {},
+      phaseEndMs: {},
+      phaseStatus: {},
       error: null,
     }));
   }
@@ -181,11 +229,12 @@ export class PhaseTable<P extends string = string> {
     }
   }
 
-  /** Update the k8s pod ready status for a service row (live during ready phase). */
+  /** Update detail text for the row's current phase. */
   setPodStatus(service: string, status: string): void {
     const row = this.rows.find((r) => r.name === service);
     if (!row) return;
-    row.podStatus = status;
+    const { phase } = this.rowCurrentState(row.phases);
+    row.phaseStatus[phase] = status;
   }
 
   /** Store an error message for a failed service (shown in final summary). */
@@ -213,17 +262,27 @@ export class PhaseTable<P extends string = string> {
   transition(service: string, phase: P, state: PhaseState): void {
     const row = this.rows.find((r) => r.name === service);
     if (!row) return;
+    if (row.phases[phase] === state) return;
     row.phases[phase] = state;
+    const now = Date.now();
 
-    if (state === "running" && phase === this.phaseList[0]) {
-      row.startMs = Date.now();
+    if (state === "running" || state === "queued") {
+      row.phaseStartMs[phase] = now;
+      delete row.phaseEndMs[phase];
+      row.phaseStatus[phase] = null;
+      if (!this.hasStarted(row) || phase === this.phaseList[0]) {
+        row.startMs = now;
+      }
     }
     const lastPhase = this.phaseList[this.phaseList.length - 1];
     if (state === "done" && phase === lastPhase) {
-      row.endMs = Date.now();
+      row.endMs = now;
+    }
+    if (state === "done" || state === "failed") {
+      row.phaseEndMs[phase] = now;
     }
     if (state === "failed") {
-      row.endMs = Date.now();
+      row.endMs = now;
     }
 
     if (!this.isTTY) {
@@ -242,6 +301,7 @@ export class PhaseTable<P extends string = string> {
     entry: string | null = null,
     baseDomain?: string,
     tail?: string,
+    finalState?: PhaseTableFinalState,
   ): void {
     if (this.ticker) {
       clearInterval(this.ticker);
@@ -255,9 +315,25 @@ export class PhaseTable<P extends string = string> {
     );
 
     if (this.isTTY) {
-      this.finishTTY(totalMs, visibleRows, failed, entry, baseDomain, tail);
+      this.finishTTY(
+        totalMs,
+        visibleRows,
+        failed,
+        entry,
+        baseDomain,
+        tail,
+        finalState,
+      );
     } else {
-      this.finishPlain(totalMs, visibleRows, failed, entry, baseDomain, tail);
+      this.finishPlain(
+        totalMs,
+        visibleRows,
+        failed,
+        entry,
+        baseDomain,
+        tail,
+        finalState,
+      );
     }
     this.lineCount = 0;
   }
@@ -269,12 +345,14 @@ export class PhaseTable<P extends string = string> {
     entry: string | null,
     baseDomain?: string,
     tail?: string,
+    finalState?: PhaseTableFinalState,
   ): void {
     const nameW = this.maxNameLen();
     const preflightBlock = this.preflightLines.join("\n");
+    const overallFailed = failed.length > 0 || finalState?.failed === true;
 
     const frozenHeader = this.header
-      ? (failed.length === 0 ? PHASE_PASS : PHASE_FAIL) +
+      ? (overallFailed ? PHASE_FAIL : PHASE_PASS) +
         renderHeader(this.header) +
         "\n" +
         ROUTE_INDENT +
@@ -282,44 +360,49 @@ export class PhaseTable<P extends string = string> {
       : "";
 
     const frozenRows = visibleRows.flatMap((row) => {
-      const sMs = row.endMs != null ? row.endMs - row.startMs : totalMs;
-      const sS = (sMs / 1000).toFixed(1) + "s";
-      const anyFailed = (Object.values(row.phases) as PhaseState[]).some(
-        (s) => s === "failed",
-      );
-      if (anyFailed) {
-        const pods = row.podStatus
-          ? `  ${colorPods(row.podStatus.padEnd(5))}`
+      const { phase } = this.rowCurrentState(row.phases);
+      const status = row.phaseStatus[phase];
+      const elapsedMs = this.rowFinalElapsedMs(row, totalMs);
+      const elapsed =
+        elapsedMs == null ? "" : (elapsedMs / 1000).toFixed(1) + "s";
+      if (this.rowHasFailed(row)) {
+        const pods = status
+          ? `  ${colorPods(truncatePlain(status, 5).padEnd(5))}`
           : "       ";
         const lines = [
-          `${ROW_INDENT}${colors.red("○")} ${padDisplayName(row.displayName, nameW)}${pods}  ${sS}`,
+          `${ROW_INDENT}${colors.red("○")} ${padDisplayName(row.displayName, nameW)}${pods}  ${elapsed}`,
         ];
         if (row.error) lines.push(`${ERROR_INDENT}${pc.dim(row.error)}`);
         return lines;
       }
-      const pods = row.podStatus
-        ? `  ${colorPods(row.podStatus.padEnd(5))}`
+      const succeeded = this.rowSucceeded(row);
+      const doneStatus = succeeded && status ? status : null;
+      const pods = doneStatus
+        ? `  ${colorPods(truncatePlain(doneStatus, 5).padEnd(5))}`
         : "       ";
-      const urlSuffix = baseDomain
-        ? `  →  ${pc.cyan(`https://${row.name}.${baseDomain}`)}`
-        : "";
+      const urlSuffix =
+        succeeded && baseDomain
+          ? `  →  ${pc.cyan(`https://${row.name}.${baseDomain}`)}`
+          : "";
+      const glyph = succeeded ? blue("•") : "·";
       return [
-        `${ROW_INDENT}${blue("•")} ${padDisplayName(row.displayName, nameW)}${pods}  ${sS.padEnd(7)}${urlSuffix}`,
+        `${ROW_INDENT}${glyph} ${padDisplayName(row.displayName, nameW)}${pods}  ${elapsed.padEnd(7)}${urlSuffix}`,
       ];
     });
 
     const lines = [...frozenRows];
     if (tail) {
       lines.push(`${ROUTE_OUT}✧ ${tail}`);
-    } else if (failed.length === 0 && entry && baseDomain) {
+    } else if (!overallFailed && entry && baseDomain) {
       lines.push(
         `${ROUTE_OUT}✧ ${pc.cyan(pc.underline(`https://${entry}.${baseDomain}`))}`,
       );
-    } else if (failed.length > 0) {
-      lines.push(
-        "",
-        `${PHASE_FAIL}${colors.red(`${failed.length} service${failed.length === 1 ? "" : "s"} failed`)}`,
-      );
+    }
+    if (overallFailed) {
+      const failureText =
+        finalState?.error ??
+        `${failed.length} service${failed.length === 1 ? "" : "s"} failed`;
+      lines.push("", `${PHASE_FAIL}${colors.red(failureText)}`);
     }
 
     const tableBlock = lines.join("\n") + "\n";
@@ -349,12 +432,14 @@ export class PhaseTable<P extends string = string> {
     entry: string | null,
     baseDomain?: string,
     tail?: string,
+    finalState?: PhaseTableFinalState,
   ): void {
     const totalS = (totalMs / 1000).toFixed(1);
     const lines: string[] = [];
     const nameW = this.maxNameLen();
+    const overallFailed = failed.length > 0 || finalState?.failed === true;
 
-    if (failed.length === 0) {
+    if (!overallFailed) {
       lines.push(
         blue(
           `✓ ${visibleRows.length} service${visibleRows.length === 1 ? "" : "s"} ready in ${totalS}s`,
@@ -362,7 +447,7 @@ export class PhaseTable<P extends string = string> {
       );
       lines.push("");
       for (const row of visibleRows) {
-        const sMs = row.endMs != null ? row.endMs - row.startMs : totalMs;
+        const sMs = this.rowFinalElapsedMs(row, totalMs) ?? 0;
         lines.push(
           `${ROW_INDENT}${blue("•")} ${padDisplayName(row.displayName, nameW)}  ${(sMs / 1000).toFixed(1)}s`,
         );
@@ -375,30 +460,37 @@ export class PhaseTable<P extends string = string> {
         );
       }
     } else {
-      lines.push(colors.red(`⊗ ${failed.length} failed in ${totalS}s`));
+      lines.push(
+        colors.red(
+          finalState?.error && failed.length === 0
+            ? `⊗ failed in ${totalS}s`
+            : `⊗ ${failed.length} failed in ${totalS}s`,
+        ),
+      );
       lines.push("");
       for (const row of visibleRows) {
-        const anyFailed = (Object.values(row.phases) as PhaseState[]).some(
-          (s) => s === "failed",
-        );
-        const sMs = row.endMs != null ? row.endMs - row.startMs : totalMs;
-        if (anyFailed) {
-          const pods = row.podStatus
-            ? `  ${row.podStatus.padEnd(5)}`
+        const sMs = this.rowFinalElapsedMs(row, totalMs);
+        const elapsed = sMs == null ? "" : (sMs / 1000).toFixed(1) + "s";
+        if (this.rowHasFailed(row)) {
+          const { phase } = this.rowCurrentState(row.phases);
+          const status = row.phaseStatus[phase];
+          const pods = status
+            ? `  ${truncatePlain(status, 5).padEnd(5)}`
             : "       ";
           lines.push(
-            `${ROW_INDENT}${colors.red("○")} ${padDisplayName(row.displayName, nameW)}${pods}  ${(sMs / 1000).toFixed(1)}s`,
+            `${ROW_INDENT}${colors.red("○")} ${padDisplayName(row.displayName, nameW)}${pods}  ${elapsed}`,
           );
           if (row.error) lines.push(`${ERROR_INDENT}${pc.dim(row.error)}`);
         } else {
+          const glyph = this.rowSucceeded(row) ? blue("•") : "·";
           lines.push(
-            `${ROW_INDENT}${blue("•")} ${padDisplayName(row.displayName, nameW)}  ${(sMs / 1000).toFixed(1)}s`,
+            `${ROW_INDENT}${glyph} ${padDisplayName(row.displayName, nameW)}  ${elapsed}`,
           );
         }
       }
       lines.push(
         "",
-        ` ⊗  ${colors.red(`${failed.length} service${failed.length === 1 ? "" : "s"} failed`)}`,
+        ` ⊗  ${colors.red(finalState?.error ?? `${failed.length} service${failed.length === 1 ? "" : "s"} failed`)}`,
       );
     }
 
@@ -416,16 +508,63 @@ export class PhaseTable<P extends string = string> {
     phase: P;
     state: PhaseState;
   } {
-    for (const ph of [...this.phaseList].reverse()) {
-      if (phases[ph] !== "pending") return { phase: ph, state: phases[ph] };
+    for (const ph of this.phaseList) {
+      if (phases[ph] === "failed") return { phase: ph, state: "failed" };
     }
-    return { phase: this.phaseList[0], state: "pending" };
+    for (const ph of this.phaseList) {
+      if (phases[ph] !== "done") return { phase: ph, state: phases[ph] };
+    }
+    const lastPhase = this.phaseList[this.phaseList.length - 1];
+    return { phase: lastPhase, state: "done" };
   }
 
   private rowLabel(phase: P, state: PhaseState): string {
-    if (state === "pending") return "—";
+    if (state === "pending") return "";
     if (state === "failed") return `${phase} failed`;
     return this.phaseLabels[phase] ?? phase;
+  }
+
+  private hasStarted(row: ServiceRow<P>): boolean {
+    return Object.keys(row.phaseStartMs).length > 0;
+  }
+
+  private rowHasFailed(row: ServiceRow<P>): boolean {
+    return (Object.values(row.phases) as PhaseState[]).some(
+      (s) => s === "failed",
+    );
+  }
+
+  private rowSucceeded(row: ServiceRow<P>): boolean {
+    return (
+      !this.rowHasFailed(row) &&
+      this.phaseList.every((phase) => row.phases[phase] === "done")
+    );
+  }
+
+  private phaseElapsedMs(
+    row: ServiceRow<P>,
+    phase: P,
+    state: PhaseState,
+    now: number,
+  ): number | null {
+    const started = row.phaseStartMs[phase];
+    if (started == null) return null;
+    const ended = row.phaseEndMs[phase];
+    if (ended != null) return ended - started;
+    if (state === "running" || state === "queued") return now - started;
+    return null;
+  }
+
+  private rowFinalElapsedMs(
+    row: ServiceRow<P>,
+    totalMs: number,
+  ): number | null {
+    if (!this.hasStarted(row)) return null;
+    if (row.endMs != null) return row.endMs - row.startMs;
+    const { phase, state } = this.rowCurrentState(row.phases);
+    const phaseElapsed = this.phaseElapsedMs(row, phase, state, Date.now());
+    if (phaseElapsed != null) return phaseElapsed;
+    return this.rowSucceeded(row) ? totalMs : null;
   }
 
   private drawTTY(): void {
@@ -433,10 +572,12 @@ export class PhaseTable<P extends string = string> {
     const totalElapsedS = ((now - this.globalStartMs) / 1000).toFixed(1);
     const lastPhase = this.phaseList[this.phaseList.length - 1];
     const visibleRows = this.visibleRows();
-    const readyCount = visibleRows.filter(
-      (r) => r.phases[lastPhase] === "done",
-    ).length;
+    const readyCount = visibleRows.filter((r) => this.rowSucceeded(r)).length;
     const nameW = this.maxNameLen();
+    const elapsedW = 6;
+    const columns = process.stdout.columns ?? 100;
+    const fixedW = stripAnsi(ROW_INDENT).length + 2 + nameW + 2 + 2 + elapsedW;
+    const labelW = Math.max(MIN_LABEL_W, columns - fixedW);
     const anyFailed = visibleRows.some((r) =>
       (Object.values(r.phases) as PhaseState[]).some((s) => s === "failed"),
     );
@@ -449,50 +590,66 @@ export class PhaseTable<P extends string = string> {
         "\n"
       : "";
 
-    const rows = visibleRows
-      .filter((row) => this.rowCurrentState(row.phases).state !== "pending")
-      .flatMap((row) => {
-        const { phase, state } = this.rowCurrentState(row.phases);
-        let label = this.rowLabel(phase, state);
-        let podsDone = false;
-        if (phase === lastPhase && row.podStatus && state !== "failed") {
-          label = row.podStatus;
-          const parts = row.podStatus.split("/");
-          const r = parseInt(parts[0], 10);
-          const t = parseInt(parts[1], 10);
-          podsDone = r > 0 && r === t;
-        }
-        const g = podsDone
-          ? blue("•")
-          : stateGlyph(state, this.spinnerFrame, true);
-        const elapsedMs =
-          row.endMs != null ? row.endMs - row.startMs : now - row.startMs;
-        const elapsed = (elapsedMs / 1000).toFixed(1) + "s";
-        const isPodStatus =
-          phase === lastPhase && !!row.podStatus && state !== "failed";
-        const labelPadded = isPodStatus
-          ? colorPods(label.padEnd(LABEL_W))
-          : label.padEnd(LABEL_W);
-        const out = [
-          `${ROW_INDENT}${g} ${padDisplayName(row.displayName, nameW)}  ${labelPadded}  ${elapsed}`,
-        ];
-        if (state === "failed" && row.error) {
-          out.push(`${ERROR_INDENT}${pc.dim(row.error)}`);
-        }
-        return out;
-      });
-
-    const footer = pc.dim(
-      `  elapsed ${totalElapsedS}s · ${readyCount}/${visibleRows.length} ready`,
-    );
+    const rows = visibleRows.flatMap((row) => {
+      const { phase, state } = this.rowCurrentState(row.phases);
+      let label = this.rowLabel(phase, state);
+      let podsDone = false;
+      const status = row.phaseStatus[phase];
+      const isActive = state === "running" || state === "queued";
+      const isDonePodStatus = phase === lastPhase && state === "done" && status;
+      if ((isActive || isDonePodStatus) && status) {
+        label = status;
+      }
+      if (
+        phase === lastPhase &&
+        status &&
+        state !== "failed" &&
+        (isActive || state === "done")
+      ) {
+        podsDone = state === "done" && isSettledReadyPodStatus(status);
+      }
+      const g = podsDone
+        ? blue("•")
+        : stateGlyph(state, this.spinnerFrame, true);
+      const elapsedMs = this.phaseElapsedMs(row, phase, state, now);
+      const elapsed =
+        elapsedMs == null ? "" : (elapsedMs / 1000).toFixed(1) + "s";
+      const isPodStatus =
+        phase === lastPhase &&
+        !!status &&
+        state !== "failed" &&
+        (isActive || state === "done");
+      label = truncatePlain(label, labelW);
+      const labelPadded = isPodStatus
+        ? colorPods(label.padEnd(labelW))
+        : label.padEnd(labelW);
+      const out = [
+        `${ROW_INDENT}${g} ${padDisplayName(row.displayName, nameW)}  ${labelPadded}  ${elapsed}`,
+      ];
+      if (state === "failed" && row.error) {
+        out.push(`${ERROR_INDENT}${pc.dim(row.error)}`);
+      }
+      return out;
+    });
 
     const preflightBlock = this.preflightLines.join("\n");
-    const tableBlock = [...rows, "", footer].join("\n");
+    const tableLines =
+      visibleRows.length === 0
+        ? rows
+        : [
+            ...rows,
+            "",
+            pc.dim(
+              `  elapsed ${totalElapsedS}s · ${readyCount}/${visibleRows.length} ready`,
+            ),
+          ];
+    const tableBlock = tableLines.join("\n");
     const body = preflightBlock
-      ? headerLine + preflightBlock + "\n\n" + tableBlock + "\n"
-      : headerLine + tableBlock + "\n";
+      ? headerLine + preflightBlock + (tableBlock ? "\n\n" + tableBlock : "")
+      : headerLine + tableBlock;
+    const output = body.endsWith("\n") ? body : body + "\n";
 
-    const newLines = body.split("\n");
+    const newLines = output.split("\n");
     const newCount = newLines.length - 1;
     const moveUp = this.lineCount > 0 ? `\x1b[${this.lineCount}A\r` : "\r";
 

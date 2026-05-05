@@ -3,6 +3,11 @@ import { PhaseTable } from "../src/phase-table.js";
 
 type TestPhase = "build" | "deploy";
 const TEST_PHASES: readonly TestPhase[] = ["build", "deploy"];
+const ANSI_RE = /\x1b\[[0-9;?]*[A-Za-z]/g;
+
+function stripAnsi(output: string): string {
+  return output.replace(ANSI_RE, "");
+}
 
 // TC-016, TC-017, TC-018, TC-019, TC-020: FR-002 and FR-003 TTY/non-TTY mode
 describe("PhaseTable TTY mode", () => {
@@ -46,6 +51,194 @@ describe("PhaseTable TTY mode", () => {
     table.start();
     expect(setIntervalSpy).toHaveBeenCalledWith(expect.any(Function), 80);
     table.finish();
+  });
+
+  it("renders pending rows when hidePendingRows is false without a timer", () => {
+    const table = new PhaseTable<TestPhase>(["svc-a"], {
+      phases: TEST_PHASES,
+      isTTY: true,
+    });
+    table.start();
+    const plain = stripAnsi(output);
+    const row = plain.split("\n").find((line) => line.includes("svc-a"));
+    expect(row).toBeDefined();
+    expect(row).not.toContain("build");
+    expect(row).not.toMatch(/\d+\.\d+s/);
+    table.finish();
+  });
+
+  it("does not render stale detail from a completed prior phase", () => {
+    const table = new PhaseTable<TestPhase>(["svc-a"], {
+      phases: TEST_PHASES,
+      isTTY: true,
+    });
+    table.start();
+    table.transition("svc-a", "build", "running");
+    table.setPodStatus("svc-a", "creating: secrets");
+    table.transition("svc-a", "build", "done");
+    output = "";
+    vi.advanceTimersByTime(100);
+    const plain = stripAnsi(output);
+    expect(plain).toContain("svc-a");
+    expect(plain).not.toContain("deploy");
+    expect(plain).not.toContain("secrets");
+    expect(plain).not.toMatch(/svc-a.*\d+\.\d+s/);
+    table.finish();
+  });
+
+  it("uses available row width for long status details", () => {
+    const table = new PhaseTable<TestPhase>(["svc-a"], {
+      phases: TEST_PHASES,
+      isTTY: true,
+    });
+    table.start();
+    table.transition("svc-a", "build", "running");
+    table.setPodStatus(
+      "svc-a",
+      "this status detail is far too long for the phase column",
+    );
+    output = "";
+    vi.advanceTimersByTime(100);
+    const plain = stripAnsi(output);
+    const serviceRows = plain
+      .split("\n")
+      .filter((line) => line.includes("svc-a"));
+    expect(serviceRows).toHaveLength(1);
+    expect(serviceRows[0]).toContain("this status detail is far too long");
+    expect(serviceRows[0]).toContain("phase column");
+    table.finish();
+  });
+
+  it("does not reset elapsed time for repeated running transitions", () => {
+    const table = new PhaseTable<TestPhase>(["svc-a"], {
+      phases: TEST_PHASES,
+      isTTY: true,
+    });
+    table.start();
+    table.transition("svc-a", "build", "running");
+    vi.advanceTimersByTime(2500);
+    table.transition("svc-a", "build", "running");
+    output = "";
+    vi.advanceTimersByTime(100);
+    const plain = stripAnsi(output);
+    expect(plain).toMatch(/svc-a.*2\.6s/);
+    expect(plain).not.toMatch(/svc-a.*0\.1s/);
+    table.finish();
+  });
+
+  it("renders final-phase done detail without keeping the row active", () => {
+    const table = new PhaseTable<TestPhase>(["svc-a"], {
+      phases: TEST_PHASES,
+      isTTY: true,
+    });
+    table.start();
+    table.transition("svc-a", "build", "done");
+    table.transition("svc-a", "deploy", "running");
+    table.setPodStatus("svc-a", "1/1");
+    vi.advanceTimersByTime(1200);
+    table.transition("svc-a", "deploy", "done");
+    output = "";
+    vi.advanceTimersByTime(100);
+    const plain = stripAnsi(output);
+    expect(plain).toMatch(/svc-a.*1\/1/);
+    expect(plain).toMatch(/svc-a.*1\.2s/);
+    table.finish();
+  });
+
+  it("keeps a final-phase 1/1 state label active instead of rendering complete", () => {
+    const table = new PhaseTable<TestPhase>(["svc-a"], {
+      phases: TEST_PHASES,
+      isTTY: true,
+    });
+    table.start();
+    table.transition("svc-a", "build", "done");
+    table.transition("svc-a", "deploy", "running");
+    table.setPodStatus("svc-a", "1/1·settle");
+    output = "";
+    vi.advanceTimersByTime(100);
+    const plain = stripAnsi(output);
+    const row = plain.split("\n").find((line) => line.includes("svc-a"));
+    expect(row).toBeDefined();
+    expect(row).toContain("1/1·settle");
+    expect(row).not.toContain("•");
+    expect(row).toMatch(/\d+\.\d+s/);
+    table.finish();
+  });
+
+  it("does not count a row as ready while an earlier phase is active again", () => {
+    const table = new PhaseTable<TestPhase>(["svc-a"], {
+      phases: TEST_PHASES,
+      isTTY: true,
+    });
+    table.start();
+    table.transition("svc-a", "build", "done");
+    table.transition("svc-a", "deploy", "running");
+    table.setPodStatus("svc-a", "waiting for postgres");
+    table.transition("svc-a", "deploy", "done");
+    table.transition("svc-a", "build", "running");
+    output = "";
+    vi.advanceTimersByTime(100);
+    const plain = stripAnsi(output);
+    expect(plain).toContain("0/1 ready");
+    table.finish();
+  });
+
+  it("uses terminal width beyond the minimum status column", () => {
+    const originalColumns = process.stdout.columns;
+    Object.defineProperty(process.stdout, "columns", {
+      configurable: true,
+      value: 140,
+    });
+    try {
+      const table = new PhaseTable<TestPhase>(["auth-service"], {
+        phases: TEST_PHASES,
+        isTTY: true,
+      });
+      table.start();
+      table.transition("auth-service", "build", "done");
+      table.transition("auth-service", "deploy", "running");
+      table.setPodStatus(
+        "auth-service",
+        "1/1 · waiting for postgres at postgres.platform.svc.cluster.local:5432 ...",
+      );
+      output = "";
+      vi.advanceTimersByTime(100);
+      const plain = stripAnsi(output);
+      expect(plain).toContain("postgres.platform.svc.cluster.local:5432");
+      table.finish();
+    } finally {
+      Object.defineProperty(process.stdout, "columns", {
+        configurable: true,
+        value: originalColumns,
+      });
+    }
+  });
+
+  it("final summary keeps incomplete siblings neutral on failure", () => {
+    const table = new PhaseTable<TestPhase>(["svc-a", "svc-b"], {
+      phases: TEST_PHASES,
+      isTTY: true,
+    });
+    table.start();
+    table.transition("svc-a", "build", "running");
+    table.transition("svc-a", "build", "done");
+    table.transition("svc-b", "build", "running");
+    vi.advanceTimersByTime(2500);
+    table.transition("svc-b", "build", "failed");
+    table.setPodStatus("svc-b", "DeadlineExceeded");
+    table.setError("svc-b", "build: DeadlineExceeded");
+    output = "";
+    table.finish(null, "dev.ix");
+    const plain = stripAnsi(output);
+    const svcA = plain.split("\n").find((line) => line.includes("svc-a"));
+    const svcB = plain.split("\n").find((line) => line.includes("svc-b"));
+    expect(svcA).toBeDefined();
+    expect(svcB).toBeDefined();
+    expect(svcA).not.toContain("https://svc-a.dev.ix");
+    expect(svcA).not.toMatch(/\d+\.\d+s/);
+    expect(svcB).toContain("2.5s");
+    expect(plain).toContain("build: DeadlineExceeded");
+    expect(plain).toContain("1 service failed");
   });
 
   // TC-018: FR-002-AC-3 — synchronized output markers present in TTY output

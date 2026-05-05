@@ -21,13 +21,20 @@ relationships:
 ## Signature
 
 ```ts
-finish(entry?: string | null, baseDomain?: string): void
+finish(
+  entry?: string | null,
+  baseDomain?: string,
+  tail?: string,
+  finalState?: { failed?: boolean; error?: string },
+): void
 ```
 
 ## Behavior
 
 1. Clears the `setInterval` ticker (no-op if non-TTY).
 2. Computes `failed` rows: any row with at least one phase in `"failed"` state.
+   If `finalState.failed === true`, the final frame is failed even when no
+   individual row failed.
 3. **TTY success** (no failed rows):
    - Prints frozen header with `●` glyph (blue/cyan).
    - Per row: `●  <name>  <pods>  <elapsed>  →  https://<name>.<baseDomain>` (URL omitted if `baseDomain` not provided).
@@ -52,3 +59,6 @@ finish(entry?: string | null, baseDomain?: string): void
 - **FR-005-AC-3**: Non-TTY failure summary contains `failed` and the error message set via `setError()`.
 - **FR-005-AC-4**: When `entry = "my-app"` and `baseDomain = "ix.internal"`, the frozen output contains `my-app.ix.internal`.
 - **FR-005-AC-5**: When `baseDomain` is omitted, no URL is rendered in the summary.
+- **FR-005-AC-6**: When `finalState.failed === true`, the frozen output is
+  a failure summary and includes `finalState.error` even if no row has a
+  failed phase.

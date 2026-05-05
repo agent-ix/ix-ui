@@ -89,3 +89,8 @@ Labels emitted in the `0/N·label` suffix:
 - **FR-002-AC-6**: `colorPods("1/1")` contains cyan escape for the count.
 - **FR-002-AC-7**: `colorPods("1/3")` contains yellow escape for the count.
 - **FR-002-AC-8**: `colorPods("0/1·init")` formats `0` in yellow and the `·init` suffix in dim.
+- **FR-002-AC-9**: `colorPods("1/1".padEnd(width))` treats the count as
+  settled ready; column padding is not a state label.
+- **FR-002-AC-10**: A final-phase row with `status = "1/1·settle"` remains
+  active and keeps its spinner/timer until the row transitions to done with
+  a plain ready count.

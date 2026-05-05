@@ -81,6 +81,23 @@ describe("PhaseTable (non-TTY)", () => {
     expect(output).toContain("build error detail");
   });
 
+  it("finish prints failure summary for an overall failure even when no row failed", () => {
+    const table = new PhaseTable<TestPhase>(["svc-a"], {
+      phases: TEST_PHASES,
+      isTTY: false,
+    });
+    table.start();
+    table.transition("svc-a", "build", "done");
+    output = "";
+    table.finish(null, undefined, undefined, {
+      failed: true,
+      error: "install (umbrella): helm failed",
+    });
+    expect(output).toContain("failed in");
+    expect(output).toContain("install (umbrella): helm failed");
+    expect(output).not.toContain("ready in");
+  });
+
   it("finish includes entry URL when entry and baseDomain are provided", () => {
     const table = new PhaseTable<TestPhase>(["svc-a"], {
       phases: TEST_PHASES,
@@ -211,6 +228,21 @@ describe("colorPods", () => {
     const out = colorPods("1/1");
     // picocolors cyan = \x1b[36m; verify count and plain text present
     expect(out).toContain("1/1");
+    expect(out).not.toContain(RED_167);
+  });
+
+  it("1/1 padded for column layout is still treated as settled ready", () => {
+    const out = colorPods("1/1".padEnd(20));
+    expect(out).toContain("1/1");
+    expect(out).not.toContain("settle");
+    expect(out).not.toContain(RED_167);
+  });
+
+  it("1/1·settle renders the ready count yellow and preserves the state label", () => {
+    const out = colorPods("1/1·settle");
+    expect(out).toContain("1/1");
+    expect(out).toContain("settle");
+    expect(out).not.toContain("\x1b[36m1/1");
     expect(out).not.toContain(RED_167);
   });
 

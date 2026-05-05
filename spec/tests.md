@@ -78,6 +78,8 @@ Packages covered:
 | cli/FR-002 | AC-6: `colorPods("1/1")` contains cyan, no red | TC-060 | ✅ Complete |
 | cli/FR-002 | AC-7: `colorPods("1/3")` contains yellow, no red | TC-061 | ✅ Complete |
 | cli/FR-002 | AC-8: `colorPods("0/1·init")` preserves `·init` suffix, no red | TC-062 | ✅ Complete |
+| cli/FR-002 | AC-9: padded plain `1/1` stays settled ready, not state-labeled | TC-063 | ✅ Complete |
+| cli/FR-002 | AC-10: final-phase `1/1·settle` remains active until done | TC-064 | ✅ Complete |
 | cli/FR-003 | AC-1: `transition()` in non-TTY writes one `[T+Ns] svc: phase state` line | TC-014 (existing) | ✅ Complete |
 | cli/FR-003 | AC-2: No setInterval in non-TTY mode | TC-020 | ✅ Complete |
 | cli/FR-003 | AC-3: `start()` with header in non-TTY writes `⊕  <header>` | TC-021 | ✅ Complete |
@@ -91,6 +93,7 @@ Packages covered:
 | cli/FR-005 | AC-3: Non-TTY failure summary contains "failed" and error message | TC-025 (existing) | ✅ Complete |
 | cli/FR-005 | AC-4: `entry` + `baseDomain` renders URL in summary | TC-026 (existing) | ✅ Complete |
 | cli/FR-005 | AC-5: No `baseDomain` → no URL in summary | TC-027 | ✅ Complete |
+| cli/FR-005 | AC-6: `finalState.failed` renders a failure summary with global error | TC-065 | ✅ Complete |
 | cli/FR-006 | AC-1: Non-TTY `preflight()` writes `🔑 label\n` immediately | TC-028 (existing) | ✅ Complete |
 | cli/FR-006 | AC-2: TTY mode pre-flight labels appear above service rows | (TTY render, smoke-checked via header test) | Review |
 | cli/FR-006 | AC-3: Multiple `preflight()` calls accumulate in order | TC-029 | ✅ Complete |
@@ -170,6 +173,7 @@ Packages covered:
 | TC-025 | Non-TTY failure summary contains "failed" and error message | Unit | P1 | cli/FR-005-AC-3 | ✅ Complete |
 | TC-026 | finish() with entry+baseDomain renders URL | Unit | P1 | cli/FR-005-AC-4 | ✅ Complete |
 | TC-027 | finish() without baseDomain renders no URL | Unit | P2 | cli/FR-005-AC-5 | ✅ Complete |
+| TC-065 | finish() with `finalState.failed` renders failure summary and global error without row failure | Unit | P1 | cli/FR-005-AC-6 | ✅ Complete |
 | TC-028 | Non-TTY preflight() writes 🔑 label immediately | Unit | P2 | cli/FR-006-AC-1 | ✅ Complete |
 | TC-029 | Multiple preflight() calls accumulate in order | Unit | P2 | cli/FR-006-AC-3 | ✅ Complete |
 | TC-030 | Unknown-service mutations do not throw | Unit | P1 | cli/FR-007-AC-1, AC-2, AC-3 | ✅ Complete |
@@ -185,6 +189,8 @@ Packages covered:
 | TC-060 | colorPods("1/1") contains count and no red | Unit | P1 | cli/FR-002-AC-6 | ✅ Complete |
 | TC-061 | colorPods("1/3") contains count and no red | Unit | P1 | cli/FR-002-AC-7 | ✅ Complete |
 | TC-062 | colorPods("0/1·init") preserves ·init suffix without red | Unit | P1 | cli/FR-002-AC-8 | ✅ Complete |
+| TC-063 | colorPods padded `1/1` is not treated as a settling/state-labeled count | Unit | P1 | cli/FR-002-AC-9 | ✅ Complete |
+| TC-064 | TTY row with final-phase `1/1·settle` shows active spinner/timer, not complete bullet | Unit | P1 | cli/FR-002-AC-10 | ✅ Complete |
 | TC-045 | No console.log/error/warn in packages/cli/src/ | Static | P1 | NFR-002-AC-1, AC-3 | ✅ Complete |
 | TC-046 | startListing returns a handle with all required methods | Unit | P1 | cli/FR-013-AC-1 | ✅ Complete |
 | TC-047 | TTY constructor draws header in place via `\r` | Unit | P1 | cli/FR-013-AC-2 | ✅ Complete |
