@@ -112,6 +112,24 @@ describe("FR-004-AC-9 (TC-140)", () => {
     );
     expect(stripAnsi(lastFrame() ?? "")).toContain("https://auth.ix.internal");
   });
+
+  it("renders multiple ingress URLs in the final ingress section", () => {
+    const services: ServiceRow<P>[] = [
+      { name: "auth", phases: allDone(), status: "1/1" },
+    ];
+    const { lastFrame } = render(
+      <PhaseTable
+        header="h"
+        phases={PHASES}
+        services={services}
+        tailIngressUrls={["https://auth.dev.ix", "https://auth.luna.ix"]}
+      />,
+    );
+    const out = stripAnsi(lastFrame() ?? "");
+    expect(out).toContain("Ingress");
+    expect(out).toContain("    └─→  https://auth.dev.ix");
+    expect(out).toContain("    └─→  https://auth.luna.ix");
+  });
 });
 
 // FR-004-AC-16 (TC-147): duplicate names render as separate rows

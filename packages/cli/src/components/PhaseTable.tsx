@@ -8,9 +8,13 @@ import {
 import {
   ROW_INDENT,
   ERROR_INDENT,
+  GLYPH_DIM_DOT,
   GLYPH_DONE,
   GLYPH_FAIL,
+  GLYPH_INGRESS,
+  GLYPH_PIPE,
   GLYPH_WAITING,
+  ROUTE_URL,
   colorPods,
   colors,
 } from "../style.js";
@@ -38,6 +42,7 @@ export interface PhaseTableProps<P extends string> {
   preflight?: React.ReactNode;
   tail?: React.ReactNode;
   tailVariant?: TailVariant;
+  tailIngressUrls?: string[];
   tailEntry?: { name: string; baseDomain: string };
 }
 
@@ -110,6 +115,7 @@ function PhaseRow<P extends string>({
   const elapsedMs = Date.now() - startMs;
   const elapsed =
     state === "pending" ? "" : `${(elapsedMs / 1000).toFixed(1)}s`;
+  const elapsedDisplay = state === "done" ? colors.dim(elapsed) : elapsed;
 
   return (
     <>
@@ -124,7 +130,7 @@ function PhaseRow<P extends string>({
           <Text wrap="truncate-end">{labelDisplay}</Text>
         </Box>
         <Box width={ELAPSED_W} justifyContent="flex-end">
-          <Text>{elapsed}</Text>
+          <Text>{elapsedDisplay}</Text>
         </Box>
       </Box>
       {state === "failed" && row.error ? (
@@ -136,6 +142,27 @@ function PhaseRow<P extends string>({
     </>
   );
 }
+
+const IngressUrls: React.FC<{ urls: string[] }> = ({ urls }) => (
+  <>
+    <PipeLine />
+    <Box flexDirection="row">
+      <Text>{ROW_INDENT}</Text>
+      <Text>{GLYPH_INGRESS} </Text>
+      <Text>{colors.dim("Ingress")}</Text>
+    </Box>
+    {urls.map((url, i) => (
+      <Box key={`${url}-${i}`} flexDirection="row">
+        <Text>{`${ROUTE_URL}  `}</Text>
+        <Text color="cyan" underline>
+          {url}
+        </Text>
+      </Box>
+    ))}
+  </>
+);
+
+const PipeLine: React.FC = () => <Text>{`${ROW_INDENT}${GLYPH_PIPE}`}</Text>;
 
 function visibleNameWidth(rows: ServiceRow<string>[]): number {
   let w = 0;
@@ -161,6 +188,7 @@ export function PhaseTable<P extends string>(
     preflight,
     tail,
     tailVariant,
+    tailIngressUrls,
     tailEntry,
   } = props;
 
@@ -202,16 +230,14 @@ export function PhaseTable<P extends string>(
   const nameW = visibleNameWidth(visibleRows);
 
   const failureCount = visibleRows.filter((r) => rowFailed(r.phases)).length;
+  const ingressUrls =
+    tailIngressUrls ??
+    (tailEntry ? [`https://${tailEntry.name}.${tailEntry.baseDomain}`] : []);
   const computedTail =
     tail ??
-    (aggregateStatus === "failed" ? (
-      `${failureCount} service${failureCount === 1 ? "" : "s"} failed`
-    ) : aggregateStatus === "passed" && tailEntry ? (
-      <Text
-        color="cyan"
-        underline
-      >{`https://${tailEntry.name}.${tailEntry.baseDomain}`}</Text>
-    ) : undefined);
+    (aggregateStatus === "failed"
+      ? `${failureCount} service${failureCount === 1 ? "" : "s"} failed`
+      : undefined);
   const computedTailVariant: TailVariant =
     tailVariant ?? (aggregateStatus === "failed" ? "error" : "success");
 
@@ -223,7 +249,7 @@ export function PhaseTable<P extends string>(
       tailVariant={computedTailVariant}
     >
       {preflight}
-      {visibleRows.length > 0 && <Text> </Text>}
+      {visibleRows.length > 0 && <PipeLine />}
       {visibleRows.map((row, i) => (
         <PhaseRow
           key={`${row.name}-${i}`}
@@ -235,12 +261,18 @@ export function PhaseTable<P extends string>(
           tick={tick}
         />
       ))}
-      <Text> </Text>
-      <Text>
-        {colors.dim(
-          `  elapsed ${totalElapsedS}s · ${readyCount}/${visibleRows.length} ready`,
-        )}
-      </Text>
+      <Box flexDirection="row">
+        <Text>{ROW_INDENT}</Text>
+        <Text>{`${GLYPH_DIM_DOT} `}</Text>
+        <Text>
+          {colors.dim(
+            `elapsed ${totalElapsedS}s · ${readyCount}/${visibleRows.length} ready`,
+          )}
+        </Text>
+      </Box>
+      {aggregateStatus === "passed" && ingressUrls.length > 0 ? (
+        <IngressUrls urls={ingressUrls} />
+      ) : null}
     </Frame>
   );
 }

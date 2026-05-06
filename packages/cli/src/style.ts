@@ -40,11 +40,17 @@ export const ROUTE_INDENT = pc.dim(" └──┐");
  *  is `       └──•`. The error tail does NOT use `ROUTE_OUT` — it sits at
  *  column 1 with `GLYPH_FAIL_MARK` for prominence (FR-002-AC-8). */
 export const ROUTE_OUT = ROW_INDENT + pc.dim("   └──");
+/** URL route connector used by PhaseTable ingress sections. */
+export const ROUTE_URL = ROW_INDENT + pc.dim("└─→");
 
 // ── Glyphs ──────────────────────────────────────────────────────────────────
 
 /** Done bullet — completed task rows AND success/warn tail glyph (after `└──`). */
 export const GLYPH_DONE = blue("•");
+/** Dim body bullet — preflight and summary rows. */
+export const GLYPH_DIM_DOT = pc.dim("•");
+/** Dim vertical continuation marker for PhaseTable flow separators. */
+export const GLYPH_PIPE = pc.dim("|");
 /** Failed bullet — outline circle. */
 export const GLYPH_FAIL = colors.red("○");
 /** Header fail marker — used inline (e.g. `⊗ 1 service failed`). */
@@ -53,6 +59,8 @@ export const GLYPH_FAIL_MARK = colors.red("⊗");
 export const GLYPH_WAITING = pc.dim("·");
 /** Cancelled — task didn't run because a sibling failed. */
 export const GLYPH_CANCELLED = pc.dim("○");
+/** Ingress section marker. */
+export const GLYPH_INGRESS = blue("◎");
 
 // ── Header rendering ────────────────────────────────────────────────────────
 
@@ -85,7 +93,7 @@ export function renderHeader(text: string): string {
 
 // ── Pod-status helper ───────────────────────────────────────────────────────
 
-const POD_STATUS_RE = /^(\d+)\/(\d+)( · .+)?$/;
+const POD_STATUS_RE = /^(\d+)\/(\d+)(?:(\s*·\s*)(.+))?$/;
 
 /**
  * Color a "ready/total" pod-status string. Cyan when fully ready, yellow
@@ -96,12 +104,10 @@ export function colorPods(status: string): string {
   if (!m) return status;
   const ready = parseInt(m[1], 10);
   const total = parseInt(m[2], 10);
-  const tail = m[3] ?? "";
+  const tail = m[4] ? ` · ${m[4]}` : "";
   const count = `${ready}/${total}`;
   if (ready > 0 && ready === total) {
-    return tail
-      ? pc.yellow(count) + pc.dim(tail)
-      : pc.cyan(count) + pc.dim(tail);
+    return pc.cyan(count) + pc.dim(tail);
   }
   if (ready > 0) return pc.yellow(count) + pc.dim(tail);
   return pc.yellow(`${ready}`) + pc.dim(`/${total}${tail}`);

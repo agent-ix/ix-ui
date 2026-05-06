@@ -8,11 +8,15 @@ import {
   HEADER_TICK_DIV,
   ROUTE_INDENT,
   ROUTE_OUT,
+  ROUTE_URL,
   GLYPH_DONE,
+  GLYPH_DIM_DOT,
+  GLYPH_PIPE,
   GLYPH_FAIL,
   GLYPH_FAIL_MARK,
   GLYPH_WAITING,
   GLYPH_CANCELLED,
+  GLYPH_INGRESS,
   PHASE_PASS,
   PHASE_FAIL,
   ORBIT_SPINNER,
@@ -78,6 +82,9 @@ describe("FR-016-AC-8 (TC-307)", () => {
   it("ROUTE_OUT contains the └── connector after the row indent", () => {
     expect(stripAnsi(ROUTE_OUT)).toBe(ROW_INDENT + "   └──");
   });
+  it("ROUTE_URL contains the URL connector after the row indent", () => {
+    expect(stripAnsi(ROUTE_URL)).toBe(ROW_INDENT + "└─→");
+  });
 });
 
 // FR-016-AC-9: renderHeader
@@ -139,10 +146,13 @@ describe("FR-016-AC-12 (TC-311)", () => {
 describe("FR-016-AC-1 (TC-300)", () => {
   it("exports all expected layout/connector/glyph tokens", () => {
     expect(GLYPH_DONE).toBeDefined();
+    expect(GLYPH_DIM_DOT).toBeDefined();
+    expect(GLYPH_PIPE).toBeDefined();
     expect(GLYPH_FAIL).toBeDefined();
     expect(GLYPH_FAIL_MARK).toBeDefined();
     expect(GLYPH_WAITING).toBeDefined();
     expect(GLYPH_CANCELLED).toBeDefined();
+    expect(GLYPH_INGRESS).toBeDefined();
     expect(colors).toBeDefined();
     expect(blue).toBeDefined();
     expect(ORBIT_SPINNER).toBeDefined();
@@ -170,5 +180,15 @@ describe("colorPods (FR-004-AC-8)", () => {
   it("preserves the · trailing label dim", () => {
     const out = colorPods("1/1 · waiting");
     expect(out).toContain("waiting");
+  });
+  it("colors fully-ready counts with active hook text as ready plus dim tail", () => {
+    const out = colorPods("1/1 · hook running");
+    expect(out).toMatch(/\x1b\[36m/);
+    expect(out).toContain("hook running");
+  });
+  it("accepts compact rollout labels", () => {
+    const out = colorPods("1/1·settle");
+    expect(out).toMatch(/\x1b\[36m/);
+    expect(out).toContain("settle");
   });
 });

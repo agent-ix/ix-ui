@@ -24,14 +24,14 @@ The `cli` package SHALL expose a single style module containing every visual lay
 
 - **FR-016-AC-1**: A module at `packages/cli/src/style.ts` exports the following named tokens, all re-exported from the package root (`@agent-ix/ix-ui-cli`):
 
-| Category | Names |
-|---|---|
-| Layout | `PLANET_COL`, `ROW_INDENT`, `NOTE_INDENT`, `ERROR_INDENT`, `PHASE_WIDTH`, `HEADER_TICK_DIV` |
-| Connectors | `ROUTE_INDENT`, `ROUTE_OUT` |
-| Glyphs | `GLYPH_DONE`, `GLYPH_FAIL`, `GLYPH_FAIL_MARK`, `GLYPH_WAITING`, `GLYPH_CANCELLED` |
-| Header | `PHASE_PASS`, `PHASE_FAIL`, `colorOrbitFrame(frame)`, `renderHeader(text)`, `ORBIT_SPINNER` |
-| Colors | `colors.{cyan,green,yellow,red,dim,bold,underline,bgCyan,black}`, `blue` |
-| Pod-status helper | `colorPods(status)` |
+| Category          | Names                                                                                                                             |
+| ----------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| Layout            | `PLANET_COL`, `ROW_INDENT`, `NOTE_INDENT`, `ERROR_INDENT`, `PHASE_WIDTH`, `HEADER_TICK_DIV`                                       |
+| Connectors        | `ROUTE_INDENT`, `ROUTE_OUT`, `ROUTE_URL`                                                                                          |
+| Glyphs            | `GLYPH_DONE`, `GLYPH_DIM_DOT`, `GLYPH_PIPE`, `GLYPH_FAIL`, `GLYPH_FAIL_MARK`, `GLYPH_WAITING`, `GLYPH_CANCELLED`, `GLYPH_INGRESS` |
+| Header            | `PHASE_PASS`, `PHASE_FAIL`, `colorOrbitFrame(frame)`, `renderHeader(text)`, `ORBIT_SPINNER`                                       |
+| Colors            | `colors.{cyan,green,yellow,red,dim,bold,underline,bgCyan,black}`, `blue`                                                          |
+| Pod-status helper | `colorPods(status)`                                                                                                               |
 
 ### Standard layout invariants
 
@@ -42,6 +42,7 @@ The `cli` package SHALL expose a single style module containing every visual lay
 - **FR-016-AC-6**: `PHASE_WIDTH = 4` — every header indicator (animated spinner, frozen pass, frozen fail) is exactly 4 columns wide so the bracketed `[ … ]` text starts at the same column in every state.
 - **FR-016-AC-7**: `ROUTE_INDENT` is `dim(" └──┐")` — the opener under the header. The `└` aligns with the planet (column 1).
 - **FR-016-AC-8**: `ROUTE_OUT` is `dim(ROW_INDENT + "   └──")` — the tail connector. Combined with the trailing glyph (`•` for success/warn, the error path does NOT use `ROUTE_OUT`), the success tail renders as `       └──•  <text>` (10 cols indent + connector + glyph + 2 spaces + text). The `└` aligns with the body content's left padding so the tail visually closes back over the rows above.
+- **FR-016-AC-8a**: `ROUTE_URL` is `ROW_INDENT + dim("└─→")` — the URL connector used by ingress sections. Combined with two spaces and an underlined URL, it renders as `    └─→  https://...`.
 
 ### Header rendering
 
@@ -52,7 +53,7 @@ The `cli` package SHALL expose a single style module containing every visual lay
 
 ### Renderer compliance
 
-- **FR-016-AC-13**: A static check across `packages/cli/src/` (excluding `style.ts`) SHALL find no inline literals for the standardized indents (`"    "`, `"      "`, `"        "`), connectors (`"└──┐"`, `"└──"`), or glyphs (`"•"`, `"○"`, `"⊗"`, `"⊙"`, `"⊕"`).
+- **FR-016-AC-13**: A static check across `packages/cli/src/` (excluding `style.ts`) SHALL find no inline literals for the standardized indents (`"    "`, `"      "`, `"        "`), connectors (`"└──┐"`, `"└──"`, `"└─→"`), or glyphs (`"•"`, `"○"`, `"⊗"`, `"⊙"`, `"⊕"`, `"◎"`).
 - **FR-016-AC-14**: All components import every glyph, indent, connector, and color from the style module. Bumping a value in `style.ts` changes all consumers with no other source edits.
 
 ## Constraints

@@ -24,26 +24,27 @@ The `cli` package SHALL expose a `<PhaseTable>` component for displaying concurr
 ## Signature
 
 ```tsx
-type PhaseState = "pending" | "queued" | "running" | "done" | "failed";  // from semantic
+type PhaseState = "pending" | "queued" | "running" | "done" | "failed"; // from semantic
 
 interface ServiceRow<P extends string> {
   name: string;
-  displayName?: string | ReactNode;     // ANSI-allowed; defaults to name
+  displayName?: string | ReactNode; // ANSI-allowed; defaults to name
   phases: Record<P, PhaseState>;
-  status?: string | null;               // active-phase label or pod status (e.g. "1/1")
-  error?: string | null;                // shown beneath row when any phase is "failed"
+  status?: string | null; // active-phase label or pod status (e.g. "1/1")
+  error?: string | null; // shown beneath row when any phase is "failed"
 }
 
 interface PhaseTableProps<P extends string> {
   header: string;
-  status?: "running" | "passed" | "failed";   // overrides aggregate row state when set
+  status?: "running" | "passed" | "failed"; // overrides aggregate row state when set
   services: ServiceRow<P>[];
   phases: readonly P[];
   phaseLabels?: Partial<Record<P, string>>;
-  hidePending?: boolean;                       // hide rows whose phases are all pending
-  preflight?: ReactNode;                       // entries shown above the row table
-  tail?: ReactNode;                            // overrides default tail
-  tailEntry?: { name: string; baseDomain: string }; // renders "https://<name>.<domain>" tail
+  hidePending?: boolean; // hide rows whose phases are all pending
+  preflight?: ReactNode; // entries shown above the row table
+  tail?: ReactNode; // overrides default tail
+  tailIngressUrls?: string[]; // renders final ingress URL section
+  tailEntry?: { name: string; baseDomain: string }; // legacy single ingress URL adapter
 }
 
 const PhaseTable: <P extends string>(props: PhaseTableProps<P>) => ReactElement;
@@ -53,7 +54,7 @@ const PhaseTable: <P extends string>(props: PhaseTableProps<P>) => ReactElement;
 
 ### Layout
 
-- **FR-004-AC-1**: `<PhaseTable>` SHALL render inside `<Frame header={header} status={...}>` with the body containing (in order): optional `preflight` content, a blank line, one row per visible service, a blank line, and a dim summary line `elapsed {totalElapsedS}s · {readyCount}/{total} ready`.
+- **FR-004-AC-1**: `<PhaseTable>` SHALL render inside `<Frame header={header} status={...}>` with the body containing (in order): optional `preflight` content, a dim `GLYPH_PIPE` separator row, one row per visible service, and a dim summary row with a dim `GLYPH_DIM_DOT` followed by `elapsed {totalElapsedS}s · {readyCount}/{total} ready`.
 - **FR-004-AC-2**: Each row SHALL be a flexbox `<Box flexDirection="row">` with three cells:
   1. **Name cell** — width = max display-name length across visible rows; left-aligned.
   2. **Status/label cell** — `flexGrow={1}`; truncates with `wrap="truncate-end"` when narrow.
@@ -72,11 +73,12 @@ const PhaseTable: <P extends string>(props: PhaseTableProps<P>) => ReactElement;
 
 ### Pod-status rendering
 
-- **FR-004-AC-8**: When the active phase is the last phase in `phases` and `status` matches the pod-count pattern `^(\d+)/(\d+)( · .+)?$`, the status cell SHALL color-code the count via `colorPods()` (cyan for fully ready, yellow for partial). The implementation reuses the `colorPods` helper from FR-016.
+- **FR-004-AC-8**: When the active phase is the last phase in `phases` and `status` matches the pod-count pattern `^(\d+)/(\d+)(?:(\s*·\s*).+)?$`, the status cell SHALL color-code the count via `colorPods()` (cyan for fully ready, yellow for partial). Text after `·` SHALL be dim/gray, including active Helm hook text. The implementation reuses the `colorPods` helper from FR-016.
+- **FR-004-AC-8a**: Completed row elapsed values SHALL render dim/gray while running row elapsed values remain normal.
 
 ### Tail
 
-- **FR-004-AC-9**: When `tailEntry` is provided AND aggregate status is `passed`, the tail SHALL render `https://{name}.{baseDomain}` cyan-underlined as a `<Frame tail>` value with `tailVariant="success"`.
+- **FR-004-AC-9**: When `tailIngressUrls` is non-empty AND aggregate status is `passed`, the body SHALL render an ingress section after the summary. It SHALL show the shared ingress marker plus dim `Ingress`, followed by one cyan-underlined URL per line using the shared URL route connector. `tailEntry` remains a legacy adapter that produces a single `https://{name}.{baseDomain}` ingress URL.
 - **FR-004-AC-10**: When aggregate status is `failed` and no explicit `tail` is set, the tail SHALL render `{n} service(s) failed` with `tailVariant="error"`.
 
 ### Preflight
@@ -93,52 +95,76 @@ const PhaseTable: <P extends string>(props: PhaseTableProps<P>) => ReactElement;
 
 ## Rendered Examples
 
-### Three-service run, all running
+### Auth app run, passed with ingress
 
 ```tsx
 <PhaseTable
-  header="ix local up auth · ghcr.io"
+  header="ix local up · auth"
   phases={["pull", "secrets", "install", "ready"] as const}
+  preflight={<Text> • Loading Helm charts from ghcr.io</Text>}
   services={[
-    { name: "auth-service", displayName: "auth-service 0.9.3",
-      phases: { pull: "done", secrets: "done", install: "done", ready: "running" },
-      status: "1/1 · waiting for postgres" },
-    { name: "identity", displayName: "identity 0.10.2",
-      phases: { pull: "done", secrets: "done", install: "done", ready: "running" },
-      status: "1/1" },
-    { name: "permission-service", displayName: "permission-service 0.4.9",
-      phases: { pull: "done", secrets: "done", install: "done", ready: "running" },
-      status: "1/1" },
+    {
+      name: "auth-service",
+      displayName: "auth-service 0.9.3",
+      phases: { pull: "done", secrets: "done", install: "done", ready: "done" },
+      status: "1/1",
+    },
+    {
+      name: "identity",
+      displayName: "identity 0.10.2",
+      phases: { pull: "done", secrets: "done", install: "done", ready: "done" },
+      status: "1/1",
+    },
+    {
+      name: "permission-service",
+      displayName: "permission-service 0.4.9",
+      phases: { pull: "done", secrets: "done", install: "done", ready: "done" },
+      status: "1/1",
+    },
   ]}
-  phaseLabels={{ pull: "pulling", secrets: "secrets", install: "installing", ready: "ready" }}
+  phaseLabels={{
+    pull: "pulling",
+    secrets: "secrets",
+    install: "installing",
+    ready: "ready",
+  }}
+  tailIngressUrls={["https://auth.dev.ix", "https://auth.luna.ix"]}
 />
 ```
 
 ```
- ⊙⚬ [ ix local up auth · ghcr.io ]
+ ⊙  [ ix local up · auth ]
  └──┐
-    • auth-service 0.9.3        1/1 · waiting for postgres   1.5s
-    • identity 0.10.2           1/1                           1.5s
-    • permission-service 0.4.9  1/1                           1.5s
+    • Loading Helm charts from ghcr.io
+    |
 
-  elapsed 1.5s · 0/3 ready
+    • auth-service 0.9.3        1/1                           12.1s
+    • identity 0.10.2           1/1                           12.1s
+    • permission-service 0.4.9  1/1                           12.1s
+
+    • elapsed 12.1s · 3/3 ready
+    |
+
+    ◎ Ingress
+    └─→  https://auth.dev.ix
+    └─→  https://auth.luna.ix
 ```
 
 ### One service failed
 
 ```tsx
-<PhaseTable header="ix local up auth · ghcr.io" status="failed" services={[…]} ... />
+<PhaseTable header="ix local up · auth" status="failed" services={[…]} ... />
 ```
 
 ```
- ⊗  [ ix local up auth · ghcr.io ]
+ ⊗  [ ix local up · auth ]
  └──┐
     • auth-service 0.9.3        1/1                           4.0s
     ○ identity 0.10.2           install failed                4.2s
         helm upgrade returned exit 1: REVISION: 1
     • permission-service 0.4.9  1/1                           4.0s
 
-  elapsed 4.2s · 2/3 ready
+    • elapsed 4.2s · 2/3 ready
 
  ⊗  1 service failed
 ```
