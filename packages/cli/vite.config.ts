@@ -4,6 +4,9 @@ import dts from "vite-plugin-dts";
 
 export default defineConfig({
   plugins: [dts({ rollupTypes: true, include: ["src"] })],
+  esbuild: {
+    jsx: "automatic",
+  },
   build: {
     lib: {
       entry: "src/index.ts",
@@ -14,15 +17,20 @@ export default defineConfig({
     rollupOptions: {
       external: [
         /^node:/,
+        /^react($|\/)/,
+        /^ink($|-)/,
         "@agent-ix/ix-ui-semantic",
-        "@clack/prompts",
-        "listr2",
         "picocolors",
+        "execa",
       ],
     },
+    ssr: true,
   },
   test: {
     globals: true,
     environment: "node",
+    env: {
+      FORCE_COLOR: "1",
+    },
   },
 });

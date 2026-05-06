@@ -6,9 +6,9 @@ component_type: node-lib
 tags:
   - design-system
   - terminal
-  - clack
-  - listr2
-  - ansi
+  - ink
+  - react
+  - jsx
 implementation_language: typescript
 depends_on: []
 relationships:
@@ -28,9 +28,9 @@ standards_alignment:
 
 This document defines the **scope, intent, and governing requirements framework** for ix-ui.
 
-ix-ui is the **terminal design system** for Agent IX. It provides the shared state vocabulary and CLI output components used by all Agent IX CLI tools.
+ix-ui is the **terminal design system** for Agent IX. It provides the shared state vocabulary and CLI output components used by all Agent IX CLI tools. The `cli` package is implemented on **Ink** (React for terminals); components are JSX, layout is yoga flexbox, and the framework owns all stdout writes and cursor positioning.
 
-Web/React theming is owned by `ix-themes` (`@agent-ix/ix-themes`). ix-ui and ix-themes share a conceptual design language but have no runtime dependency on each other. The `semantic` package provides the shared TypeScript contract that both sides can reference.
+Web/React DOM theming is owned by `ix-themes` (`@agent-ix/ix-themes`). ix-ui and ix-themes share a conceptual design language but have no runtime dependency on each other. The `semantic` package provides the shared TypeScript contract that both sides can reference.
 
 ---
 
@@ -38,19 +38,19 @@ Web/React theming is owned by `ix-themes` (`@agent-ix/ix-themes`). ix-ui and ix-
 
 ### 2.1 In Scope
 
-This specification governs:
-- The `semantic` package: platform-agnostic state types, glyph vocabulary, phase model — no runtime deps
-- The `cli` package: terminal UI components (phase-table, task-list, prompts, spinners) using ANSI/cursor control
-- Non-TTY / CI mode output contracts for all terminal components
-- Component consumption API for first-party and third-party CLI packages
+- The `semantic` package: platform-agnostic state types, glyph vocabulary, phase model — no runtime deps.
+- The `cli` package: terminal Ink components (`<Frame>`, `<Listing>`, `<PhaseTable>`, `<TaskList>`, prompts).
+- Async hooks (`useInterval`, `useExecaPhase`, `useKubectlRollout`, `useHelmHookWatcher`) for wiring child-process and Kubernetes work into components.
+- The `render(element, opts?)` mounting entry point.
+- Non-TTY / CI mode output contracts via Ink's plain-mode rendering.
+- Component consumption API for first-party and third-party CLI packages.
 
 ### 2.2 Out of Scope
 
-This specification does not govern:
-- React components or CSS tokens — owned by `ix-themes`
-- Application-specific business logic in consuming CLIs
-- The `ix-cli` command tree or plugin system
-- Branding and naming conventions (deferred)
+- React DOM components or CSS tokens — owned by `ix-themes`.
+- Application-specific business logic in consuming CLIs.
+- The `ix-cli` command tree or plugin system.
+- Branding and naming conventions (deferred).
 
 ---
 
@@ -58,27 +58,33 @@ This specification does not govern:
 
 ### 3.1 System Description
 
-ix-ui is a **two-package TypeScript monorepo** providing terminal output components and the shared state vocabulary for the Agent IX CLI ecosystem.
+ix-ui is a **two-package TypeScript monorepo**:
 
 | Package | Name | Purpose |
 |---------|------|---------|
-| `packages/semantic` | `@agent-ix/ix-ui-semantic` | Platform-agnostic state types, glyph vocabulary, phase model |
-| `packages/cli` | `@agent-ix/ix-ui-cli` | Terminal components: phase-table, task-list, clack wrappers |
+| `packages/semantic` | `@agent-ix/ix-ui-semantic` | Platform-agnostic state types, glyph vocabulary, phase model. Zero runtime deps. |
+| `packages/cli` | `@agent-ix/ix-ui-cli` | Terminal Ink components: Frame, Listing, PhaseTable, TaskList, prompts, hooks, render entry. |
 
-`semantic` has no runtime dependencies. `cli` depends on `semantic`.
+Runtime dependencies of `packages/cli`:
 
-`ix-themes` owns the web/React side and mirrors the same design language independently.
+- `react`, `ink` — reconciler + renderer.
+- `ink-spinner`, `ink-text-input`, `ink-select-input` — primitive components used by `<HeaderSpinner>` and prompt components.
+- `picocolors` — ANSI color helpers used inside `<Text>` children.
+- `execa` — used internally by async hooks (FR-007) for child-process work.
+- `@agent-ix/ix-ui-semantic` (workspace).
+
+`ix-themes` owns the web/React DOM side and mirrors the same design language independently.
 
 ### 3.2 Intended Users
 
-- **First-party CLI package authors** — `ix-cli` packages import `@agent-ix/ix-ui-cli` for all terminal output
-- **Third-party plugin authors** — teams building CLI plugins for the Agent IX ecosystem
+- **First-party CLI package authors** — `ix-cli` packages import `@agent-ix/ix-ui-cli` for all terminal output.
+- **Third-party plugin authors** — teams building CLI plugins for the Agent IX ecosystem.
 
 ---
 
 ## 4. Requirements Architecture
 
-FRs and NFRs are organized by package within each artifact directory (Option B artifact-first):
+FRs and NFRs are organized by package within each artifact directory:
 
 ```
 spec/
@@ -98,57 +104,41 @@ spec/
 
 ## 5. Requirement Classes
 
-### 5.1 Stakeholder Requirements (`StR-XXX`)
-Authoritative needs from CLI authors and plugin authors.
-
-### 5.2 User Stories (`US-XXX`)
-Usage scenarios describing developer intent when consuming the design system.
-
-### 5.3 Functional Requirements (`FR-XXX`)
-Testable behavioral contracts for each package and component.
-
-### 5.4 Non-Functional Requirements (`NFR-XXX`)
-Quality constraints: consistency, API stability, TTY/non-TTY correctness.
-
----
-
-## 6. Requirement Identification
-
-| Artifact | Format | Example |
-|----------|--------|---------|
-| Stakeholder Requirement | `StR-XXX` | `StR-001` |
-| User Story | `US-XXX` | `US-002` |
-| Functional Requirement | `FR-XXX` | `FR-014` |
-| Non-Functional Requirement | `NFR-XXX` | `NFR-003` |
-| Acceptance Criteria | `{FR}-AC-N` | `FR-014-AC-1` |
-| Test Case | `TC-XXX` | `TC-021` |
+| Class | Format | Purpose |
+|---|---|---|
+| Stakeholder Requirement | `StR-XXX` | Authoritative needs from CLI authors and plugin authors. |
+| User Story | `US-XXX` | Usage scenarios describing developer intent. |
+| Functional Requirement | `FR-XXX` | Testable behavioral contracts. |
+| Non-Functional Requirement | `NFR-XXX` | Quality constraints: consistency, API stability, TTY/non-TTY correctness. |
+| Acceptance Criteria | `{FR}-AC-N` | Verifiable bullet within an FR. |
+| Test Case | `TC-XXX` | Tracked in `tests.md`. |
 
 Identifiers are immutable once assigned.
 
 ---
 
-## 7. Requirement Quality Policy
+## 6. Requirement Quality Policy
 
 All functional requirements SHALL:
-- Define observable behavior
-- Be unambiguous and atomic
-- Be testable through explicit criteria
+- Define observable behavior.
+- Be unambiguous and atomic.
+- Be testable through explicit criteria.
 
 ---
 
-## 8. State and Execution Model
+## 7. State and Execution Model
 
-### 8.1 Phase State Model (`semantic`)
+### 7.1 Phase State Model (`semantic`)
 
-The canonical phase state vocabulary is defined in `@agent-ix/ix-ui-semantic`. All CLI components MUST use these types exclusively — no local state enumerations are permitted in consuming packages.
+The canonical phase state vocabulary is defined in `@agent-ix/ix-ui-semantic`. All CLI components MUST use these types exclusively.
 
 ```
 PhaseState: pending | queued | running | done | failed
 ```
 
-### 8.2 Glyph Vocabulary
+### 7.2 Glyph Vocabulary
 
-The canonical glyph mapping is defined in `@agent-ix/ix-ui-semantic` and re-exported with rendering helpers from `@agent-ix/ix-ui-cli/style` (FR-016).
+The canonical glyph mapping is defined in `@agent-ix/ix-ui-semantic` and re-exported with rendering helpers from `@agent-ix/ix-ui-cli` (FR-016).
 
 | State | TTY glyph | Non-TTY text | Animated | Token |
 |-------|-----------|--------------|----------|-------|
@@ -157,58 +147,65 @@ The canonical glyph mapping is defined in `@agent-ix/ix-ui-semantic` and re-expo
 | `running` | braille spinner frame | `running` | Yes | `BRAILLE_SPINNER` |
 | `done` | `•` | `done` | No | `GLYPH_DONE` |
 | `failed` | `○` | `failed` | No | `GLYPH_FAIL` |
-| header (running) | orbit frame | `⊕` | Yes (240ms) | `ORBIT_SPINNER` / `phaseRun` |
+| header (running) | orbit frame | `⊕` | Yes (240ms) | `ORBIT_SPINNER` / `<HeaderSpinner>` |
 | header (passed) | `⊙` | `⊕` | No | `PHASE_PASS` |
 | header (failed) | `⊗` | `⊕` | No | `PHASE_FAIL` / `GLYPH_FAIL_MARK` |
 
-### 8.3 Platform Boundary
+### 7.3 Platform Boundary
 
-ix-ui is terminal-only. Web rendering (CSS tokens, React components) is owned by `ix-themes`. The design language is kept in sync through shared conceptual vocabulary, not a shared runtime dependency.
-
----
-
-## 9. Component Model
-
-### 9.1 CLI Components (`@agent-ix/ix-ui-cli`)
-
-| Component | Description | Spec |
-|-----------|-------------|------|
-| `PhaseTable` | Concurrent multi-item progress with phase columns, live cursor-up redraws, and frozen final state | FR-001 – FR-008 |
-| `Listing` (`startListing`) | Orbit-framed renderer for static listings, status views, and short flows that mix in clack prompts. Same visual vocabulary as `PhaseTable` (orbit header, `└──┐` opener, `└──•` tail) | FR-013 – FR-015 |
-| `style` module | Single source of truth for all visual layout tokens (glyphs, indents, connectors, header rendering, TTY control codes). Every renderer imports from here — no inline literals. | FR-016, NFR-003 |
-| `colors` | Semantic color helpers (cyan, green, yellow, dim, bold, IX-blue alias) | FR-009 – FR-010 |
-| `prompts` re-exports | `@clack/prompts` primitives (`text`, `password`, `confirm`, `select`, `multiselect`, `isCancel`, `log`, `spinner`) — used inside `Listing.pause()` for interactive input | n/a |
+ix-ui is terminal-only. Web rendering is owned by `ix-themes`. The `cli` package depends on `react` because Ink uses it as a reconciler runtime — this does not make ix-ui a web library; Ink reconciles React elements to ANSI output, not to DOM.
 
 ---
 
-## 10. Error and Failure Model
+## 8. Component Model
 
-- Components SHALL NOT throw on invalid `PhaseState` values — they SHALL render a `failed` glyph and log a warning
-- `PhaseTable` SHALL handle empty item lists gracefully (render nothing, no crash)
-- CLI components SHALL detect non-TTY environments and fall back to plain-text output automatically
+### 8.1 CLI Components (`@agent-ix/ix-ui-cli`)
+
+| Component / API | Description | Spec |
+|---|---|---|
+| `<Frame>` | Base layout: animated/frozen orbit header, `└──┐` opener, body, optional `└──•` tail. | FR-002 |
+| `<HeaderSpinner>` | Animated orbit glyph (240 ms per frame, NFR-001). Used inside `<Frame>` while running. | FR-002, FR-007 |
+| `<Listing>` (with `<Group>` / `<Item>` / `<Note>`) | Frame for static listings, status views, mixed flows. | FR-003 |
+| `<PhaseTable>` | Concurrent multi-service progress with phase columns. | FR-004 |
+| `<TaskList>` | Sequential or concurrent named-task execution. | FR-005 |
+| `<TextPrompt>`, `<PasswordPrompt>`, `<ConfirmPrompt>`, `<SelectPrompt>`, `<MultiSelectPrompt>` | Ink-native interactive prompts. | FR-006 |
+| `useInterval`, `useExecaPhase`, `useKubectlRollout`, `useHelmHookWatcher` | Async work hooks with auto-cleanup on unmount. | FR-007 |
+| `render(element, opts?)` | Mount entry point. Returns a Promise that resolves on unmount. Handles non-TTY and Ctrl-C. | FR-008 |
+| `colors` palette | Semantic color helpers (cyan, green, yellow, red, dim, bold, IX blue). | FR-009, FR-010 |
+| `style` module | Visual layout tokens: indents, connectors, glyphs, header rendering. | FR-016 |
 
 ---
 
-## 11. Traceability
+## 9. Error and Failure Model
+
+- Components SHALL NOT throw on invalid `PhaseState` values — they SHALL render a `failed` glyph and continue.
+- `<PhaseTable>` SHALL handle empty `services` lists gracefully (header + summary `0/0 ready` + no rows; no crash).
+- The `cli` package detects non-TTY environments via Ink's standard rendering and emits frames per state change with no animation, no in-place updates.
+- `render()` resolves rather than rejects when the user cancels (Ctrl-C); rejection is reserved for thrown render errors.
+
+---
+
+## 10. Traceability
 
 Bidirectional traceability SHALL be maintained between:
-- Stakeholder Requirements → Functional Requirements
-- Functional Requirements → Acceptance Criteria → Test Cases
+- Stakeholder Requirements → Functional Requirements.
+- Functional Requirements → Acceptance Criteria → Test Cases.
+
+The `tests.md` matrix is the authoritative trace.
 
 ---
 
-## 12. Verification Strategy
+## 11. Verification Strategy
 
-- `semantic`: unit tests for type contracts and glyph mapping
-- `cli`: unit tests with TTY mock; snapshot tests for rendered output
+- `semantic`: unit tests for type contracts and glyph mapping (Vitest).
+- `cli`: component tests via `ink-testing-library` — mount component, snapshot `lastFrame()`, assert on resize via mocked `useStdout()`, verify cancel paths in prompts. Hook tests use `@testing-library/react` `renderHook`.
 
 ---
 
-## 13. References
+## 12. References
 
-- ISO/IEC/IEEE 29148 — Requirements Engineering
-- IEEE 828 — Configuration Management
-- ix-local-cli FR-022 — Phase-column table reference implementation
-- ix-local-cli FR-005 — Reactive output display reference implementation
-- ix-local-cli NFR-001 — CLI output style consistency
-- ix-themes — web/React design token system
+- ISO/IEC/IEEE 29148 — Requirements Engineering.
+- IEEE 828 — Configuration Management.
+- Ink (https://github.com/vadimdemedes/ink) — React renderer for terminal UIs.
+- React 18+ — reconciler runtime.
+- ix-themes — web/React DOM design token system.

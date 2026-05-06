@@ -1,9 +1,12 @@
 /**
- * Centralized style/theme tokens for the ix CLI's visual language.
+ * Centralized style/theme tokens for the ix CLI design system.
  *
- * Every glyph, indent, connector, and header rendering rule lives here.
- * Renderers (PhaseTable, Listing, future helpers) import from this module
- * — never hand-roll spacing or colors. Tweak here to retheme the CLI.
+ * Every glyph, indent, connector, color helper, and header rendering rule
+ * lives here. Components import from this module exclusively — no inline
+ * literals (NFR-003).
+ *
+ * Cursor-control sequences are NOT in this module: Ink owns cursor
+ * management. See NFR-002.
  */
 
 import pc from "picocolors";
@@ -11,21 +14,17 @@ import { ORBIT_SPINNER, type PhaseState } from "@agent-ix/ix-ui-semantic";
 import { colors, blue } from "./colors.js";
 
 export type { PhaseState };
-export { ORBIT_SPINNER };
+export { ORBIT_SPINNER, colors, blue };
 
 // ── Layout ──────────────────────────────────────────────────────────────────
-// Planet/marker is always at column 1, preceded by exactly one character
-// (a satellite glyph or a space). Row glyphs sit at column 4 (one indent past
-// the planet). Header phase indicators are exactly PHASE_WIDTH chars so the
-// bracketed text starts at the same column in every state.
 
+/** Column at which the orbit/marker glyph sits in every header line. */
 export const PLANET_COL = 1;
-/** Indent for body rows (•, ○ glyphs). */
+/** Indent for body rows (•, ○ glyphs). 4 spaces. */
 export const ROW_INDENT = "    ";
-/** Indent for note/info text — sits 2 cols past ROW_INDENT, lined up under
- *  the body of the row above (after the bullet glyph and its space). */
+/** Indent for note/info text — sits 2 cols past ROW_INDENT. 6 spaces. */
 export const NOTE_INDENT = "      ";
-/** Indent for error messages — aligns under the row name. */
+/** Indent for error messages — aligns under the row name. 8 spaces. */
 export const ERROR_INDENT = "        ";
 /** Header indicator width — keeps `[ … ]` aligned across spinner/pass/fail. */
 export const PHASE_WIDTH = 4;
@@ -33,20 +32,19 @@ export const PHASE_WIDTH = 4;
 export const HEADER_TICK_DIV = 3;
 
 // ── Connectors ──────────────────────────────────────────────────────────────
-// Top connector aligns with the planet (col 1). Tail connector sits 3 cols
-// past the row indent so the • of the summary lands fully under body content.
 
 /** Opener: `' └──┐'` under the orbit header. */
 export const ROUTE_INDENT = pc.dim(" └──┐");
-/** Tail prefix: same indent as body rows, glyph appended by caller. */
-export const ROUTE_OUT = ROW_INDENT;
+/** Tail connector: 4-space indent + 3 padding + dim `└──` (3 chars). The
+ *  caller appends the tail glyph (`•` for success/warn) so the visible result
+ *  is `       └──•`. The error tail does NOT use `ROUTE_OUT` — it sits at
+ *  column 1 with `GLYPH_FAIL_MARK` for prominence (FR-002-AC-8). */
+export const ROUTE_OUT = ROW_INDENT + pc.dim("   └──");
 
 // ── Glyphs ──────────────────────────────────────────────────────────────────
 
-/** Done bullet — used for completed task rows. */
+/** Done bullet — completed task rows AND success/warn tail glyph (after `└──`). */
 export const GLYPH_DONE = blue("•");
-/** Result glyph — used for the tail summary line. */
-export const GLYPH_RESULT = "✧";
 /** Failed bullet — outline circle. */
 export const GLYPH_FAIL = colors.red("○");
 /** Header fail marker — used inline (e.g. `⊗ 1 service failed`). */
@@ -58,6 +56,9 @@ export const GLYPH_CANCELLED = pc.dim("○");
 
 // ── Header rendering ────────────────────────────────────────────────────────
 
+/**
+ * Per-glyph color the orbit frame: planet (⊙/⊚) gray, satellite (∘/⋅/⚬) blue.
+ */
 export function colorOrbitFrame(frame: string): string {
   return [...frame]
     .map((ch) => {
@@ -70,30 +71,38 @@ export function colorOrbitFrame(frame: string): string {
 
 /** Frozen "passed" header indicator — orbit at rest. */
 export const PHASE_PASS: string = colorOrbitFrame(ORBIT_SPINNER[5]);
-/** Frozen "failed" header indicator — red ⊗. */
+/** Frozen "failed" header indicator — red ⊗, padded to PHASE_WIDTH. */
 export const PHASE_FAIL: string = " " + colors.red("⊗") + "  ";
 
-/** Animated "running" header indicator for the current tick. */
-export function phaseRun(spinnerFrame: number): string {
-  return colorOrbitFrame(
-    ORBIT_SPINNER[
-      Math.floor(spinnerFrame / HEADER_TICK_DIV) % ORBIT_SPINNER.length
-    ],
-  );
-}
-
-/** Wrap a header string in gray brackets with gray · separators. */
+/** Wrap a header string in gray brackets with gray `·` separators. */
 export function renderHeader(text: string): string {
+  // FR-001-AC-12: coerce embedded newlines to single spaces.
+  const flat = text.replace(/\s*\r?\n\s*/g, " ");
   return (
-    pc.gray("[") + " " + text.replace(/·/g, pc.gray("·")) + " " + pc.gray("]")
+    pc.gray("[") + " " + flat.replace(/·/g, pc.gray("·")) + " " + pc.gray("]")
   );
 }
 
-// ── TTY control sequences ───────────────────────────────────────────────────
+// ── Pod-status helper ───────────────────────────────────────────────────────
 
-export const HIDE_CURSOR = "\x1b[?25l";
-export const SHOW_CURSOR = "\x1b[?25h";
-export const SYNC_BEGIN = "\x1b[?2026h";
-export const SYNC_END = "\x1b[?2026l";
-export const CLEAR_EOL = "\x1b[K";
-export const moveUp = (n: number): string => (n > 0 ? `\x1b[${n}A\r` : "\r");
+const POD_STATUS_RE = /^(\d+)\/(\d+)( · .+)?$/;
+
+/**
+ * Color a "ready/total" pod-status string. Cyan when fully ready, yellow
+ * when partial. Returns the input unchanged when it doesn't match the pattern.
+ */
+export function colorPods(status: string): string {
+  const m = POD_STATUS_RE.exec(status);
+  if (!m) return status;
+  const ready = parseInt(m[1], 10);
+  const total = parseInt(m[2], 10);
+  const tail = m[3] ?? "";
+  const count = `${ready}/${total}`;
+  if (ready > 0 && ready === total) {
+    return tail
+      ? pc.yellow(count) + pc.dim(tail)
+      : pc.cyan(count) + pc.dim(tail);
+  }
+  if (ready > 0) return pc.yellow(count) + pc.dim(tail);
+  return pc.yellow(`${ready}`) + pc.dim(`/${total}${tail}`);
+}
