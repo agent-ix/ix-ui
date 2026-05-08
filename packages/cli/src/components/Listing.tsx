@@ -132,7 +132,7 @@ export interface InfoProps {
 export const Info: React.FC<InfoProps> = ({ name, description }) => (
   <Box flexDirection="row">
     <Text>
-      {ROW_INDENT}
+      {"   "}
       {GLYPH_WAITING}{" "}
     </Text>
     <Text dimColor>{name}</Text>
