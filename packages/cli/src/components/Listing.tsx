@@ -7,6 +7,7 @@ import {
   GLYPH_DONE,
   GLYPH_COMPLETE,
   GLYPH_PIPE,
+  GLYPH_WAITING,
   colors,
 } from "../style.js";
 import { Frame, type FrameStatus, type TailVariant } from "./Frame.js";
@@ -114,5 +115,32 @@ export const Note: React.FC<NoteProps> = ({ children }) => (
   <Box flexDirection="row">
     <Text>{NOTE_INDENT}</Text>
     <Text dimColor>{children}</Text>
+  </Box>
+);
+
+export interface InfoProps {
+  name: React.ReactNode;
+  description?: React.ReactNode;
+}
+
+/**
+ * Info row — a key/value body row for action listings, rendered with a
+ * dim `·` glyph to distinguish informational metadata from active
+ * Item rows (which use `•`). Used for "result" details like user IDs,
+ * timestamps, and config values.
+ */
+export const Info: React.FC<InfoProps> = ({ name, description }) => (
+  <Box flexDirection="row">
+    <Text>
+      {ROW_INDENT}
+      {GLYPH_WAITING}{" "}
+    </Text>
+    <Text dimColor>{name}</Text>
+    {description ? (
+      <>
+        <Text>{colors.dim("  ")}</Text>
+        <Text>{description}</Text>
+      </>
+    ) : null}
   </Box>
 );

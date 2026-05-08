@@ -15,10 +15,12 @@ export {
   Listing,
   Group,
   Item,
+  Info,
   Note,
   type ListingProps,
   type GroupProps,
   type ItemProps,
+  type InfoProps,
   type NoteProps,
 } from "./components/Listing.js";
 export {
