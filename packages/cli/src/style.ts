@@ -20,12 +20,12 @@ export { ORBIT_SPINNER, colors, blue };
 
 /** Column at which the orbit/marker glyph sits in every header line. */
 export const PLANET_COL = 1;
-/** Indent for body rows (•, ○ glyphs). 4 spaces. */
-export const ROW_INDENT = "    ";
-/** Indent for note/info text — sits 2 cols past ROW_INDENT. 6 spaces. */
-export const NOTE_INDENT = "      ";
-/** Indent for error messages — aligns under the row name. 8 spaces. */
-export const ERROR_INDENT = "        ";
+/** Indent for body rows (•, ○ glyphs). 3 spaces — aligns under route opener `└─┐`. */
+export const ROW_INDENT = "   ";
+/** Indent for note/info text — sits 2 cols past ROW_INDENT. */
+export const NOTE_INDENT = ROW_INDENT + "  ";
+/** Indent for error messages — aligns under the row name. */
+export const ERROR_INDENT = ROW_INDENT + "    ";
 /** Indent for outer-level flow rows (pipe, preflight, completion). */
 export const FLOW_INDENT = " ";
 /** Header indicator width — keeps `[ … ]` aligned across spinner/pass/fail. */

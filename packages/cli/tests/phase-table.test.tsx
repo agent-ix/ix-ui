@@ -112,7 +112,7 @@ describe("FR-004-AC-9 (TC-140)", () => {
     );
     const out = stripAnsi(lastFrame() ?? "");
     expect(out).toContain("Ingress · ix.internal");
-    expect(out).toContain("    →  https://auth.ix.internal");
+    expect(out).toContain("   →  https://auth.ix.internal");
   });
 
   it("groups URLs into per-host blocks via longest-host-suffix match", () => {
@@ -135,9 +135,9 @@ describe("FR-004-AC-9 (TC-140)", () => {
     const out = stripAnsi(lastFrame() ?? "");
     expect(out).toContain("Ingress · dev.ix");
     expect(out).toContain("Ingress · luna.ix");
-    expect(out).toContain("    →  https://auth.dev.ix");
-    expect(out).toContain("    →  https://identity.dev.ix");
-    expect(out).toContain("    →  https://auth.luna.ix");
+    expect(out).toContain("   →  https://auth.dev.ix");
+    expect(out).toContain("   →  https://identity.dev.ix");
+    expect(out).toContain("   →  https://auth.luna.ix");
     // Old `└─→` URL connector is gone.
     expect(out).not.toContain("└─→");
     // dev.ix group appears before luna.ix because it's first-seen in the URL list.
@@ -165,7 +165,7 @@ describe("FR-004-AC-9 (TC-140a)", () => {
     );
     const out = stripAnsi(lastFrame() ?? "");
     expect(out).toContain("Ingress · orphan.example.com");
-    expect(out).toContain("    →  https://orphan.example.com");
+    expect(out).toContain("   →  https://orphan.example.com");
   });
 
   it("collapses to per-hostname groups when tailIngressHosts is omitted", () => {

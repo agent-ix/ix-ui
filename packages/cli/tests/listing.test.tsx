@@ -38,7 +38,7 @@ describe("Listing flow variant", () => {
     expect(out).toContain("[ ix local refresh ]");
     expect(out).toContain(" |\n • Refreshing helm charts from ghcr.io");
     expect(out).toContain("└─┐");
-    expect(out).toContain("    • service:Cloud Manager UI 0.8.2 -> 0.8.3");
+    expect(out).toContain("   • service:Cloud Manager UI 0.8.2 -> 0.8.3");
     expect(out).toContain(" ✧   Refreshed: 1 chart(s) updated.");
     expect(out).not.toContain("└──•");
   });

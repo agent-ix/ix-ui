@@ -38,24 +38,24 @@ describe("FR-016-AC-2 (TC-301)", () => {
   });
 });
 
-// FR-016-AC-3: ROW_INDENT = 4 spaces
+// FR-016-AC-3: ROW_INDENT = 3 spaces (aligns body rows under route opener `└─┐`)
 describe("FR-016-AC-3 (TC-302)", () => {
-  it("ROW_INDENT is exactly 4 spaces", () => {
-    expect(ROW_INDENT).toBe("    ");
+  it("ROW_INDENT is exactly 3 spaces", () => {
+    expect(ROW_INDENT).toBe("   ");
   });
 });
 
-// FR-016-AC-4: NOTE_INDENT = 6 spaces
+// FR-016-AC-4: NOTE_INDENT = ROW_INDENT + 2 (5 spaces)
 describe("FR-016-AC-4 (TC-303)", () => {
-  it("NOTE_INDENT is exactly 6 spaces", () => {
-    expect(NOTE_INDENT).toBe("      ");
+  it("NOTE_INDENT is ROW_INDENT + 2 spaces", () => {
+    expect(NOTE_INDENT).toBe(ROW_INDENT + "  ");
   });
 });
 
-// FR-016-AC-5: ERROR_INDENT = 8 spaces
+// FR-016-AC-5: ERROR_INDENT = ROW_INDENT + 4 (7 spaces)
 describe("FR-016-AC-5 (TC-304)", () => {
-  it("ERROR_INDENT is exactly 8 spaces", () => {
-    expect(ERROR_INDENT).toBe("        ");
+  it("ERROR_INDENT is ROW_INDENT + 4 spaces", () => {
+    expect(ERROR_INDENT).toBe(ROW_INDENT + "    ");
   });
 });
 
