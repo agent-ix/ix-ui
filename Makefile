@@ -46,6 +46,24 @@ install:
 update-lock:
 	pnpm install --lockfile-only
 
+.PHONY: add-packages
+add-packages:
+	@echo "Adding packages: $(PACKAGES)"
+	pnpm run pkg:add $(PACKAGES)
+
+.PHONY: add-dev-packages
+add-dev-packages:
+	@echo "Adding dev packages: $(PACKAGES)"
+	pnpm run pkg:add-dev $(PACKAGES)
+
+.PHONY: update-packages
+update-packages:
+	pnpm run pkg:update
+
+.PHONY: update-packages-latest
+update-packages-latest:
+	pnpm run pkg:update-latest
+
 .PHONY: use-local
 use-local:
 	@echo "Switching $(p) to local..."

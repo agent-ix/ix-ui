@@ -15,6 +15,11 @@
     "clean": "pnpm -r run clean",
     "version": "node scripts/build-tools.js version",
     "info": "node scripts/build-tools.js info",
+    "update-lock": "pnpm install --lockfile-only",
+    "pkg:add": "pnpm add",
+    "pkg:add-dev": "pnpm add -D",
+    "pkg:update": "pnpm update",
+    "pkg:update-latest": "pnpm dlx @agent-ix/js-deps update-latest",
     "pkg:use-local": "pnpm dlx @agent-ix/js-deps use-local",
     "pkg:use-upstream": "pnpm dlx @agent-ix/js-deps use-upstream",
     "pkg:refresh-local": "pnpm dlx @agent-ix/js-deps refresh-local"
