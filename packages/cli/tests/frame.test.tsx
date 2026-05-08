@@ -32,13 +32,13 @@ describe("FR-002-AC-3 (TC-114)", () => {
 
 // FR-002-AC-5 + AC-6 (TC-116, TC-117): opener appears with children, collapses without
 describe("FR-002-AC-5/AC-6 (TC-116, TC-117)", () => {
-  it("renders └──┐ opener when children present", () => {
+  it("renders └─┐ opener when children present", () => {
     const { lastFrame } = render(
       <Frame header="h" status="passed">
         <Text>body</Text>
       </Frame>,
     );
-    expect(stripAnsi(lastFrame() ?? "")).toContain("└──┐");
+    expect(stripAnsi(lastFrame() ?? "")).toContain("└─┐");
   });
 
   it("collapses to header-only when no children and no tail", () => {

@@ -26,6 +26,8 @@ export const ROW_INDENT = "    ";
 export const NOTE_INDENT = "      ";
 /** Indent for error messages — aligns under the row name. 8 spaces. */
 export const ERROR_INDENT = "        ";
+/** Indent for outer-level flow rows (pipe, preflight, completion). */
+export const FLOW_INDENT = " ";
 /** Header indicator width — keeps `[ … ]` aligned across spinner/pass/fail. */
 export const PHASE_WIDTH = 4;
 /** Advance the orbit glyph every N ticks (3 × 80 ms = 240 ms). */
@@ -33,8 +35,8 @@ export const HEADER_TICK_DIV = 3;
 
 // ── Connectors ──────────────────────────────────────────────────────────────
 
-/** Opener: `' └──┐'` under the orbit header. */
-export const ROUTE_INDENT = pc.dim(" └──┐");
+/** Opener: `' └─┐'` under the orbit header. */
+export const ROUTE_INDENT = pc.dim(" └─┐");
 /** Tail connector: 4-space indent + 3 padding + dim `└──` (3 chars). The
  *  caller appends the tail glyph (`•` for success/warn) so the visible result
  *  is `       └──•`. The error tail does NOT use `ROUTE_OUT` — it sits at
@@ -63,6 +65,8 @@ export const GLYPH_WAITING = pc.dim("·");
 export const GLYPH_CANCELLED = pc.dim("○");
 /** Ingress section marker. */
 export const GLYPH_INGRESS = blue("◎");
+/** Successful completion marker. */
+export const GLYPH_COMPLETE = blue("✧");
 
 // ── Header rendering ────────────────────────────────────────────────────────
 

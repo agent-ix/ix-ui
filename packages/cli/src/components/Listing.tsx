@@ -1,6 +1,14 @@
 import React from "react";
 import { Box, Text } from "ink";
-import { ROW_INDENT, NOTE_INDENT, GLYPH_DONE, colors } from "../style.js";
+import {
+  ROW_INDENT,
+  NOTE_INDENT,
+  FLOW_INDENT,
+  GLYPH_DONE,
+  GLYPH_COMPLETE,
+  GLYPH_PIPE,
+  colors,
+} from "../style.js";
 import { Frame, type FrameStatus, type TailVariant } from "./Frame.js";
 
 export interface ListingProps {
@@ -8,11 +16,59 @@ export interface ListingProps {
   status?: FrameStatus;
   tail?: React.ReactNode;
   tailVariant?: TailVariant;
+  variant?: "framed" | "flow";
+  pre?: React.ReactNode;
   children?: React.ReactNode;
 }
 
 /** Frame for static listings, status views, mixed flows. (FR-003) */
-export const Listing: React.FC<ListingProps> = (props) => <Frame {...props} />;
+export const Listing: React.FC<ListingProps> = ({
+  variant = "framed",
+  children,
+  tail,
+  tailVariant,
+  pre,
+  ...props
+}) => {
+  if (variant !== "flow") {
+    return (
+      <Frame {...props} pre={pre} tail={tail} tailVariant={tailVariant}>
+        {children}
+      </Frame>
+    );
+  }
+
+  const successTail = tail != null && (tailVariant ?? "success") === "success";
+
+  return (
+    <Frame
+      {...props}
+      pre={
+        pre != null ? (
+          <>
+            <Text>{`${FLOW_INDENT}${GLYPH_PIPE}`}</Text>
+            {pre}
+          </>
+        ) : null
+      }
+      post={
+        successTail ? (
+          <>
+            <Text> </Text>
+            <Box flexDirection="row">
+              <Text>{`${FLOW_INDENT}${GLYPH_COMPLETE}   `}</Text>
+              <Text>{tail}</Text>
+            </Box>
+          </>
+        ) : null
+      }
+      tail={successTail ? undefined : tail}
+      tailVariant={tailVariant}
+    >
+      {children}
+    </Frame>
+  );
+};
 
 export interface GroupProps {
   name: string;
@@ -30,17 +86,23 @@ export const Group: React.FC<GroupProps> = ({ name, children }) => (
 );
 
 export interface ItemProps {
-  name: string;
-  description?: string;
+  name: React.ReactNode;
+  description?: React.ReactNode;
 }
 
 export const Item: React.FC<ItemProps> = ({ name, description }) => (
   <Box flexDirection="row">
     <Text>
       {ROW_INDENT}
-      {GLYPH_DONE} {name}
+      {GLYPH_DONE}{" "}
     </Text>
-    {description ? <Text>{colors.dim(`  — ${description}`)}</Text> : null}
+    <Text>{name}</Text>
+    {description ? (
+      <>
+        <Text>{colors.dim("  — ")}</Text>
+        <Text dimColor>{description}</Text>
+      </>
+    ) : null}
   </Box>
 );
 

@@ -26,6 +26,12 @@ export interface FrameProps {
    * (ROUTE_INDENT). Sits at the planet column with no body indent.
    */
   pre?: React.ReactNode;
+  /**
+   * Outer-level content rendered after the body, before the framed tail.
+   * Used by flow-style commands that keep body rows framed but finish with
+   * their own result marker.
+   */
+  post?: React.ReactNode;
   children?: React.ReactNode;
   marginTop?: number;
   marginLeft?: number;
@@ -84,6 +90,7 @@ export const Frame: React.FC<FrameProps> = ({
   tail,
   tailVariant = "success",
   pre,
+  post,
   children,
   marginTop,
   marginLeft,
@@ -103,6 +110,7 @@ export const Frame: React.FC<FrameProps> = ({
       {prePresent && <Box flexDirection="column">{pre}</Box>}
       {childrenPresent && <Text>{ROUTE_INDENT}</Text>}
       {childrenPresent && <Box flexDirection="column">{children}</Box>}
+      {post != null && <Box flexDirection="column">{post}</Box>}
       {tail != null && (
         <>
           <Text> </Text>

@@ -4,6 +4,7 @@ import {
   ROW_INDENT,
   NOTE_INDENT,
   ERROR_INDENT,
+  FLOW_INDENT,
   PHASE_WIDTH,
   HEADER_TICK_DIV,
   ROUTE_INDENT,
@@ -17,6 +18,7 @@ import {
   GLYPH_WAITING,
   GLYPH_CANCELLED,
   GLYPH_INGRESS,
+  GLYPH_COMPLETE,
   PHASE_PASS,
   PHASE_FAIL,
   ORBIT_SPINNER,
@@ -70,10 +72,10 @@ describe("FR-016-AC-6 (TC-305, TC-CB-04)", () => {
   });
 });
 
-// FR-016-AC-7: ROUTE_INDENT contains └──┐
+// FR-016-AC-7: ROUTE_INDENT contains └─┐
 describe("FR-016-AC-7 (TC-306)", () => {
-  it("ROUTE_INDENT contains the └──┐ opener", () => {
-    expect(stripAnsi(ROUTE_INDENT)).toBe(" └──┐");
+  it("ROUTE_INDENT contains the └─┐ opener", () => {
+    expect(stripAnsi(ROUTE_INDENT)).toBe(" └─┐");
   });
 });
 
@@ -153,6 +155,8 @@ describe("FR-016-AC-1 (TC-300)", () => {
     expect(GLYPH_WAITING).toBeDefined();
     expect(GLYPH_CANCELLED).toBeDefined();
     expect(GLYPH_INGRESS).toBeDefined();
+    expect(GLYPH_COMPLETE).toBeDefined();
+    expect(FLOW_INDENT).toBe(" ");
     expect(colors).toBeDefined();
     expect(blue).toBeDefined();
     expect(ORBIT_SPINNER).toBeDefined();

@@ -1,6 +1,7 @@
 import React from "react";
 import { describe, it, expect } from "vitest";
 import { render } from "ink-testing-library";
+import { Text } from "ink";
 import { Listing, Group, Item, Note } from "../src/components/Listing.js";
 
 const stripAnsi = (s: string): string => s.replace(/\x1b\[[0-9;]*m/g, "");
@@ -15,8 +16,31 @@ describe("FR-003-AC-1 (TC-123)", () => {
     );
     const out = stripAnsi(lastFrame() ?? "");
     expect(out).toContain("[ ix elements list ]");
-    expect(out).toContain("└──┐");
+    expect(out).toContain("└─┐");
     expect(out).toContain("└──•  Done.");
+  });
+});
+
+describe("Listing flow variant", () => {
+  it("renders outer-level rows with pipe separators and ✧ completion", () => {
+    const { lastFrame } = render(
+      <Listing
+        header="ix local refresh"
+        status="passed"
+        variant="flow"
+        pre={<Text> • Refreshing helm charts from ghcr.io</Text>}
+        tail="Refreshed: 1 chart(s) updated."
+      >
+        <Item name="service:Cloud Manager UI 0.8.2 -> 0.8.3" />
+      </Listing>,
+    );
+    const out = stripAnsi(lastFrame() ?? "");
+    expect(out).toContain("[ ix local refresh ]");
+    expect(out).toContain(" |\n • Refreshing helm charts from ghcr.io");
+    expect(out).toContain("└─┐");
+    expect(out).toContain("    • service:Cloud Manager UI 0.8.2 -> 0.8.3");
+    expect(out).toContain(" ✧   Refreshed: 1 chart(s) updated.");
+    expect(out).not.toContain("└──•");
   });
 });
 
