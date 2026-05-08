@@ -65,14 +65,14 @@ TC ID conventions:
 | FR-001 | Ink renderer foundation | 12 | TC-100 – TC-111 |
 | FR-002 | Frame component | 12 | TC-112 – TC-122, TC-122a |
 | FR-003 | Listing component | 9 | TC-123 – TC-131 |
-| FR-004 | PhaseTable component | 16 | TC-132 – TC-147 |
+| FR-004 | PhaseTable component | 17 | TC-132 – TC-147, TC-140a |
 | FR-005 | TaskList component | 18 | TC-148 – TC-163, TC-163a – TC-163b |
 | FR-006 | Prompt components | 23 | TC-164 – TC-183, TC-183a – TC-183c |
 | FR-007 | Async work hooks | 16 | TC-184 – TC-198, TC-198a |
 | FR-008 | render() entry point | 12 | TC-199 – TC-210 |
 | FR-009 | colors.red | 3 | TC-211 – TC-213 |
 | FR-010 | colors palette object | 4 | TC-214 – TC-217 |
-| FR-016 | Shared style tokens | 14 | TC-300 – TC-313 |
+| FR-016 | Shared style tokens | 15 | TC-300 – TC-313, TC-307a |
 
 ---
 
@@ -140,7 +140,7 @@ TC ID conventions:
 
 | TC | AC | Description |
 |---|---|---|
-| TC-132 | AC-1 | Body layout: preflight + rows + summary. |
+| TC-132 | AC-1 | Layout: header → outer-level preflight (separated by `GLYPH_PIPE`) → services block (`└──┐` + rows + dim `elapsed N/N ready` summary) → outer-level ingress group blocks as siblings of the services block. |
 | TC-133 | AC-2 | Row is 3-cell flexbox. |
 | TC-134 | AC-3 | Resize narrower truncates status cell, no wrap. |
 | TC-135 | AC-4 | `hidePending` hides all-pending rows. |
@@ -148,9 +148,10 @@ TC ID conventions:
 | TC-137 | AC-6 | Aggregate status defaults computed correctly. |
 | TC-138 | AC-7 | Header animates only while running. |
 | TC-139 | AC-8 | Pod-status pattern colored via colorPods. |
-| TC-140 | AC-9 | tailEntry renders entry URL on passed. |
+| TC-140 | AC-9 | `tailIngressUrls` + `tailIngressHosts` group URLs by longest-host-suffix into per-host `◎ Ingress · <host>` sibling blocks; within-group URL order preserved; group order follows first-URL-seen in `tailIngressUrls`. Each URL row uses `ROUTE_URL` (arrow only). Legacy `tailEntry` adapter renders one URL grouped under its `baseDomain`. Section only renders when aggregate status is `passed`. |
+| TC-140a | AC-9 | URLs whose hostname matches no entry in `tailIngressHosts` fall into a default group keyed by their full hostname (kept, not dropped). When `tailIngressHosts` is omitted/empty, all URLs collapse to per-hostname groups. |
 | TC-141 | AC-10 | Failure tail. |
-| TC-142 | AC-11 | Preflight content above row block. |
+| TC-142 | AC-11 | Preflight content rendered at the outer level (planet column), above the services-block opener — NOT inside the indented body. Multiple preflight lines separated by `GLYPH_PIPE` rows. |
 | TC-143 | AC-12 | Empty services renders 0/0. |
 | TC-144 | AC-13 | Unknown phase ignored. |
 | TC-145 | AC-14 | displayName fallback to name. |
@@ -270,6 +271,7 @@ TC ID conventions:
 | TC-305 | AC-6 | PHASE_WIDTH = 4. |
 | TC-306 | AC-7 | ROUTE_INDENT dim ` └──┐`. |
 | TC-307 | AC-8 | ROUTE_OUT === ROW_INDENT. |
+| TC-307a | AC-8a | ROUTE_URL === ROW_INDENT + dim("→") (legacy `└─→` form removed). |
 | TC-308 | AC-9 | renderHeader bracket grayscale. |
 | TC-309 | AC-10 | PHASE_PASS / PHASE_FAIL definitions. |
 | TC-310 | AC-11 | colorOrbitFrame per-glyph coloring. |

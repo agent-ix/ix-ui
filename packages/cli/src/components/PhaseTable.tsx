@@ -14,6 +14,7 @@ import {
   GLYPH_INGRESS,
   GLYPH_PIPE,
   GLYPH_WAITING,
+  ROUTE_INDENT,
   ROUTE_URL,
   colorPods,
   colors,
@@ -43,6 +44,13 @@ export interface PhaseTableProps<P extends string> {
   tail?: React.ReactNode;
   tailVariant?: TailVariant;
   tailIngressUrls?: string[];
+  /**
+   * Configured ingress hosts (e.g. `["dev.ix", "luna.ix"]`) used to group
+   * the URLs in `tailIngressUrls` into per-host `◎ Ingress · <host>` sibling
+   * blocks via longest-host-suffix match. URLs that match no entry fall into
+   * a default group keyed by their full hostname.
+   */
+  tailIngressHosts?: string[];
   tailEntry?: { name: string; baseDomain: string };
 }
 
@@ -143,14 +151,53 @@ function PhaseRow<P extends string>({
   );
 }
 
-const IngressUrls: React.FC<{ urls: string[] }> = ({ urls }) => (
+interface IngressGroup {
+  host: string;
+  urls: string[];
+}
+
+/**
+ * Group URLs into per-host buckets via longest-host-suffix match against
+ * `hosts`. URLs whose hostname does not match any entry fall into a default
+ * group keyed by the URL's full hostname. Within each group URL order is
+ * preserved; groups are rendered in the order their first URL appears in
+ * `urls` (deterministic from caller-supplied order).
+ */
+function groupUrlsByHost(urls: string[], hosts: string[]): IngressGroup[] {
+  const sortedHosts = [...hosts].sort((a, b) => b.length - a.length);
+  const buckets = new Map<string, string[]>();
+  const order: string[] = [];
+
+  for (const url of urls) {
+    let key: string;
+    try {
+      const hostname = new URL(url).hostname;
+      const match = sortedHosts.find(
+        (h) => hostname === h || hostname.endsWith("." + h),
+      );
+      key = match ?? hostname;
+    } catch {
+      key = url;
+    }
+    if (!buckets.has(key)) {
+      buckets.set(key, []);
+      order.push(key);
+    }
+    buckets.get(key)!.push(url);
+  }
+  return order.map((host) => ({ host, urls: buckets.get(host)! }));
+}
+
+const IngressBlock: React.FC<IngressGroup> = ({ host, urls }) => (
   <>
-    <PipeLine />
+    <Text> </Text>
     <Box flexDirection="row">
-      <Text>{ROW_INDENT}</Text>
-      <Text>{GLYPH_INGRESS} </Text>
-      <Text>{colors.dim("Ingress")}</Text>
+      <Text>{` ${GLYPH_INGRESS} `}</Text>
+      <Text>
+        {colors.dim("Ingress")} · {host}
+      </Text>
     </Box>
+    <Text>{ROUTE_INDENT}</Text>
     {urls.map((url, i) => (
       <Box key={`${url}-${i}`} flexDirection="row">
         <Text>{`${ROUTE_URL}  `}</Text>
@@ -162,7 +209,7 @@ const IngressUrls: React.FC<{ urls: string[] }> = ({ urls }) => (
   </>
 );
 
-const PipeLine: React.FC = () => <Text>{`${ROW_INDENT}${GLYPH_PIPE}`}</Text>;
+const PipeLine: React.FC = () => <Text>{` ${GLYPH_PIPE}`}</Text>;
 
 function visibleNameWidth(rows: ServiceRow<string>[]): number {
   let w = 0;
@@ -189,6 +236,7 @@ export function PhaseTable<P extends string>(
     tail,
     tailVariant,
     tailIngressUrls,
+    tailIngressHosts,
     tailEntry,
   } = props;
 
@@ -233,6 +281,16 @@ export function PhaseTable<P extends string>(
   const ingressUrls =
     tailIngressUrls ??
     (tailEntry ? [`https://${tailEntry.name}.${tailEntry.baseDomain}`] : []);
+  const effectiveHosts =
+    tailIngressHosts ?? (tailEntry ? [tailEntry.baseDomain] : []);
+  const ingressGroups = useMemo(
+    () => groupUrlsByHost(ingressUrls, effectiveHosts),
+    [ingressUrls, effectiveHosts],
+  );
+  const preflightItems = useMemo(
+    () => flattenPreflight(preflight),
+    [preflight],
+  );
   const computedTail =
     tail ??
     (aggregateStatus === "failed"
@@ -245,11 +303,19 @@ export function PhaseTable<P extends string>(
     <Frame
       header={header}
       status={aggregateStatus}
+      pre={
+        preflightItems.length > 0
+          ? preflightItems.map((item, i) => (
+              <React.Fragment key={i}>
+                <PipeLine />
+                {item}
+              </React.Fragment>
+            ))
+          : null
+      }
       tail={computedTail}
       tailVariant={computedTailVariant}
     >
-      {preflight}
-      {visibleRows.length > 0 && <PipeLine />}
       {visibleRows.map((row, i) => (
         <PhaseRow
           key={`${row.name}-${i}`}
@@ -270,11 +336,23 @@ export function PhaseTable<P extends string>(
           )}
         </Text>
       </Box>
-      {aggregateStatus === "passed" && ingressUrls.length > 0 ? (
-        <IngressUrls urls={ingressUrls} />
-      ) : null}
+      {aggregateStatus === "passed" &&
+        ingressGroups.map((g, i) => (
+          <IngressBlock key={`${g.host}-${i}`} host={g.host} urls={g.urls} />
+        ))}
     </Frame>
   );
+}
+
+function flattenPreflight(node: React.ReactNode): React.ReactNode[] {
+  if (node == null || node === false) return [];
+  if (Array.isArray(node)) return node.flat(Infinity).filter(Boolean);
+  if (React.isValidElement(node) && node.type === React.Fragment) {
+    return React.Children.toArray(
+      (node.props as { children?: React.ReactNode }).children,
+    );
+  }
+  return [node];
 }
 
 void PHASE_GLYPHS;

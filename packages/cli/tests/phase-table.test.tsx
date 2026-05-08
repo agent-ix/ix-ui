@@ -96,9 +96,9 @@ describe("FR-004-AC-10 (TC-141)", () => {
   });
 });
 
-// FR-004-AC-9 (TC-140): tailEntry renders entry URL on passed
+// FR-004-AC-9 (TC-140): tailEntry adapter + per-host grouping with arrow-only URL connector
 describe("FR-004-AC-9 (TC-140)", () => {
-  it("renders https://name.domain on passed", () => {
+  it("renders https://name.domain grouped under baseDomain on passed", () => {
     const services: ServiceRow<P>[] = [
       { name: "auth", phases: allDone(), status: "1/1" },
     ];
@@ -110,10 +110,12 @@ describe("FR-004-AC-9 (TC-140)", () => {
         tailEntry={{ name: "auth", baseDomain: "ix.internal" }}
       />,
     );
-    expect(stripAnsi(lastFrame() ?? "")).toContain("https://auth.ix.internal");
+    const out = stripAnsi(lastFrame() ?? "");
+    expect(out).toContain("Ingress · ix.internal");
+    expect(out).toContain("    →  https://auth.ix.internal");
   });
 
-  it("renders multiple ingress URLs in the final ingress section", () => {
+  it("groups URLs into per-host blocks via longest-host-suffix match", () => {
     const services: ServiceRow<P>[] = [
       { name: "auth", phases: allDone(), status: "1/1" },
     ];
@@ -122,13 +124,65 @@ describe("FR-004-AC-9 (TC-140)", () => {
         header="h"
         phases={PHASES}
         services={services}
-        tailIngressUrls={["https://auth.dev.ix", "https://auth.luna.ix"]}
+        tailIngressUrls={[
+          "https://auth.dev.ix",
+          "https://identity.dev.ix",
+          "https://auth.luna.ix",
+        ]}
+        tailIngressHosts={["dev.ix", "luna.ix"]}
       />,
     );
     const out = stripAnsi(lastFrame() ?? "");
-    expect(out).toContain("Ingress");
-    expect(out).toContain("    └─→  https://auth.dev.ix");
-    expect(out).toContain("    └─→  https://auth.luna.ix");
+    expect(out).toContain("Ingress · dev.ix");
+    expect(out).toContain("Ingress · luna.ix");
+    expect(out).toContain("    →  https://auth.dev.ix");
+    expect(out).toContain("    →  https://identity.dev.ix");
+    expect(out).toContain("    →  https://auth.luna.ix");
+    // Old `└─→` URL connector is gone.
+    expect(out).not.toContain("└─→");
+    // dev.ix group appears before luna.ix because it's first-seen in the URL list.
+    const devAt = out.indexOf("Ingress · dev.ix");
+    const lunaAt = out.indexOf("Ingress · luna.ix");
+    expect(devAt).toBeGreaterThan(-1);
+    expect(lunaAt).toBeGreaterThan(devAt);
+  });
+});
+
+// FR-004-AC-9 (TC-140a): no-match fallback + omitted-hosts degenerate path
+describe("FR-004-AC-9 (TC-140a)", () => {
+  it("URLs whose hostname matches no configured host fall into a default group keyed by hostname", () => {
+    const services: ServiceRow<P>[] = [
+      { name: "svc", phases: allDone(), status: "1/1" },
+    ];
+    const { lastFrame } = render(
+      <PhaseTable
+        header="h"
+        phases={PHASES}
+        services={services}
+        tailIngressUrls={["https://orphan.example.com"]}
+        tailIngressHosts={["dev.ix"]}
+      />,
+    );
+    const out = stripAnsi(lastFrame() ?? "");
+    expect(out).toContain("Ingress · orphan.example.com");
+    expect(out).toContain("    →  https://orphan.example.com");
+  });
+
+  it("collapses to per-hostname groups when tailIngressHosts is omitted", () => {
+    const services: ServiceRow<P>[] = [
+      { name: "svc", phases: allDone(), status: "1/1" },
+    ];
+    const { lastFrame } = render(
+      <PhaseTable
+        header="h"
+        phases={PHASES}
+        services={services}
+        tailIngressUrls={["https://a.dev.ix", "https://b.luna.ix"]}
+      />,
+    );
+    const out = stripAnsi(lastFrame() ?? "");
+    expect(out).toContain("Ingress · a.dev.ix");
+    expect(out).toContain("Ingress · b.luna.ix");
   });
 });
 

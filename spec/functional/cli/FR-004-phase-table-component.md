@@ -41,9 +41,10 @@ interface PhaseTableProps<P extends string> {
   phases: readonly P[];
   phaseLabels?: Partial<Record<P, string>>;
   hidePending?: boolean; // hide rows whose phases are all pending
-  preflight?: ReactNode; // entries shown above the row table
+  preflight?: ReactNode; // entries shown above the services block at outer level
   tail?: ReactNode; // overrides default tail
-  tailIngressUrls?: string[]; // renders final ingress URL section
+  tailIngressUrls?: string[]; // flat list of rendered ingress URLs, in chart-rendered order
+  tailIngressHosts?: string[]; // configured `domain.hosts` (priority order); used to group URLs
   tailEntry?: { name: string; baseDomain: string }; // legacy single ingress URL adapter
 }
 
@@ -54,7 +55,11 @@ const PhaseTable: <P extends string>(props: PhaseTableProps<P>) => ReactElement;
 
 ### Layout
 
-- **FR-004-AC-1**: `<PhaseTable>` SHALL render inside `<Frame header={header} status={...}>` with the body containing (in order): optional `preflight` content, a dim `GLYPH_PIPE` separator row, one row per visible service, and a dim summary row with a dim `GLYPH_DIM_DOT` followed by `elapsed {totalElapsedS}s · {readyCount}/{total} ready`.
+- **FR-004-AC-1**: `<PhaseTable>` SHALL render the following blocks in order, all aligned at the planet column (no outer indent):
+  1. The `<Frame>` header line (`header`, `status`).
+  2. Zero or more **outer-level preflight** lines from `preflight`, each separated from the header above and from the next preflight line below by a dim `GLYPH_PIPE` separator row. Preflight lines are NOT indented inside the services block.
+  3. The **services block**: a `└──┐` opener (`ROUTE_INDENT`), one row per visible service indented at `ROW_INDENT`, and a dim summary row with a dim `GLYPH_DIM_DOT` followed by `elapsed {totalElapsedS}s · {readyCount}/{total} ready`.
+  4. Zero or more **outer-level ingress group blocks** (siblings of the services block, separated from each other and from the services block by a single blank line). Each group is rendered per AC-9 and uses its own `ROUTE_INDENT` opener at the planet column — the URL rows visually close back under that opener, not under the services block.
 - **FR-004-AC-2**: Each row SHALL be a flexbox `<Box flexDirection="row">` with three cells:
   1. **Name cell** — width = max display-name length across visible rows; left-aligned.
   2. **Status/label cell** — `flexGrow={1}`; truncates with `wrap="truncate-end"` when narrow.
@@ -78,12 +83,12 @@ const PhaseTable: <P extends string>(props: PhaseTableProps<P>) => ReactElement;
 
 ### Tail
 
-- **FR-004-AC-9**: When `tailIngressUrls` is non-empty AND aggregate status is `passed`, the body SHALL render an ingress section after the summary. It SHALL show the shared ingress marker plus dim `Ingress`, followed by one cyan-underlined URL per line using the shared URL route connector. `tailEntry` remains a legacy adapter that produces a single `https://{name}.{baseDomain}` ingress URL.
+- **FR-004-AC-9**: When `tailIngressUrls` is non-empty AND aggregate status is `passed`, one or more ingress group blocks SHALL render as outer-level siblings of the services block (not inside its body). Grouping rule: each URL is assigned to the group keyed by the **longest matching suffix** in `tailIngressHosts`; URLs whose hostname does not match any configured host fall into a default group keyed by their full hostname (kept rather than dropped, so unexpected hosts remain visible to the operator). Within each group, URLs preserve their input order from `tailIngressUrls`; groups are rendered in the order their first URL appears in `tailIngressUrls` (deterministic from caller-supplied order). Each group renders as: a heading line `{GLYPH_INGRESS} {dim("Ingress")} · {host}` at the planet column, the shared `ROUTE_INDENT` opener (`└──┐`), and one cyan-underlined URL per row using `ROUTE_URL` (the URL row carries only the `→` glyph plus URL — the host-level opener already provides the visual closure that `└─` previously implied). `tailEntry` remains a legacy adapter that produces a single `https://{name}.{baseDomain}` URL grouped under its `baseDomain`. When `tailIngressHosts` is omitted or empty, all URLs collapse into one group keyed by each URL's full hostname (degenerate but safe).
 - **FR-004-AC-10**: When aggregate status is `failed` and no explicit `tail` is set, the tail SHALL render `{n} service(s) failed` with `tailVariant="error"`.
 
 ### Preflight
 
-- **FR-004-AC-11**: `preflight` content (any React node) SHALL render above the row block. Standard preflight idioms include credential-resolution lines (`🔑 ghcr.io credentials`) and entry-point notices (`• <appName>`). Preflight is independent of `services` and persists across re-renders.
+- **FR-004-AC-11**: `preflight` content (any React node) SHALL render at the **outer level** above the services-block opener — at the planet column, NOT indented inside the services-block body. Multiple preflight lines SHALL be separated from the header above and from each other by dim `GLYPH_PIPE` separator rows. Standard preflight idioms include credential-resolution lines (`• Loading Helm charts from ghcr.io`) and entry-point notices (`• Starting App: <appName>`). Preflight is independent of `services` and persists across re-renders.
 
 ### Empty / invalid input
 
@@ -95,13 +100,18 @@ const PhaseTable: <P extends string>(props: PhaseTableProps<P>) => ReactElement;
 
 ## Rendered Examples
 
-### Auth app run, passed with ingress
+### Auth app run, passed with multi-host ingress
 
 ```tsx
 <PhaseTable
   header="ix local up · auth"
   phases={["pull", "secrets", "install", "ready"] as const}
-  preflight={<Text> • Loading Helm charts from ghcr.io</Text>}
+  preflight={
+    <>
+      <Text> • Loading Helm charts from ghcr.io</Text>
+      <Text> • Starting App: auth</Text>
+    </>
+  }
   services={[
     {
       name: "auth-service",
@@ -128,26 +138,35 @@ const PhaseTable: <P extends string>(props: PhaseTableProps<P>) => ReactElement;
     install: "installing",
     ready: "ready",
   }}
-  tailIngressUrls={["https://auth.dev.ix", "https://auth.luna.ix"]}
+  tailIngressUrls={[
+    "https://auth.dev.ix",
+    "https://identity.dev.ix",
+    "https://auth.luna.ix",
+  ]}
+  tailIngressHosts={["dev.ix", "luna.ix"]}
 />
 ```
 
 ```
  ⊙  [ ix local up · auth ]
+ |
+ • Loading Helm charts from ghcr.io
+ |
+ • Starting App: auth
  └──┐
-    • Loading Helm charts from ghcr.io
-    |
-
     • auth-service 0.9.3        1/1                           12.1s
     • identity 0.10.2           1/1                           12.1s
     • permission-service 0.4.9  1/1                           12.1s
-
     • elapsed 12.1s · 3/3 ready
-    |
 
-    ◎ Ingress
-    └─→  https://auth.dev.ix
-    └─→  https://auth.luna.ix
+ ◎ Ingress · dev.ix
+ └──┐
+    →  https://auth.dev.ix
+    →  https://identity.dev.ix
+
+ ◎ Ingress · luna.ix
+ └──┐
+    →  https://auth.luna.ix
 ```
 
 ### One service failed

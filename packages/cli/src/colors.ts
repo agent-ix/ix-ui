@@ -1,6 +1,8 @@
 import pc from "picocolors";
 
 // Muted terracotta red — ANSI 256 color 167, softer than bright red.
+// Hex equivalent for use with ink's <Text color={...}>.
+export const RED_HEX = "#d75f5f";
 const red = (s: string) => `\x1b[38;5;167m${s}\x1b[0m`;
 
 export const colors = {

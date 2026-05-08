@@ -10,6 +10,7 @@ import {
   renderHeader,
   colors,
 } from "../style.js";
+import { RED_HEX } from "../colors.js";
 import { HeaderSpinner } from "./HeaderSpinner.js";
 
 export type FrameStatus = "running" | "passed" | "failed";
@@ -20,6 +21,11 @@ export interface FrameProps {
   status?: FrameStatus;
   tail?: React.ReactNode;
   tailVariant?: TailVariant;
+  /**
+   * Outer-level content rendered between the header and the body opener
+   * (ROUTE_INDENT). Sits at the planet column with no body indent.
+   */
+  pre?: React.ReactNode;
   children?: React.ReactNode;
   marginTop?: number;
   marginLeft?: number;
@@ -48,7 +54,7 @@ const Tail: React.FC<{ tail: React.ReactNode; variant: TailVariant }> = ({
     return (
       <Box flexDirection="row">
         <Text>{` ${GLYPH_FAIL_MARK}  `}</Text>
-        <Text color="red">{tail}</Text>
+        <Text color={RED_HEX}>{tail}</Text>
       </Box>
     );
   }
@@ -77,11 +83,13 @@ export const Frame: React.FC<FrameProps> = ({
   status = "running",
   tail,
   tailVariant = "success",
+  pre,
   children,
   marginTop,
   marginLeft,
 }) => {
   const childrenPresent = hasChildren(children);
+  const prePresent = hasChildren(pre);
   // Prefer error tail when status is failed and a plain text tail was provided.
   const variant: TailVariant =
     status === "failed" && tailVariant === "success" ? "error" : tailVariant;
@@ -92,6 +100,7 @@ export const Frame: React.FC<FrameProps> = ({
         <HeaderIndicator status={status} />
         <Text>{renderHeader(header)}</Text>
       </Box>
+      {prePresent && <Box flexDirection="column">{pre}</Box>}
       {childrenPresent && <Text>{ROUTE_INDENT}</Text>}
       {childrenPresent && <Box flexDirection="column">{children}</Box>}
       {tail != null && (

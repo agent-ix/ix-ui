@@ -82,8 +82,8 @@ describe("FR-016-AC-8 (TC-307)", () => {
   it("ROUTE_OUT contains the └── connector after the row indent", () => {
     expect(stripAnsi(ROUTE_OUT)).toBe(ROW_INDENT + "   └──");
   });
-  it("ROUTE_URL contains the URL connector after the row indent", () => {
-    expect(stripAnsi(ROUTE_URL)).toBe(ROW_INDENT + "└─→");
+  it("ROUTE_URL is the arrow-only URL connector after the row indent", () => {
+    expect(stripAnsi(ROUTE_URL)).toBe(ROW_INDENT + "→");
   });
 });
 

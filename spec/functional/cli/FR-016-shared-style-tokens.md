@@ -42,7 +42,7 @@ The `cli` package SHALL expose a single style module containing every visual lay
 - **FR-016-AC-6**: `PHASE_WIDTH = 4` — every header indicator (animated spinner, frozen pass, frozen fail) is exactly 4 columns wide so the bracketed `[ … ]` text starts at the same column in every state.
 - **FR-016-AC-7**: `ROUTE_INDENT` is `dim(" └──┐")` — the opener under the header. The `└` aligns with the planet (column 1).
 - **FR-016-AC-8**: `ROUTE_OUT` is `dim(ROW_INDENT + "   └──")` — the tail connector. Combined with the trailing glyph (`•` for success/warn, the error path does NOT use `ROUTE_OUT`), the success tail renders as `       └──•  <text>` (10 cols indent + connector + glyph + 2 spaces + text). The `└` aligns with the body content's left padding so the tail visually closes back over the rows above.
-- **FR-016-AC-8a**: `ROUTE_URL` is `ROW_INDENT + dim("└─→")` — the URL connector used by ingress sections. Combined with two spaces and an underlined URL, it renders as `    └─→  https://...`.
+- **FR-016-AC-8a**: `ROUTE_URL` is `ROW_INDENT + dim("→")` — the URL connector used inside per-host ingress group blocks. The host-level `└─┐` opener (FR-016-AC-7) closes back over the URL rows, so the URL row itself only carries the arrow glyph. Combined with two spaces and an underlined URL, it renders as `    →  https://...`. The legacy `└─→` form is removed; consumers SHALL NOT inline it.
 
 ### Header rendering
 

@@ -40,8 +40,10 @@ export const ROUTE_INDENT = pc.dim(" └──┐");
  *  is `       └──•`. The error tail does NOT use `ROUTE_OUT` — it sits at
  *  column 1 with `GLYPH_FAIL_MARK` for prominence (FR-002-AC-8). */
 export const ROUTE_OUT = ROW_INDENT + pc.dim("   └──");
-/** URL route connector used by PhaseTable ingress sections. */
-export const ROUTE_URL = ROW_INDENT + pc.dim("└─→");
+/** URL route connector used inside per-host ingress group blocks. The
+ *  host-level ROUTE_INDENT opener already provides the visual closure that
+ *  `└─` previously implied, so the URL row carries only the arrow. */
+export const ROUTE_URL = ROW_INDENT + pc.dim("→");
 
 // ── Glyphs ──────────────────────────────────────────────────────────────────
 
