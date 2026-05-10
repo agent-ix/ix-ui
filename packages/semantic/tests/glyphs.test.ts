@@ -59,17 +59,17 @@ describe("spinners", () => {
     expect(HEADER_SPINNER).toHaveLength(4);
   });
 
-  it("ORBIT_SPINNER has 7 frames", () => {
-    expect(ORBIT_SPINNER).toHaveLength(7);
+  it("ORBIT_SPINNER has 10 frames", () => {
+    expect(ORBIT_SPINNER).toHaveLength(10);
   });
 
-  it("ORBIT_SPINNER frames are all 4 chars wide", () => {
+  it("ORBIT_SPINNER frames are all 5 cells wide", () => {
     for (const frame of ORBIT_SPINNER) {
-      expect(frame).toHaveLength(4);
+      expect(frame).toHaveLength(5);
     }
   });
 
-  it("spinner frames are non-empty strings", () => {
+  it("BRAILLE_SPINNER and HEADER_SPINNER frames are non-empty strings", () => {
     for (const frame of BRAILLE_SPINNER) {
       expect(typeof frame).toBe("string");
       expect(frame.length).toBeGreaterThan(0);
@@ -78,9 +78,21 @@ describe("spinners", () => {
       expect(typeof frame).toBe("string");
       expect(frame.length).toBeGreaterThan(0);
     }
+  });
+
+  it("ORBIT_SPINNER cells are space or {glyph, tone}", () => {
     for (const frame of ORBIT_SPINNER) {
-      expect(typeof frame).toBe("string");
-      expect(frame.length).toBeGreaterThan(0);
+      for (const cell of frame) {
+        if (typeof cell === "string") {
+          expect(cell).toBe(" ");
+        } else {
+          expect(typeof cell.glyph).toBe("string");
+          expect(cell.glyph.length).toBeGreaterThan(0);
+          expect(["gray", "dim", "medDim", "med", "bright"]).toContain(
+            cell.tone,
+          );
+        }
+      }
     }
   });
 });

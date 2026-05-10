@@ -22,6 +22,7 @@ import {
   PHASE_PASS,
   PHASE_FAIL,
   ORBIT_SPINNER,
+  orbitFrameGlyphs,
   colorOrbitFrame,
   renderHeader,
   colorPods,
@@ -59,10 +60,10 @@ describe("FR-016-AC-5 (TC-304)", () => {
   });
 });
 
-// FR-016-AC-6: PHASE_WIDTH = 4 (TC-305) + TC-CB-04
+// FR-016-AC-6: PHASE_WIDTH = 5 (TC-305) + TC-CB-04
 describe("FR-016-AC-6 (TC-305, TC-CB-04)", () => {
-  it("PHASE_WIDTH is 4", () => {
-    expect(PHASE_WIDTH).toBe(4);
+  it("PHASE_WIDTH is 5", () => {
+    expect(PHASE_WIDTH).toBe(5);
   });
   it("PHASE_PASS is exactly PHASE_WIDTH cells (after stripping ANSI)", () => {
     expect(stripAnsi(PHASE_PASS)).toHaveLength(PHASE_WIDTH);
@@ -115,8 +116,8 @@ describe("FR-001-AC-12 (TC-111)", () => {
 
 // FR-016-AC-10: PHASE_PASS / PHASE_FAIL
 describe("FR-016-AC-10 (TC-309)", () => {
-  it("PHASE_PASS is the orbit at frame index 5", () => {
-    expect(stripAnsi(PHASE_PASS)).toBe(ORBIT_SPINNER[5]);
+  it("PHASE_PASS is the planet at rest (⊝, no satellites)", () => {
+    expect(stripAnsi(PHASE_PASS)).toBe("  ⊝  ");
   });
   it("PHASE_FAIL contains a red ⊗", () => {
     expect(PHASE_FAIL).toContain("⊗");
@@ -127,12 +128,12 @@ describe("FR-016-AC-10 (TC-309)", () => {
 describe("FR-016-AC-11 (TC-310)", () => {
   it("preserves the underlying glyphs after coloring", () => {
     const colored = colorOrbitFrame(ORBIT_SPINNER[0]);
-    expect(stripAnsi(colored)).toBe(ORBIT_SPINNER[0]);
+    expect(stripAnsi(colored)).toBe(orbitFrameGlyphs(ORBIT_SPINNER[0]));
   });
   it("colors orbit and satellite glyphs", () => {
-    // ORBIT[0] contains either ⊚ or ⊙ + a satellite. After coloring there
-    // should be at least one color escape.
-    const colored = colorOrbitFrame(ORBIT_SPINNER[0]);
+    // Frame 1 contains the planet ⊝ plus two sats (⋅ dim, ∘ bright).
+    // After coloring there should be at least one ANSI color escape.
+    const colored = colorOrbitFrame(ORBIT_SPINNER[1]);
     expect(colored).toMatch(/\x1b\[/);
   });
 });

@@ -10,11 +10,25 @@
  */
 
 import pc from "picocolors";
-import { ORBIT_SPINNER, type PhaseState } from "@agent-ix/ix-ui-semantic";
-import { colors, blue } from "./colors.js";
+import {
+  ORBIT_SPINNER,
+  orbitFrameGlyphs,
+  type PhaseState,
+  type OrbitCell,
+  type OrbitFrame,
+  type OrbitTone,
+} from "@agent-ix/ix-ui-semantic";
+import {
+  colors,
+  blue,
+  orbitDim,
+  orbitMedDim,
+  orbitMed,
+  orbitBright,
+} from "./colors.js";
 
-export type { PhaseState };
-export { ORBIT_SPINNER, colors, blue };
+export type { PhaseState, OrbitCell, OrbitFrame, OrbitTone };
+export { ORBIT_SPINNER, orbitFrameGlyphs, colors, blue };
 
 // ── Layout ──────────────────────────────────────────────────────────────────
 
@@ -29,7 +43,7 @@ export const ERROR_INDENT = ROW_INDENT + "    ";
 /** Indent for outer-level flow rows (pipe, preflight, completion). */
 export const FLOW_INDENT = " ";
 /** Header indicator width — keeps `[ … ]` aligned across spinner/pass/fail. */
-export const PHASE_WIDTH = 4;
+export const PHASE_WIDTH = 5;
 /** Advance the orbit glyph every N ticks (3 × 80 ms = 240 ms). */
 export const HEADER_TICK_DIV = 3;
 
@@ -70,23 +84,35 @@ export const GLYPH_COMPLETE = blue("✧");
 
 // ── Header rendering ────────────────────────────────────────────────────────
 
+const ORBIT_TONE: Record<OrbitTone, (s: string) => string> = {
+  gray: pc.gray,
+  dim: orbitDim,
+  medDim: orbitMedDim,
+  med: orbitMed,
+  bright: orbitBright,
+};
+
 /**
- * Per-glyph color the orbit frame: planet (⊙/⊚) gray, satellite (∘/⋅/⚬) blue.
+ * Apply per-cell tones to an orbit frame: each non-space cell carries its
+ * own tone (gray, dim, medDim, med, bright). Glyph and color together
+ * encode depth — ⋅ dim = farther, ∘ bright = closer.
  */
-export function colorOrbitFrame(frame: string): string {
-  return [...frame]
-    .map((ch) => {
-      if (ch === "⊙" || ch === "⊚") return pc.gray(ch);
-      if (ch === "∘" || ch === "⋅" || ch === "⚬") return blue(ch);
-      return ch;
-    })
+export function colorOrbitFrame(frame: OrbitFrame): string {
+  return frame
+    .map((c) => (typeof c === "string" ? c : ORBIT_TONE[c.tone](c.glyph)))
     .join("");
 }
 
-/** Frozen "passed" header indicator — orbit at rest. */
-export const PHASE_PASS: string = colorOrbitFrame(ORBIT_SPINNER[5]);
+/** Frozen "passed" header indicator — orbit at rest, planet alone in gray. */
+export const PHASE_PASS: string = colorOrbitFrame([
+  " ",
+  " ",
+  { glyph: "⊝", tone: "gray" },
+  " ",
+  " ",
+]);
 /** Frozen "failed" header indicator — red ⊗, padded to PHASE_WIDTH. */
-export const PHASE_FAIL: string = " " + colors.red("⊗") + "  ";
+export const PHASE_FAIL: string = " " + colors.red("⊗") + "   ";
 
 /** Wrap a header string in gray brackets with gray `·` separators. */
 export function renderHeader(text: string): string {

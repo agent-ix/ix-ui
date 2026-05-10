@@ -8,12 +8,12 @@ const stripAnsi = (s: string): string => s.replace(/\x1b\[[0-9;]*m/g, "");
 
 // FR-002-AC-2 (TC-113): passed status
 describe("FR-002-AC-2 (TC-113)", () => {
-  it("renders frozen ⊙ in passed state", () => {
+  it("renders frozen ⊝ in passed state", () => {
     const { lastFrame } = render(
       <Frame header="ix elements list" status="passed" />,
     );
     const out = stripAnsi(lastFrame() ?? "");
-    expect(out).toContain("⊙");
+    expect(out).toContain("⊝");
     expect(out).toContain("[ ix elements list ]");
   });
 });
