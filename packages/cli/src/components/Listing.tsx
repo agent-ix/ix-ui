@@ -1,12 +1,11 @@
 import React from "react";
 import { Box, Text } from "ink";
 import {
-  ROW_INDENT,
   NOTE_INDENT,
   FLOW_INDENT,
   GLYPH_DONE,
+  GLYPH_DIM_DOT,
   GLYPH_COMPLETE,
-  GLYPH_PIPE,
   GLYPH_WAITING,
   colors,
 } from "../style.js";
@@ -44,20 +43,13 @@ export const Listing: React.FC<ListingProps> = ({
   return (
     <Frame
       {...props}
-      pre={
-        pre != null ? (
-          <>
-            <Text>{`${FLOW_INDENT}${GLYPH_PIPE}`}</Text>
-            {pre}
-          </>
-        ) : null
-      }
+      pre={pre ?? null}
       post={
         successTail ? (
           <>
             <Text> </Text>
             <Box flexDirection="row">
-              <Text>{`${FLOW_INDENT}${GLYPH_COMPLETE}   `}</Text>
+              <Text>{`${FLOW_INDENT}${GLYPH_COMPLETE} `}</Text>
               <Text>{tail}</Text>
             </Box>
           </>
@@ -71,6 +63,18 @@ export const Listing: React.FC<ListingProps> = ({
   );
 };
 
+export interface FlowLineProps {
+  children: React.ReactNode;
+}
+
+/** Outer-level flow row for Listing.pre. Owns the shared bullet and indent. */
+export const FlowLine: React.FC<FlowLineProps> = ({ children }) => (
+  <Box flexDirection="row">
+    <Text>{`${FLOW_INDENT}${GLYPH_DIM_DOT} `}</Text>
+    <Text>{children}</Text>
+  </Box>
+);
+
 export interface GroupProps {
   name: string;
   children?: React.ReactNode;
@@ -79,7 +83,7 @@ export interface GroupProps {
 export const Group: React.FC<GroupProps> = ({ name, children }) => (
   <Box flexDirection="column" marginTop={1}>
     <Text>
-      {ROW_INDENT}
+      {FLOW_INDENT}
       {colors.bold(colors.cyan(name))}
     </Text>
     {children}
@@ -94,7 +98,7 @@ export interface ItemProps {
 export const Item: React.FC<ItemProps> = ({ name, description }) => (
   <Box flexDirection="row">
     <Text>
-      {ROW_INDENT}
+      {FLOW_INDENT}
       {GLYPH_DONE}{" "}
     </Text>
     <Text>{name}</Text>
@@ -132,7 +136,7 @@ export interface InfoProps {
 export const Info: React.FC<InfoProps> = ({ name, description }) => (
   <Box flexDirection="row">
     <Text>
-      {"   "}
+      {FLOW_INDENT}
       {GLYPH_WAITING}{" "}
     </Text>
     <Text dimColor>{name}</Text>

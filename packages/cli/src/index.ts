@@ -13,11 +13,13 @@ export {
 export { HeaderSpinner } from "./components/HeaderSpinner.js";
 export {
   Listing,
+  FlowLine,
   Group,
   Item,
   Info,
   Note,
   type ListingProps,
+  type FlowLineProps,
   type GroupProps,
   type ItemProps,
   type InfoProps,
@@ -100,7 +102,6 @@ export {
   PHASE_WIDTH,
   HEADER_TICK_DIV,
   ROUTE_INDENT,
-  ROUTE_OUT,
   ROUTE_URL,
   GLYPH_DONE,
   GLYPH_DIM_DOT,

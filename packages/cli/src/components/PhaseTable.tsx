@@ -12,10 +12,11 @@ import {
   GLYPH_DONE,
   GLYPH_FAIL,
   GLYPH_INGRESS,
-  GLYPH_PIPE,
   GLYPH_WAITING,
-  ROUTE_INDENT,
+  CONNECTOR_OPEN,
+  CONNECTOR_PIPE,
   ROUTE_URL,
+  indentFor,
   colorPods,
   colors,
 } from "../style.js";
@@ -192,12 +193,12 @@ const IngressBlock: React.FC<IngressGroup> = ({ host, urls }) => (
   <>
     <Text> </Text>
     <Box flexDirection="row">
-      <Text>{` ${GLYPH_INGRESS} `}</Text>
+      <Text>{`${indentFor(1)}${GLYPH_INGRESS} `}</Text>
       <Text>
         {colors.dim("Ingress")} · {host}
       </Text>
     </Box>
-    <Text>{ROUTE_INDENT}</Text>
+    <Text>{`${indentFor(1)}${CONNECTOR_OPEN}`}</Text>
     {urls.map((url, i) => (
       <Box key={`${url}-${i}`} flexDirection="row">
         <Text>{`${ROUTE_URL}  `}</Text>
@@ -209,7 +210,7 @@ const IngressBlock: React.FC<IngressGroup> = ({ host, urls }) => (
   </>
 );
 
-const PipeLine: React.FC = () => <Text>{` ${GLYPH_PIPE}`}</Text>;
+const PipeLine: React.FC = () => <Text>{CONNECTOR_PIPE}</Text>;
 
 function visibleNameWidth(rows: ServiceRow<string>[]): number {
   let w = 0;
@@ -307,7 +308,7 @@ export function PhaseTable<P extends string>(
         preflightItems.length > 0
           ? preflightItems.map((item, i) => (
               <React.Fragment key={i}>
-                <PipeLine />
+                {i > 0 && <PipeLine />}
                 {item}
               </React.Fragment>
             ))

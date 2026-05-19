@@ -3,9 +3,10 @@ import { Box, Text } from "ink";
 import {
   PHASE_PASS,
   PHASE_FAIL,
-  ROUTE_INDENT,
-  ROUTE_OUT,
-  GLYPH_DONE,
+  CONNECTOR_HEADER,
+  CONNECTOR_OPEN,
+  FLOW_INDENT,
+  GLYPH_COMPLETE,
   GLYPH_FAIL_MARK,
   renderHeader,
   colors,
@@ -56,16 +57,13 @@ const Tail: React.FC<{ tail: React.ReactNode; variant: TailVariant }> = ({
   variant,
 }) => {
   if (variant === "error") {
-    // 1-space lead + GLYPH_FAIL_MARK + 2 trailing spaces (FR-002-AC-8 error).
     return (
       <Box flexDirection="row">
-        <Text>{` ${GLYPH_FAIL_MARK}  `}</Text>
+        <Text>{`${FLOW_INDENT}${GLYPH_FAIL_MARK} `}</Text>
         <Text color={RED_HEX}>{tail}</Text>
       </Box>
     );
   }
-  // ROUTE_OUT + glyph + 2 spaces produces the success/warn tail line.
-  const glyph = variant === "warn" ? colors.yellow("•") : GLYPH_DONE;
   const colored =
     variant === "warn" ? (
       <Text color="yellow">{tail}</Text>
@@ -74,7 +72,7 @@ const Tail: React.FC<{ tail: React.ReactNode; variant: TailVariant }> = ({
     );
   return (
     <Box flexDirection="row">
-      <Text>{`${ROUTE_OUT}${glyph}  `}</Text>
+      <Text>{`${FLOW_INDENT}${GLYPH_COMPLETE} `}</Text>
       {colored}
     </Box>
   );
@@ -82,7 +80,7 @@ const Tail: React.FC<{ tail: React.ReactNode; variant: TailVariant }> = ({
 
 /**
  * Base layout: orbit header, opener (ROUTE_INDENT), body, optional tail
- * (ROUTE_OUT). Used by Listing, PhaseTable, TaskList. (FR-002)
+ * Used by Listing, PhaseTable, TaskList. (FR-002)
  */
 export const Frame: React.FC<FrameProps> = ({
   header,
@@ -107,8 +105,9 @@ export const Frame: React.FC<FrameProps> = ({
         <HeaderIndicator status={status} />
         <Text>{renderHeader(header)}</Text>
       </Box>
+      {(prePresent || childrenPresent) && <Text>{CONNECTOR_HEADER}</Text>}
       {prePresent && <Box flexDirection="column">{pre}</Box>}
-      {childrenPresent && <Text>{ROUTE_INDENT}</Text>}
+      {prePresent && childrenPresent && <Text>{CONNECTOR_OPEN}</Text>}
       {childrenPresent && <Box flexDirection="column">{children}</Box>}
       {post != null && <Box flexDirection="column">{post}</Box>}
       {tail != null && (
@@ -123,5 +122,4 @@ export const Frame: React.FC<FrameProps> = ({
 
 // Re-export internal helpers so tests can target them.
 export { HeaderIndicator };
-// Silence "colors imported but unused" if optimisations remove it.
 void colors;

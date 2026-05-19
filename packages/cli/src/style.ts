@@ -9,7 +9,7 @@
  * management. See NFR-002.
  */
 
-import pc from "picocolors";
+import { createColors } from "picocolors";
 import {
   ORBIT_SPINNER,
   orbitFrameGlyphs,
@@ -30,18 +30,24 @@ import {
 export type { PhaseState, OrbitCell, OrbitFrame, OrbitTone };
 export { ORBIT_SPINNER, orbitFrameGlyphs, colors, blue };
 
+const pc = createColors(true);
+
 // ── Layout ──────────────────────────────────────────────────────────────────
 
 /** Column at which the orbit/marker glyph sits in every header line. */
-export const PLANET_COL = 1;
-/** Indent for body rows (•, ○ glyphs). 3 spaces — aligns under route opener `└─┐`. */
-export const ROW_INDENT = "   ";
-/** Indent for note/info text — sits 2 cols past ROW_INDENT. */
-export const NOTE_INDENT = ROW_INDENT + "  ";
-/** Indent for error messages — aligns under the row name. */
-export const ERROR_INDENT = ROW_INDENT + "    ";
-/** Indent for outer-level flow rows (pipe, preflight, completion). */
-export const FLOW_INDENT = " ";
+export const PLANET_COL = 2;
+/** Two spaces — one nesting level. */
+export const LEVEL_INDENT = "  ";
+/** Indent string for nesting `level` (0 = col 0, 1 = col 2, 2 = col 4, …). */
+export const indentFor = (level: number): string => LEVEL_INDENT.repeat(level);
+/** Indent for body rows (•, ○ glyphs). Level-1: aligns under the `┐` of `└─┐`. */
+export const ROW_INDENT = indentFor(1);
+/** Indent for note/info text — sits under the row's name (level-2). */
+export const NOTE_INDENT = indentFor(2);
+/** Indent for error messages — sits 2 cols past NOTE_INDENT. */
+export const ERROR_INDENT = indentFor(2) + "  ";
+/** Indent for outer-level flow rows (pipe, preflight, completion) — col 0. */
+export const FLOW_INDENT = "";
 /** Header indicator width — keeps `[ … ]` aligned across spinner/pass/fail. */
 export const PHASE_WIDTH = 5;
 /** Advance the orbit glyph every N ticks (3 × 80 ms = 240 ms). */
@@ -49,21 +55,22 @@ export const HEADER_TICK_DIV = 3;
 
 // ── Connectors ──────────────────────────────────────────────────────────────
 
-/** Opener: `' └─┐'` under the orbit header. */
-export const ROUTE_INDENT = pc.dim(" └─┐");
-/** Tail connector: 4-space indent + 3 padding + dim `└──` (3 chars). The
- *  caller appends the tail glyph (`•` for success/warn) so the visible result
- *  is `       └──•`. The error tail does NOT use `ROUTE_OUT` — it sits at
- *  column 1 with `GLYPH_FAIL_MARK` for prominence (FR-002-AC-8). */
-export const ROUTE_OUT = ROW_INDENT + pc.dim("   └──");
-/** URL route connector used inside per-host ingress group blocks. The
- *  host-level ROUTE_INDENT opener already provides the visual closure that
- *  `└─` previously implied, so the URL row carries only the arrow. */
-export const ROUTE_URL = ROW_INDENT + pc.dim("→");
+/** Header-to-body connector: `┌─┘` sits directly below the orbit, with `┘`
+ *  under the planet at col 2 and `┌` opening the body line at col 0. */
+export const CONNECTOR_HEADER = pc.dim("┌─┘");
+/** Sub-section opener: `└─┐`. Caller prepends `indentFor(level)` to nest. */
+export const CONNECTOR_OPEN = pc.dim("└─┐");
+/** Vertical separator between sibling top-level rows. */
+export const CONNECTOR_PIPE = pc.dim("|");
+/** Body opener under the header (level-0 `└─┐`, no leading indent). */
+export const ROUTE_INDENT = CONNECTOR_OPEN;
+/** URL route connector used inside per-host ingress group blocks (level-2:
+ *  arrow at col 4, directly under the `┐` of the level-1 `└─┐` opener). */
+export const ROUTE_URL = indentFor(2) + pc.dim("→");
 
 // ── Glyphs ──────────────────────────────────────────────────────────────────
 
-/** Done bullet — completed task rows AND success/warn tail glyph (after `└──`). */
+/** Done bullet — completed task rows. */
 export const GLYPH_DONE = blue("•");
 /** Dim body bullet — preflight and summary rows. */
 export const GLYPH_DIM_DOT = pc.dim("•");
@@ -107,7 +114,7 @@ export function colorOrbitFrame(frame: OrbitFrame): string {
 export const PHASE_PASS: string = colorOrbitFrame([
   " ",
   " ",
-  { glyph: "⊝", tone: "gray" },
+  { glyph: "⊙", tone: "gray" },
   " ",
   " ",
 ]);

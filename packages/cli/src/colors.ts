@@ -1,4 +1,6 @@
-import pc from "picocolors";
+import { createColors } from "picocolors";
+
+const pc = createColors(true);
 
 // Muted terracotta red — ANSI 256 color 167, softer than bright red.
 // Hex equivalent for use with ink's <Text color={...}>.

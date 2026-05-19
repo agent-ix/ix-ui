@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { Box, Text } from "ink";
 import { BRAILLE_SPINNER } from "@agent-ix/ix-ui-semantic";
 import {
-  ROW_INDENT,
+  FLOW_INDENT,
   NOTE_INDENT,
   ERROR_INDENT,
   GLYPH_DONE,
@@ -304,7 +304,7 @@ export const TaskList: React.FC<TaskListProps> = ({
         return (
           <React.Fragment key={i}>
             <Box flexDirection="row">
-              <Text>{ROW_INDENT}</Text>
+              <Text>{FLOW_INDENT}</Text>
               <Text>{stateGlyph(r, tick)} </Text>
               <Box flexGrow={1}>
                 <Text>

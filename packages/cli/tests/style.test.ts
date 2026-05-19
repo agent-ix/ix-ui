@@ -8,7 +8,6 @@ import {
   PHASE_WIDTH,
   HEADER_TICK_DIV,
   ROUTE_INDENT,
-  ROUTE_OUT,
   ROUTE_URL,
   GLYPH_DONE,
   GLYPH_DIM_DOT,
@@ -32,31 +31,31 @@ import {
 
 const stripAnsi = (s: string): string => s.replace(/\x1b\[[0-9;]*m/g, "");
 
-// FR-016-AC-2: PLANET_COL = 1
+// FR-016-AC-2: PLANET_COL = 2 (planet glyph sits at column 2 of the 5-cell orbit)
 describe("FR-016-AC-2 (TC-301)", () => {
-  it("PLANET_COL is 1", () => {
-    expect(PLANET_COL).toBe(1);
+  it("PLANET_COL is 2", () => {
+    expect(PLANET_COL).toBe(2);
   });
 });
 
-// FR-016-AC-3: ROW_INDENT = 3 spaces (aligns body rows under route opener `└─┐`)
+// FR-016-AC-3: ROW_INDENT = 2 spaces (level-1 body rows, under the `┐` of `└─┐`)
 describe("FR-016-AC-3 (TC-302)", () => {
-  it("ROW_INDENT is exactly 3 spaces", () => {
-    expect(ROW_INDENT).toBe("   ");
+  it("ROW_INDENT is exactly 2 spaces", () => {
+    expect(ROW_INDENT).toBe("  ");
   });
 });
 
-// FR-016-AC-4: NOTE_INDENT = ROW_INDENT + 2 (5 spaces)
+// FR-016-AC-4: NOTE_INDENT = level-2 (4 spaces) — under row name text
 describe("FR-016-AC-4 (TC-303)", () => {
-  it("NOTE_INDENT is ROW_INDENT + 2 spaces", () => {
-    expect(NOTE_INDENT).toBe(ROW_INDENT + "  ");
+  it("NOTE_INDENT is 4 spaces (level 2)", () => {
+    expect(NOTE_INDENT).toBe("    ");
   });
 });
 
-// FR-016-AC-5: ERROR_INDENT = ROW_INDENT + 4 (7 spaces)
+// FR-016-AC-5: ERROR_INDENT = NOTE_INDENT + 2 (6 spaces)
 describe("FR-016-AC-5 (TC-304)", () => {
-  it("ERROR_INDENT is ROW_INDENT + 4 spaces", () => {
-    expect(ERROR_INDENT).toBe(ROW_INDENT + "    ");
+  it("ERROR_INDENT is NOTE_INDENT + 2 spaces", () => {
+    expect(ERROR_INDENT).toBe(NOTE_INDENT + "  ");
   });
 });
 
@@ -73,20 +72,17 @@ describe("FR-016-AC-6 (TC-305, TC-CB-04)", () => {
   });
 });
 
-// FR-016-AC-7: ROUTE_INDENT contains └─┐
+// FR-016-AC-7: ROUTE_INDENT contains └─┐ (level-0 body opener)
 describe("FR-016-AC-7 (TC-306)", () => {
-  it("ROUTE_INDENT contains the └─┐ opener", () => {
-    expect(stripAnsi(ROUTE_INDENT)).toBe(" └─┐");
+  it("ROUTE_INDENT contains the └─┐ opener at col 0", () => {
+    expect(stripAnsi(ROUTE_INDENT)).toBe("└─┐");
   });
 });
 
-// FR-016-AC-8: ROUTE_OUT
+// FR-016-AC-8: ROUTE_URL (level-2 ingress arrow)
 describe("FR-016-AC-8 (TC-307)", () => {
-  it("ROUTE_OUT contains the └── connector after the row indent", () => {
-    expect(stripAnsi(ROUTE_OUT)).toBe(ROW_INDENT + "   └──");
-  });
-  it("ROUTE_URL is the arrow-only URL connector after the row indent", () => {
-    expect(stripAnsi(ROUTE_URL)).toBe(ROW_INDENT + "→");
+  it("ROUTE_URL is the arrow-only URL connector at level 2", () => {
+    expect(stripAnsi(ROUTE_URL)).toBe("    →");
   });
 });
 
@@ -116,8 +112,8 @@ describe("FR-001-AC-12 (TC-111)", () => {
 
 // FR-016-AC-10: PHASE_PASS / PHASE_FAIL
 describe("FR-016-AC-10 (TC-309)", () => {
-  it("PHASE_PASS is the planet at rest (⊝, no satellites)", () => {
-    expect(stripAnsi(PHASE_PASS)).toBe("  ⊝  ");
+  it("PHASE_PASS is the planet at rest (⊙, no satellites)", () => {
+    expect(stripAnsi(PHASE_PASS)).toBe("  ⊙  ");
   });
   it("PHASE_FAIL contains a red ⊗", () => {
     expect(PHASE_FAIL).toContain("⊗");
@@ -131,7 +127,7 @@ describe("FR-016-AC-11 (TC-310)", () => {
     expect(stripAnsi(colored)).toBe(orbitFrameGlyphs(ORBIT_SPINNER[0]));
   });
   it("colors orbit and satellite glyphs", () => {
-    // Frame 1 contains the planet ⊝ plus two sats (⋅ dim, ∘ bright).
+    // Frame 1 contains the planet ⊙ plus two sats (⋅ dim, ∘ bright).
     // After coloring there should be at least one ANSI color escape.
     const colored = colorOrbitFrame(ORBIT_SPINNER[1]);
     expect(colored).toMatch(/\x1b\[/);
@@ -157,7 +153,7 @@ describe("FR-016-AC-1 (TC-300)", () => {
     expect(GLYPH_CANCELLED).toBeDefined();
     expect(GLYPH_INGRESS).toBeDefined();
     expect(GLYPH_COMPLETE).toBeDefined();
-    expect(FLOW_INDENT).toBe(" ");
+    expect(FLOW_INDENT).toBe("");
     expect(colors).toBeDefined();
     expect(blue).toBeDefined();
     expect(ORBIT_SPINNER).toBeDefined();

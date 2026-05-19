@@ -8,12 +8,12 @@ const stripAnsi = (s: string): string => s.replace(/\x1b\[[0-9;]*m/g, "");
 
 // FR-002-AC-2 (TC-113): passed status
 describe("FR-002-AC-2 (TC-113)", () => {
-  it("renders frozen ⊝ in passed state", () => {
+  it("renders frozen ⊙ in passed state", () => {
     const { lastFrame } = render(
       <Frame header="ix elements list" status="passed" />,
     );
     const out = stripAnsi(lastFrame() ?? "");
-    expect(out).toContain("⊝");
+    expect(out).toContain("⊙");
     expect(out).toContain("[ ix elements list ]");
   });
 });
@@ -32,13 +32,13 @@ describe("FR-002-AC-3 (TC-114)", () => {
 
 // FR-002-AC-5 + AC-6 (TC-116, TC-117): opener appears with children, collapses without
 describe("FR-002-AC-5/AC-6 (TC-116, TC-117)", () => {
-  it("renders └─┐ opener when children present", () => {
+  it("renders ┌─┘ header connector when children present", () => {
     const { lastFrame } = render(
       <Frame header="h" status="passed">
         <Text>body</Text>
       </Frame>,
     );
-    expect(stripAnsi(lastFrame() ?? "")).toContain("└─┐");
+    expect(stripAnsi(lastFrame() ?? "")).toContain("┌─┘");
   });
 
   it("collapses to header-only when no children and no tail", () => {
@@ -58,13 +58,15 @@ describe("FR-002-AC-5/AC-6 (TC-116, TC-117)", () => {
 
 // FR-002-AC-8 (TC-119): tail variants
 describe("FR-002-AC-8 (TC-119)", () => {
-  it("success tail uses └──• connector", () => {
+  it("success tail uses ✧ connector", () => {
     const { lastFrame } = render(
       <Frame header="h" status="passed" tail="Done.">
         <Text>row</Text>
       </Frame>,
     );
-    expect(stripAnsi(lastFrame() ?? "")).toContain("└──•  Done.");
+    const out = stripAnsi(lastFrame() ?? "");
+    expect(out).toContain("✧ Done.");
+    expect(out).not.toContain("└──");
   });
 
   it("error tail sits at planet column with ⊗ and no └── connector", () => {
@@ -74,19 +76,19 @@ describe("FR-002-AC-8 (TC-119)", () => {
       </Frame>,
     );
     const out = stripAnsi(lastFrame() ?? "");
-    expect(out).toContain(" ⊗  failed");
-    // Tail line specifically does NOT use the └── connector (only the opener does)
-    const tailLine = out.split("\n").find((l) => l.includes("⊗  failed")) ?? "";
-    expect(tailLine).not.toContain("└──");
+    expect(out).toContain("⊗ failed");
+    expect(out).not.toContain("└──");
   });
 
-  it("warn tail uses └──• connector", () => {
+  it("warn tail uses ✧ connector", () => {
     const { lastFrame } = render(
       <Frame header="h" status="passed" tail="warning" tailVariant="warn">
         <Text>row</Text>
       </Frame>,
     );
-    expect(stripAnsi(lastFrame() ?? "")).toContain("└──•  warning");
+    const out = stripAnsi(lastFrame() ?? "");
+    expect(out).toContain("✧ warning");
+    expect(out).not.toContain("└──");
   });
 });
 

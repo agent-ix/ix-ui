@@ -58,12 +58,11 @@ describe("NFR-002-AC-4 (TC-328)", () => {
   });
 });
 
-// NFR-003-AC-2 (TC-331): no └── connectors outside style.ts
+// NFR-003-AC-2 (TC-331): no └── connectors anywhere in src
 describe("NFR-003-AC-2 (TC-331)", () => {
-  it("no └── connectors outside style.ts", () => {
+  it("no └── connectors anywhere in src", () => {
     const offenders: string[] = [];
     for (const s of SOURCES) {
-      if (s.rel === "style.ts") continue;
       if (/└──/.test(s.body)) offenders.push(s.rel);
     }
     expect(offenders).toEqual([]);
