@@ -1,2 +1,10 @@
 packages:
   - packages/*
+
+minimumReleaseAge: 14400
+minimumReleaseAgeExclude:
+  - "@agent-ix/*"
+
+updateConfig:
+  ignoreDependencies:
+    - typescript
