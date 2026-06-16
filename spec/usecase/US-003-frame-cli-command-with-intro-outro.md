@@ -1,7 +1,7 @@
 ---
 id: US-003
 title: "Frame a CLI Command With a Listing"
-artifact_type: US
+type: US
 relationships:
   - target: "ix://agent-ix/ix-ui/spec/functional/cli/FR-002"
     type: "derives_into"

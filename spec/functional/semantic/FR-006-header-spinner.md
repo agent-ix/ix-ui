@@ -1,7 +1,7 @@
 ---
 id: FR-006
 title: "HEADER_SPINNER Frame Array"
-artifact_type: FR
+type: FR
 relationships: []
 ---
 

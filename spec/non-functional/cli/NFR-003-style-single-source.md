@@ -1,7 +1,7 @@
 ---
 id: NFR-003
 title: "All Visual Style Lives in One Module — No Inline Literals in Components"
-artifact_type: NFR
+type: NFR
 relationships:
   - target: "ix://agent-ix/ix-ui/spec/functional/cli/FR-016"
     type: "constrains"

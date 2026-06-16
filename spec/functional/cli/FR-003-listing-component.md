@@ -1,7 +1,7 @@
 ---
 id: FR-003
 title: "Listing Component — Static Listings, Status Views, Mixed Flows"
-artifact_type: FR
+type: FR
 relationships:
   - target: "ix://agent-ix/ix-ui/spec/usecase/US-003"
     type: "derived_from"

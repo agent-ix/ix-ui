@@ -1,7 +1,7 @@
 ---
 id: StR-002
 title: "Platform-Agnostic Semantic Vocabulary With Zero Runtime Dependencies"
-artifact_type: StR
+type: StR
 relationships:
   - target: "ix://agent-ix/ix-ui/spec/functional/semantic/FR-001"
     type: "satisfied_by"

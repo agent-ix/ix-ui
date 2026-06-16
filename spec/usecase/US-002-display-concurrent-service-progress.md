@@ -1,7 +1,7 @@
 ---
 id: US-002
 title: "Display Concurrent Multi-Service Progress With Phase Columns"
-artifact_type: US
+type: US
 relationships:
   - target: "ix://agent-ix/ix-ui/spec/functional/cli/FR-004"
     type: "derives_into"

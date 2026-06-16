@@ -1,7 +1,7 @@
 ---
 id: FR-009
 title: "colors.red — ANSI 256 Muted Terracotta Red"
-artifact_type: FR
+type: FR
 relationships:
   - target: "ix://agent-ix/ix-ui/spec/functional/cli/FR-010"
     type: "depends_on"

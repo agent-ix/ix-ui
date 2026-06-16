@@ -1,7 +1,7 @@
 ---
 id: StR-001
 title: "Consistent Terminal Design Language Across All CLI Tools"
-artifact_type: StR
+type: StR
 relationships:
   - target: "ix://agent-ix/ix-ui/spec/functional/semantic/FR-001"
     type: "satisfied_by"

@@ -1,7 +1,7 @@
 ---
 id: FR-007
 title: "Zero Runtime Dependencies"
-artifact_type: FR
+type: FR
 relationships:
   - target: "ix://agent-ix/ix-ui/spec/stakeholder/StR-002"
     type: "implements"

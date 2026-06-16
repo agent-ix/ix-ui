@@ -1,7 +1,7 @@
 ---
 id: FR-003
 title: "PHASE_GLYPHS Canonical Map"
-artifact_type: FR
+type: FR
 relationships:
   - target: "ix://agent-ix/ix-ui/spec/functional/semantic/FR-001"
     type: "depends_on"

@@ -1,7 +1,7 @@
 ---
 id: NFR-001
 title: "Animation Tick Interval — 80 ms"
-artifact_type: NFR
+type: NFR
 relationships:
   - target: "ix://agent-ix/ix-ui/spec/functional/cli/FR-002"
     type: "constrains"

@@ -1,7 +1,7 @@
 ---
 id: FR-005
 title: "BRAILLE_SPINNER Frame Array"
-artifact_type: FR
+type: FR
 relationships:
   - target: "ix://agent-ix/ix-ui/spec/functional/semantic/FR-003"
     type: "depends_on"

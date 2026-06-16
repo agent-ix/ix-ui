@@ -1,7 +1,7 @@
 ---
 id: US-001
 title: "Consume Phase State Types in a CLI Package"
-artifact_type: US
+type: US
 relationships:
   - target: "ix://agent-ix/ix-ui/spec/functional/semantic/FR-001"
     type: "derives_into"

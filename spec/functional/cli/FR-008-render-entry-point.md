@@ -1,7 +1,7 @@
 ---
 id: FR-008
 title: "render() Entry Point — Mount Ink Tree, Resolve on Unmount"
-artifact_type: FR
+type: FR
 relationships:
   - target: "ix://agent-ix/ix-ui/spec/functional/cli/FR-001"
     type: "depends_on"

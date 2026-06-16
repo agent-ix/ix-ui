@@ -1,7 +1,7 @@
 ---
 id: FR-016
 title: "Shared Visual Style Tokens — Single Source of Truth"
-artifact_type: FR
+type: FR
 relationships:
   - target: "ix://agent-ix/ix-ui/spec/usecase/US-004"
     type: "derived_from"

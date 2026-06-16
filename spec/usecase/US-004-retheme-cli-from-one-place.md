@@ -1,7 +1,7 @@
 ---
 id: US-004
 title: "Retheme the Entire CLI From One Module"
-artifact_type: US
+type: US
 relationships:
   - target: "ix://agent-ix/ix-ui/spec/functional/cli/FR-016"
     type: "derives_into"

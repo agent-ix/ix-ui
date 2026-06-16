@@ -1,7 +1,7 @@
 ---
 id: FR-005
 title: "TaskList Component — Sequential and Concurrent Task Execution"
-artifact_type: FR
+type: FR
 relationships:
   - target: "ix://agent-ix/ix-ui/spec/usecase/US-003"
     type: "derived_from"

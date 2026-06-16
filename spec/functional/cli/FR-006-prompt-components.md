@@ -1,7 +1,7 @@
 ---
 id: FR-006
 title: "Prompt Components — Text, Password, Confirm, Select, MultiSelect"
-artifact_type: FR
+type: FR
 relationships:
   - target: "ix://agent-ix/ix-ui/spec/usecase/US-003"
     type: "derived_from"

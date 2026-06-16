@@ -1,7 +1,7 @@
 ---
 id: FR-010
 title: "colors — Canonical Colour Palette Object"
-artifact_type: FR
+type: FR
 relationships:
   - target: "ix://agent-ix/ix-ui/spec/stakeholder/StR-001"
     type: "implements"

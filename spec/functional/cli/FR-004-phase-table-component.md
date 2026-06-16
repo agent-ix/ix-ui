@@ -1,7 +1,7 @@
 ---
 id: FR-004
 title: "PhaseTable Component — Concurrent Multi-Service Progress"
-artifact_type: FR
+type: FR
 relationships:
   - target: "ix://agent-ix/ix-ui/spec/usecase/US-002"
     type: "derived_from"

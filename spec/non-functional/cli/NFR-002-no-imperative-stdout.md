@@ -1,7 +1,7 @@
 ---
 id: NFR-002
 title: "No Imperative stdout / ANSI Control in Component Code"
-artifact_type: NFR
+type: NFR
 relationships:
   - target: "ix://agent-ix/ix-ui/spec/functional/cli/FR-001"
     type: "constrains"

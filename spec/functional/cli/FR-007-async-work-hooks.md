@@ -1,7 +1,7 @@
 ---
 id: FR-007
 title: "Async Work Hooks — useInterval, useExecaPhase, useKubectlRollout, useHelmHookWatcher"
-artifact_type: FR
+type: FR
 relationships:
   - target: "ix://agent-ix/ix-ui/spec/functional/cli/FR-001"
     type: "depends_on"

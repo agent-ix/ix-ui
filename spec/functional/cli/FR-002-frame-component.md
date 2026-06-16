@@ -1,7 +1,7 @@
 ---
 id: FR-002
 title: "Frame Component — Orbit Header, Opener, Tail"
-artifact_type: FR
+type: FR
 relationships:
   - target: "ix://agent-ix/ix-ui/spec/usecase/US-003"
     type: "derived_from"
