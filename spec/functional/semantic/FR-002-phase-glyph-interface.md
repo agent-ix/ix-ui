@@ -37,5 +37,15 @@ export interface PhaseGlyph {
 
 ## Acceptance Criteria
 
+| ID | Criteria | Verification |
+|----|----------|--------------|
+| FR-002-AC-1 | `PhaseGlyph` is exported from `@agent-ix/ix-ui-semantic` | Test |
+| FR-002-AC-2 | All three fields (`tty`, `nonTty`, `animated`) are present and typed as specified | Test |
+
 - **FR-002-AC-1**: `PhaseGlyph` is exported from `@agent-ix/ix-ui-semantic`.
 - **FR-002-AC-2**: All three fields (`tty`, `nonTty`, `animated`) are present and typed as specified.
+
+
+## Dependencies
+
+- **Upstream**: FR-001 (depends_on)

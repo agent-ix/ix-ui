@@ -11,7 +11,7 @@ relationships:
     cardinality: "1:N"
 ---
 
-## Statement
+## Stakeholder Need
 
 The shared state vocabulary (phase states, glyphs, spinner frames) SHALL be publishable as a dependency-free package so that any TypeScript consumer — CLI tool, web dashboard, or test harness — can import types and constants without pulling in terminal or browser dependencies.
 
@@ -25,7 +25,7 @@ A monorepo design system that couples types to a renderer forces every consumer 
 - `@agent-ix/ix-ui-cli` depends on `semantic` and adds terminal-specific rendering deps.
 - `ix-themes` (web/React) may reference the same semantic vocabulary independently without importing `ix-ui-cli`.
 
-## Success Indicators
+## Validation Criteria
 
 - `@agent-ix/ix-ui-semantic/package.json` has no `dependencies` field (or an empty object).
 - A Next.js server component can import `PhaseState` from `@agent-ix/ix-ui-semantic` without bundler warnings about Node-only APIs.

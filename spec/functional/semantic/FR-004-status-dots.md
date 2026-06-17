@@ -36,5 +36,15 @@ export const STATUS_DOTS = {
 
 ## Acceptance Criteria
 
+| ID | Criteria | Verification |
+|----|----------|--------------|
+| FR-004-AC-1 | `STATUS_DOTS` is exported from `@agent-ix/ix-ui-semantic` | Test |
+| FR-004-AC-2 | `STATUS_DOTS.done === "●"`, `STATUS_DOTS.failed === "○"`, `STATUS_DOTS.pending === "·"` | Test |
+
 - **FR-004-AC-1**: `STATUS_DOTS` is exported from `@agent-ix/ix-ui-semantic`.
 - **FR-004-AC-2**: `STATUS_DOTS.done === "●"`, `STATUS_DOTS.failed === "○"`, `STATUS_DOTS.pending === "·"`.
+
+
+## Dependencies
+
+- **Upstream**: FR-001 (depends_on)

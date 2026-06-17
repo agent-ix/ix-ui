@@ -37,6 +37,18 @@ relationships:
 
 Centralizing all terminal output through Ink eliminates the entire class of cursor-math bugs caused by hand-tracked line counts diverging from physical terminal rows. It also makes the source easier to reason about: a reader knows exactly one path emits anything to the user's terminal, and that path is yoga-aware and resize-aware.
 
+## Measurement and Evaluation
+
+| Metric | Target | Threshold | Method |
+|--------|--------|-----------|--------|
+| Direct `process.stdout`/`stderr`/`console` write call sites in `packages/cli/src/` | 0 | 0 | Analysis |
+| ANSI escape literals (`\x1b[`) outside `colors.ts` | 0 | 0 | Analysis |
+| `process.stdout.columns` reads in `packages/cli/src/` | 0 | 0 | Analysis |
+
+## Verification
+
+A test iterates `packages/cli/src/` and runs the static greps in the Acceptance Criteria, asserting zero matches for forbidden stdout/stderr/console writes, cursor-control ANSI literals, and direct column reads.
+
 ## Acceptance Criteria
 
 - **NFR-002-AC-1**: A static grep across `packages/cli/src/` for `process\.stdout\.write\|process\.stderr\.write\|console\.(log|error|warn)\|process\.stdout\.(cursorTo|moveCursor|clearLine|columns)` SHALL return zero matches.

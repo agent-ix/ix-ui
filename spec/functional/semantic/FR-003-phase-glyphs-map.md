@@ -34,7 +34,19 @@ export const PHASE_GLYPHS: Record<PhaseState, PhaseGlyph> = {
 
 ## Acceptance Criteria
 
+| ID | Criteria | Verification |
+|----|----------|--------------|
+| FR-003-AC-1 | `PHASE_GLYPHS` is exported from `@agent-ix/ix-ui-semantic` | Test |
+| FR-003-AC-2 | `PHASE_GLYPHS` contains exactly five entries, one per `PhaseState` value | Test |
+| FR-003-AC-3 | Each entry's `tty` and `nonTty` fields are non-empty strings | Test |
+| FR-003-AC-4 | `pending`, `done`, `failed` have `animated: false`; `queued`, `running` have `animated: true` | Test |
+
 - **FR-003-AC-1**: `PHASE_GLYPHS` is exported from `@agent-ix/ix-ui-semantic`.
 - **FR-003-AC-2**: `PHASE_GLYPHS` contains exactly five entries, one per `PhaseState` value.
 - **FR-003-AC-3**: Each entry's `tty` and `nonTty` fields are non-empty strings.
 - **FR-003-AC-4**: `pending`, `done`, `failed` have `animated: false`; `queued`, `running` have `animated: true`.
+
+
+## Dependencies
+
+- **Upstream**: FR-001 (depends_on); FR-002 (depends_on)

@@ -23,6 +23,17 @@ export const HEADER_SPINNER = ["⊕", "⊘", "⊗", "⊖"];
 
 ## Acceptance Criteria
 
+| ID | Criteria | Verification |
+|----|----------|--------------|
+| FR-006-AC-1 | `HEADER_SPINNER` is exported from `@agent-ix/ix-ui-semantic` | Test |
+| FR-006-AC-2 | `HEADER_SPINNER.length === 4` | Test |
+| FR-006-AC-3 | Every element is a non-empty string | Test |
+
 - **FR-006-AC-1**: `HEADER_SPINNER` is exported from `@agent-ix/ix-ui-semantic`.
 - **FR-006-AC-2**: `HEADER_SPINNER.length === 4`.
 - **FR-006-AC-3**: Every element is a non-empty string.
+
+
+## Dependencies
+
+- No external dependencies.

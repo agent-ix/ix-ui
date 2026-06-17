@@ -14,7 +14,7 @@ relationships:
     cardinality: "1:1"
 ---
 
-## Statement
+## Description
 
 The `cli` package SHALL export a `<Frame>` component that wraps any block of UI content with the standard ix visual frame: an animated orbit header, a `└──┐` opener, the body content, and an optional `└──•` tail. `<Frame>` is the base layout primitive used by `<Listing>`, `<PhaseTable>`, and `<TaskList>`.
 
@@ -35,6 +35,21 @@ const Frame: FC<FrameProps>;
 ```
 
 ## Acceptance Criteria
+
+| ID | Criteria | Verification |
+|----|----------|--------------|
+| FR-002-AC-1 | When `status === "running"`, the header glyph SHALL be the animated orbit frame produced by the `<HeaderSpinner>` component (advancing every 240 ms per NFR-001) and the bracketed text SHALL be rendered via the `renderHeader(text)` helper (FR-016) | Test |
+| FR-002-AC-2 | When `status === "passed"`, the header glyph SHALL be `PHASE_PASS` (frozen orbit, FR-016) | Test |
+| FR-002-AC-3 | When `status === "failed"`, the header glyph SHALL be `PHASE_FAIL` (red `⊗`, FR-016) | Test |
+| FR-002-AC-4 | The header line SHALL be exactly `PLANET_COL` + `PHASE_WIDTH` + `[ … ]` columns wide; visual indicator width is constant across all three states | Test |
+| FR-002-AC-5 | A `└──┐` opener line (using `ROUTE_INDENT` from FR-016) SHALL be rendered immediately beneath the header when `children` is non-empty | Test |
+| FR-002-AC-6 | When `children` is empty AND `tail` is unset, the frame SHALL collapse to header-only (no opener, no tail) | Test |
+| FR-002-AC-7 | Body content (`children`) SHALL be rendered as direct children of an Ink `<Box flexDirection="column">` placed beneath the opener | Test |
+| FR-002-AC-8 | When `tail` is set, a tail line SHALL be rendered beneath the body | Test |
+| FR-002-AC-9 | A blank line SHALL appear between the last body row (or the header, if no children) and the tail line | Test |
+| FR-002-AC-10 | `<Frame>` SHALL accept any Ink-renderable React node as `children` | Test |
+| FR-002-AC-11 | `<Frame>` SHALL forward `marginTop` and `marginLeft` props to its outer `<Box>` so callers can position the frame within larger layouts | Test |
+| FR-002-AC-12 | When `header` is an empty string, the bracketed area SHALL still render (`[ ]`) — the indicator + opener layout is preserved | Test |
 
 ### Header
 
@@ -111,3 +126,8 @@ const Frame: FC<FrameProps>;
 
 - **FR-002-CON-1**: All glyphs, indents, and colors are imported from the FR-016 style module — no inline literals.
 - **FR-002-CON-2**: Per FR-001, `<Frame>` writes nothing directly to stdout; it returns Ink elements only.
+
+
+## Dependencies
+
+- **Upstream**: US-003 (derived_from); FR-001 (depends_on); FR-016 (depends_on)

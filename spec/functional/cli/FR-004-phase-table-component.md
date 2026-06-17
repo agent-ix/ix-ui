@@ -17,7 +17,7 @@ relationships:
     cardinality: "N:1"
 ---
 
-## Statement
+## Description
 
 The `cli` package SHALL expose a `<PhaseTable>` component for displaying concurrent multi-service progress with named phase columns. State is provided declaratively via the `services` prop; the component renders one row per service with phase glyphs, an active-phase label or pod-status string, and elapsed-time.
 
@@ -52,6 +52,25 @@ const PhaseTable: <P extends string>(props: PhaseTableProps<P>) => ReactElement;
 ```
 
 ## Acceptance Criteria
+
+| ID | Criteria | Verification |
+|----|----------|--------------|
+| FR-004-AC-1 | `<PhaseTable>` SHALL render the following blocks in order, all aligned at the planet column (no outer indent) | Test |
+| FR-004-AC-2 | Each row SHALL be a flexbox `<Box flexDirection="row">` with three cells | Test |
+| FR-004-AC-3 | When the terminal is resized narrower, the status cell SHALL truncate without wrapping the row to a second physical line | Test |
+| FR-004-AC-4 | When `hidePending === true`, rows whose phases are all `pending` SHALL be omitted from the rendered output and the summary count | Test |
+| FR-004-AC-5 | The leading glyph for each row reflects the current phase state, drawn from `PHASE_GLYPHS` (semantic) — for `running` and `queued` the braille spinner advances every NFR-001 tick | Test |
+| FR-004-AC-6 | The aggregate status (passed to `<Frame>` and used by AC-7, AC-9, AC-10) defaults to | Test |
+| FR-004-AC-7 | The aggregate header animates only while `status === "running"` | Test |
+| FR-004-AC-8 | When the active phase is the last phase in `phases` and `status` matches the pod-count pattern `^(\d+)/(\d+)(?:(\s*·\s*).+)?$`, the status cell SHALL color-code the count via `colorPods()` (cyan for fully ready, yellow for partial) | Test |
+| FR-004-AC-9 | When `tailIngressUrls` is non-empty AND aggregate status is `passed`, one or more ingress group blocks SHALL render as outer-level siblings of the services block (not inside its body) | Test |
+| FR-004-AC-10 | When aggregate status is `failed` and no explicit `tail` is set, the tail SHALL render `{n} service(s) failed` with `tailVariant="error"` | Test |
+| FR-004-AC-11 | `preflight` content (any React node) SHALL render at the **outer level** above the services-block opener — at the planet column, NOT indented inside the services-block body | Test |
+| FR-004-AC-12 | An empty `services` array SHALL render as header + opener + summary `elapsed 0.0s · 0/0 ready` + tail (if any), with no row block | Test |
+| FR-004-AC-13 | A `phases` value referenced in `services[].phases` that is not present in `props.phases` SHALL be ignored for animation/glyph selection; the row still renders but contributes only its known phases to status aggregation | Test |
+| FR-004-AC-14 | When `services[].displayName` is omitted, the row SHALL render `services[].name` as the display name | Test |
+| FR-004-AC-15 | When `phases` is an empty array, the table SHALL render header + opener + summary `elapsed 0.0s · 0/0 ready` + tail (if any), with no row block | Test |
+| FR-004-AC-16 | Duplicate `services[].name` entries SHALL each render as a separate row | Test |
 
 ### Layout
 
@@ -193,3 +212,8 @@ const PhaseTable: <P extends string>(props: PhaseTableProps<P>) => ReactElement;
 - **FR-004-CON-1**: No imperative `transition()`, `setPodStatus()`, `setError()`, `start()`, `finish()` methods exist. State flows through props.
 - **FR-004-CON-2**: Per FR-001-AC-7, the component does not read `process.stdout.columns`; width is sourced from `useStdout()`.
 - **FR-004-CON-3**: Glyphs, colors, and connectors are imported from FR-016 / `@agent-ix/ix-ui-semantic` — no inline literals.
+
+
+## Dependencies
+
+- **Upstream**: US-002 (derived_from); FR-002 (depends_on); FR-001 (depends_on); NFR-001 (constrained_by)

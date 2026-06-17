@@ -25,6 +25,18 @@ The animation tick interval for all live components in `@agent-ix/ix-ui-cli` (or
 
 80 ms yields ≈12.5 redraws per second — smooth enough for the braille spinner to appear fluid without saturating the terminal write buffer or consuming excessive CPU on constrained machines. Ink reconciles frame diffs efficiently, so the 80 ms cadence carries no rendering cost beyond a setState-triggered render of the spinner-bearing components.
 
+## Measurement and Evaluation
+
+| Metric | Target | Threshold | Method |
+|--------|--------|-----------|--------|
+| Animation tick interval | 80 ms | 80 ms (exact) | Inspection |
+| Orbit-header frame advance (80 ms × HEADER_TICK_DIV 3) | 240 ms | 240 ms (exact) | Test |
+| Raw `setInterval` call sites in component code | 0 | 0 | Analysis |
+
+## Verification
+
+A test inspects the shared `useInterval` driver and asserts the 80 ms cadence and the derived 240 ms header advance, and a static grep confirms no raw `setInterval` calls exist in component code.
+
 ## Acceptance Criteria
 
 - **NFR-001-AC-1**: The shared `useInterval(tick, 80)` hook (FR-007) drives every animated frame in the package. Components requiring animation SHALL consume this hook (or a wrapper that uses it) — no raw `setInterval` calls exist in component code.

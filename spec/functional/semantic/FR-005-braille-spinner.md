@@ -28,6 +28,17 @@ export const BRAILLE_SPINNER = [
 
 ## Acceptance Criteria
 
+| ID | Criteria | Verification |
+|----|----------|--------------|
+| FR-005-AC-1 | `BRAILLE_SPINNER` is exported from `@agent-ix/ix-ui-semantic` | Test |
+| FR-005-AC-2 | `BRAILLE_SPINNER.length === 10` | Test |
+| FR-005-AC-3 | Every element is a non-empty string | Test |
+
 - **FR-005-AC-1**: `BRAILLE_SPINNER` is exported from `@agent-ix/ix-ui-semantic`.
 - **FR-005-AC-2**: `BRAILLE_SPINNER.length === 10`.
 - **FR-005-AC-3**: Every element is a non-empty string.
+
+
+## Dependencies
+
+- **Upstream**: FR-003 (depends_on)

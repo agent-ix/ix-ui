@@ -17,7 +17,7 @@ relationships:
     cardinality: "N:1"
 ---
 
-## Statement
+## Description
 
 The `cli` package SHALL expose a `<TaskList>` component for displaying a series of named tasks with per-task status (pending → running → done | failed) and a live spinner. Tasks are scheduled and executed by the component itself.
 
@@ -59,6 +59,27 @@ const TaskList: FC<TaskListProps>;
 ```
 
 ## Acceptance Criteria
+
+| ID | Criteria | Verification |
+|----|----------|--------------|
+| FR-005-AC-1 | When `header` is non-null, `<TaskList>` SHALL render inside `<Frame header={header} status={...}>` | Test |
+| FR-005-AC-2 | Each task row SHALL be rendered as a `<Box flexDirection="row">` with: leading glyph (per state), task title, optional dim status text (set via `helpers.setStatus`), and elapsed time once the task completes | Test |
+| FR-005-AC-3 | Sub-lines emitted via `helpers.log()` SHALL render dim at column `NOTE_INDENT` beneath the active row and remain visible after the task transitions to `done` or `failed` | Test |
+| FR-005-AC-4 | When a task fails, the error message SHALL render at column `ERROR_INDENT` beneath the failed row, dim, with the `Error.message` text | Test |
+| FR-005-AC-5 | When `concurrent === false` (default), tasks SHALL execute strictly in array order | Test |
+| FR-005-AC-6 | When `concurrent === true`, all tasks SHALL start in parallel | Test |
+| FR-005-AC-7 | When `enabled === false`, the task SHALL render `skipped` with reason `"disabled"` and SHALL NOT execute | Test |
+| FR-005-AC-8 | When a task returns `{ skip: reason }`, it SHALL render `skipped` with that reason | Test |
+| FR-005-AC-9 | Tasks start executing on first mount of `<TaskList>` | Test |
+| FR-005-AC-10 | On unmount mid-run, in-flight tasks receive abort signal via `helpers.signal` | Test |
+| FR-005-AC-11 | `onComplete(result)` fires once after the schedule settles | Test |
+| FR-005-AC-12 | When all tasks pass and no explicit `tail` is set, the default tail SHALL be `{count} task(s) completed in {duration}s` with `tailVariant="success"` | Test |
+| FR-005-AC-13 | When any task failed and no explicit `tail` is set, the default tail SHALL be `{failed}/{count} task(s) failed in {duration}s` with `tailVariant="error"` | Test |
+| FR-005-AC-14 | An empty `tasks` array SHALL render header + opener + summary tail `0 task(s) completed in 0.0s` (`tailVariant="success"`) | Test |
+| FR-005-AC-15 | Calling `helpers.setStatus(...)` or `helpers.log(...)` after a task has settled SHALL be a no-op (no console warning, no rendered change) | Test |
+| FR-005-AC-16 | When `concurrent === true`, `onError(err)` fires once at completion with the first thrown error encountered (in array order) | Test |
+| FR-005-AC-17 | Tasks are identified by their position in the `tasks` array | Test |
+| FR-005-AC-18 | If `onComplete` or `onError` callbacks throw (synchronously or return a rejected Promise), the error SHALL propagate up to the surrounding error boundary or `render()` (FR-008-AC-8) | Test |
 
 ### Rendering
 
@@ -144,3 +165,8 @@ const TaskList: FC<TaskListProps>;
 - **FR-005-CON-1**: Task execution is implemented inside `<TaskList>` using React effects + a small scheduler. No external task runner library is used.
 - **FR-005-CON-2**: Per FR-001-AC-3, no direct stdout writes.
 - **FR-005-CON-3**: Glyph and indent vocabulary is imported from FR-016 / semantic.
+
+
+## Dependencies
+
+- **Upstream**: US-003 (derived_from); FR-002 (depends_on); FR-001 (depends_on); NFR-001 (constrained_by)

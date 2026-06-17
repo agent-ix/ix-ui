@@ -38,6 +38,17 @@ export type PhaseState = "pending" | "queued" | "running" | "done" | "failed";
 
 ## Acceptance Criteria
 
+| ID | Criteria | Verification |
+|----|----------|--------------|
+| FR-001-AC-1 | `PhaseState` is exported from the package root (`@agent-ix/ix-ui-semantic`) | Test |
+| FR-001-AC-2 | The type is a string union of exactly five members: `pending`, `queued`, `running`, `done`, `failed` | Test |
+| FR-001-AC-3 | A TypeScript compiler with `strict: true` SHALL reject an assignment of any string outside the five values to a `PhaseState` variable | Test |
+
 - **FR-001-AC-1**: `PhaseState` is exported from the package root (`@agent-ix/ix-ui-semantic`).
 - **FR-001-AC-2**: The type is a string union of exactly five members: `pending`, `queued`, `running`, `done`, `failed`.
 - **FR-001-AC-3**: A TypeScript compiler with `strict: true` SHALL reject an assignment of any string outside the five values to a `PhaseState` variable.
+
+
+## Dependencies
+
+- **Upstream**: StR-001 (implements); StR-002 (implements)

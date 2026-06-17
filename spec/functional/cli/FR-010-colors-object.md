@@ -36,7 +36,14 @@ export const blue = pc.cyan;   // "IX blue" alias
 
 ## Acceptance Criteria
 
-- **FR-010-AC-1**: `colors` is exported from `@agent-ix/ix-ui-cli`.
-- **FR-010-AC-2**: `colors` has keys: `cyan`, `green`, `yellow`, `red`, `dim`, `bold`, `underline`, `bgCyan`, `black`.
-- **FR-010-AC-3**: `blue` is exported separately and equals `colors.cyan`.
-- **FR-010-AC-4**: Every value is a function with signature `(s: string) => string`.
+| ID | Criteria | Verification |
+|----|----------|--------------|
+| FR-010-AC-1 | `colors` is exported from `@agent-ix/ix-ui-cli` | Test |
+| FR-010-AC-2 | `colors` has keys `cyan`, `green`, `yellow`, `red`, `dim`, `bold`, `underline`, `bgCyan`, `black` | Test |
+| FR-010-AC-3 | `blue` is exported separately and equals `colors.cyan` | Test |
+| FR-010-AC-4 | Every value is a function with signature `(s: string) => string` | Test |
+
+## Dependencies
+
+- **Upstream**: StR-001 consistent terminal design language; FR-009 `colors.red` terracotta red
+- **Downstream**: FR-016 shared style tokens

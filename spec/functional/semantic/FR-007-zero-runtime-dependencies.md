@@ -19,6 +19,17 @@ relationships:
 
 ## Acceptance Criteria
 
+| ID | Criteria | Verification |
+|----|----------|--------------|
+| FR-007-AC-1 | `@agent-ix/ix-ui-semantic/package.json` has no `dependencies` key, or `dependencies` is `{}` | Test |
+| FR-007-AC-2 | The built `dist/index.js` contains no `require()` calls and no `import` of any external module identifier | Test |
+| FR-007-AC-3 | Running `node -e "import('@agent-ix/ix-ui-semantic')"` in a clean Node environment completes without error | Test |
+
 - **FR-007-AC-1**: `@agent-ix/ix-ui-semantic/package.json` has no `dependencies` key, or `dependencies` is `{}`.
 - **FR-007-AC-2**: The built `dist/index.js` contains no `require()` calls and no `import` of any external module identifier.
 - **FR-007-AC-3**: Running `node -e "import('@agent-ix/ix-ui-semantic')"` in a clean Node environment completes without error.
+
+
+## Dependencies
+
+- **Upstream**: StR-002 (implements)

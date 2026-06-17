@@ -1,6 +1,8 @@
 ---
-type: test-matrix
+id: TM-001
+type: TestMatrix
 name: ix-ui
+title: "Test Matrix"
 ---
 
 # Test Matrix

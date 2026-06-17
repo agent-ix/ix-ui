@@ -31,6 +31,15 @@ All visual layout tokens (indents, connectors, glyphs, header rendering, color h
 
 The design system's "tweak once, retheme everywhere" guarantee depends on every component reading the same tokens. Inline literals (e.g. `"└──┐"` in one file, `"    "` indent in another) silently fork the visual language and defeat centralized control. This NFR makes the centralization auditable by static check and prevents regressions as new components are added.
 
+## Measurement and Evaluation
+
+| Metric | Target | Threshold | Method |
+|--------|--------|-----------|--------|
+| Inline canonical indent literals outside `style.ts` | 0 | 0 | Analysis |
+| Inline connector substrings (`└──┐`, `└──•`, `└──`) outside `style.ts` | 0 | 0 | Analysis |
+| Inline header/row glyph literals outside `style.ts` | 0 | 0 | Analysis |
+| Local token redefinitions (`const ROW_INDENT = …` etc.) in component files | 0 | 0 | Analysis |
+
 ## Acceptance Criteria
 
 - **NFR-003-AC-1**: A static grep across `packages/cli/src/` (excluding `style.ts`) for the canonical indent strings (`"    "`, `"      "`, `"        "`) used as ASCII whitespace literals SHALL return zero matches outside template-literal interpolations of the corresponding token.

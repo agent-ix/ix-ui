@@ -26,7 +26,7 @@ relationships:
     cardinality: "1:N"
 ---
 
-## Statement
+## Stakeholder Need
 
 All Agent IX CLI tools SHALL present a unified visual language — consistent glyphs, status colours, spinner animations, and command framing — regardless of which package or plugin authored the command.
 
@@ -40,7 +40,7 @@ Inconsistent terminal output across tools erodes operator confidence and slows d
 - Each package author must not invent their own spinners, status dots, or colour conventions.
 - The terminal side of the design language is separate from the web/React side (`ix-themes`); they share conceptual intent but no runtime dependency.
 
-## Success Indicators
+## Validation Criteria
 
 - A developer switching between `ix up`, `ix elements init`, and `ix spec run` sees the same spinner frames, the same `●`/`○`/`·` status dots, and the same intro/outro framing.
 - A new CLI package author can produce spec-compliant output by importing `@agent-ix/ix-ui-cli` with no additional styling work.

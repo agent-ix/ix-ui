@@ -28,6 +28,13 @@ Bright ANSI red (`\x1b[31m`) reads as alarming in contexts where a failure is ro
 
 ## Acceptance Criteria
 
-- **FR-009-AC-1**: `colors.red("x")` returns a string containing `\x1b[38;5;167m`.
-- **FR-009-AC-2**: `colors.red("x")` ends with `\x1b[0m`.
-- **FR-009-AC-3**: `colors.red("hello")` contains `"hello"` between the escape sequences.
+| ID | Criteria | Verification |
+|----|----------|--------------|
+| FR-009-AC-1 | `colors.red("x")` returns a string containing the `\x1b[38;5;167m` escape sequence | Test |
+| FR-009-AC-2 | `colors.red("x")` ends with the `\x1b[0m` reset sequence | Test |
+| FR-009-AC-3 | `colors.red("hello")` contains `"hello"` between the escape sequences | Test |
+
+## Dependencies
+
+- **Upstream**: StR-001 consistent terminal design language
+- **Downstream**: FR-010 canonical colour palette object

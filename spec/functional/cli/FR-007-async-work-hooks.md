@@ -11,7 +11,7 @@ relationships:
     cardinality: "N:1"
 ---
 
-## Statement
+## Description
 
 The `cli` package SHALL expose a small set of React hooks that wrap common async work (intervals, child-process execution, Kubernetes rollout polling, Helm hook watching) as state sources for components. Hooks SHALL handle cleanup on unmount via `AbortSignal` so unmounting a component cancels its in-flight work.
 
@@ -57,6 +57,25 @@ function useHelmHookWatcher(
 
 ## Acceptance Criteria
 
+| ID | Criteria | Verification |
+|----|----------|--------------|
+| FR-007-AC-1 | `useInterval(cb, delay)` SHALL fire `cb` every `delay` ms after the component mounts | Test |
+| FR-007-AC-2 | `cb` is referenced via a ref so re-rendering with a new callback does not reset the interval | Test |
+| FR-007-AC-3 | On unmount, the underlying `setInterval` SHALL be cleared | Test |
+| FR-007-AC-4 | The orbit-header animation (FR-002) and braille spinner cells (FR-004) SHALL drive their frame index from `useInterval(tick, 80)` per NFR-001 | Test |
+| FR-007-AC-5 | `useExecaPhase` SHALL return `{ state: "idle" }` when `opts.enabled === false` AND not yet started; `{ state: "running", pid }` once execa is spawned; `{ state: "done", stdout }` on success; `{ state: "failed", error, stderr }` on non-zero exit or spawn error | Test |
+| FR-007-AC-6 | Changing `command` or `args` between renders SHALL NOT auto-restart a running subprocess | Test |
+| FR-007-AC-7 | On unmount, the subprocess SHALL receive `SIGTERM` via `subprocess.kill()` | Test |
+| FR-007-AC-8 | `useKubectlRollout` SHALL execute `kubectl get pods -n <namespace> -l <label> -o json` every `intervalMs` (default 1000) | Test |
+| FR-007-AC-9 | The polling loop SHALL be cancelled on unmount and on `enabled` transitioning to `false` | Test |
+| FR-007-AC-10 | Errors during a poll (e.g | Test |
+| FR-007-AC-11 | `useHelmHookWatcher` SHALL poll Helm hook job statuses via `kubectl get jobs -l helm.sh/hook,helm.sh/release-name=<name>` (or equivalent) every `intervalMs` (default 1000) | Test |
+| FR-007-AC-12 | When a hook transitions to `failed`, the hook SHALL continue reporting it on subsequent polls until the component unmounts | Test |
+| FR-007-AC-13 | A component MAY use multiple async hooks simultaneously; cleanup is independent | Test |
+| FR-007-AC-14 | Hooks SHALL NOT directly call `process.stdout.write` or render output | Test |
+| FR-007-AC-15 | For `useExecaPhase`, when the requested `command` is not available in `PATH` (or any other spawn error occurs), the hook SHALL transition to `{ state: "failed", error, stderr }` where `error.message` contains the underlying execa spawn error message | Test |
+| FR-007-AC-16 | For `useKubectlRollout` and `useHelmHookWatcher`, when `kubectl` is not in `PATH` (or any poll error occurs), the hook SHALL keep returning the previous successful value (`null` / `[]` until the first successful poll, otherwise the last good result) per FR-007-AC-10 / AC-12 | Test |
+
 ### useInterval
 
 - **FR-007-AC-1**: `useInterval(cb, delay)` SHALL fire `cb` every `delay` ms after the component mounts. Passing `delay = null` SHALL pause the interval without unmounting.
@@ -93,3 +112,9 @@ function useHelmHookWatcher(
 - **FR-007-CON-1**: `useExecaPhase` requires `execa` as a dependency of the package; it is NOT re-exported.
 - **FR-007-CON-2**: kubectl/helm hooks shell out via `execa`; failures to find these binaries surface as `failed` states with descriptive errors (e.g. `"kubectl not found in PATH"`).
 - **FR-007-CON-3**: The hooks are deliberately small primitives. Higher-level orchestration lives in consumer code that composes these hooks.
+
+
+## Dependencies
+
+- **Upstream**: FR-001 (depends_on)
+- **Downstream**: FR-004 (supports)
