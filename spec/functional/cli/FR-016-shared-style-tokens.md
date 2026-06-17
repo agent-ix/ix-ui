@@ -33,7 +33,7 @@ The `cli` package SHALL expose a single style module containing every visual lay
 | FR-016-AC-9 | `renderHeader(text)` wraps `text` in gray brackets with gray `·` separators: `{gray("[")} {text-with-·-grayed} {gray("]")}` | Test |
 | FR-016-AC-10 | `PHASE_PASS` is the orbit at rest (frame index 5, colored) | Test |
 | FR-016-AC-11 | `colorOrbitFrame(frame)` per-glyph colors a 4-char orbit frame string | Test |
-| FR-016-AC-12 | `HEADER_TICK_DIV = 3` — the orbit advances every 3 ticks (3 × 80 ms = 240 ms per frame at the standard animation interval, NFR-001) | Test |
+| FR-016-AC-12 | `HEADER_TICK_DIV = 3` — the orbit advances every 3 ticks (3 × 80 ms = 240 ms per frame at the standard animation interval, [NFR-001](../../non-functional/cli/NFR-001-redraw-interval.md)) | Test |
 | FR-016-AC-13 | A static check across `packages/cli/src/` (excluding `style.ts`) SHALL find no inline literals for the standardized indents (`" "`, `" "`, `" "`), connectors (`"└──┐"`, `"└──"`, `"└─→"`), or glyphs (`"•"`, `"○"`, `"⊗"`, `"⊙"`, `"⊕"`, `"◎"`) | Test |
 | FR-016-AC-14 | All components import every glyph, indent, connector, and color from the style module | Test |
 
@@ -66,7 +66,7 @@ The `cli` package SHALL expose a single style module containing every visual lay
 - **FR-016-AC-9**: `renderHeader(text)` wraps `text` in gray brackets with gray `·` separators: `{gray("[")} {text-with-·-grayed} {gray("]")}`. Returns a string suitable for use inside an Ink `<Text>` child.
 - **FR-016-AC-10**: `PHASE_PASS` is the orbit at rest (frame index 5, colored). `PHASE_FAIL` is `" " + red("⊗") + "  "` (4 chars, padded so `[ … ]` aligns).
 - **FR-016-AC-11**: `colorOrbitFrame(frame)` per-glyph colors a 4-char orbit frame string. `ORBIT_SPINNER` is re-exported from `@agent-ix/ix-ui-semantic`.
-- **FR-016-AC-12**: `HEADER_TICK_DIV = 3` — the orbit advances every 3 ticks (3 × 80 ms = 240 ms per frame at the standard animation interval, NFR-001). The advance is implemented by the `<HeaderSpinner>` component (FR-002), which consumes `useInterval(tick, 80)` and computes its current frame as `Math.floor(spinnerFrame / HEADER_TICK_DIV) % ORBIT_SPINNER.length`.
+- **FR-016-AC-12**: `HEADER_TICK_DIV = 3` — the orbit advances every 3 ticks (3 × 80 ms = 240 ms per frame at the standard animation interval, [NFR-001](../../non-functional/cli/NFR-001-redraw-interval.md)). The advance is implemented by the `<HeaderSpinner>` component (FR-002), which consumes `useInterval(tick, 80)` and computes its current frame as `Math.floor(spinnerFrame / HEADER_TICK_DIV) % ORBIT_SPINNER.length`.
 
 ### Renderer compliance
 
@@ -78,9 +78,9 @@ The `cli` package SHALL expose a single style module containing every visual lay
 - **FR-016-CON-1**: Editing `ROUTE_OUT` SHALL change the rendering of every consumer. The `<Listing>` and `<PhaseTable>` snapshot tests verify this.
 - **FR-016-CON-2**: Glyphs MAY be Unicode (e.g. `•`, `○`, `⊗`, `⊙`) but MUST be exactly 1 visual cell wide where used in column-aligned positions.
 - **FR-016-CON-3**: This module has no runtime dependencies beyond `picocolors` and `@agent-ix/ix-ui-semantic` (for `ORBIT_SPINNER`, `BRAILLE_SPINNER`, `PHASE_GLYPHS`).
-- **FR-016-CON-4**: ANSI escape sequences (e.g. `\x1b[?25l`) SHALL NOT appear in the style module or anywhere in `packages/cli/src/` (per NFR-002). Cursor visibility is managed by Ink.
+- **FR-016-CON-4**: ANSI escape sequences (e.g. `\x1b[?25l`) SHALL NOT appear in the style module or anywhere in `packages/cli/src/` (per [NFR-002](../../non-functional/cli/NFR-002-no-imperative-stdout.md)). Cursor visibility is managed by Ink.
 
 
 ## Dependencies
 
-- **Upstream**: US-004 (derived_from); NFR-003 (constrained_by); FR-001 (depends_on)
+- **Upstream**: [US-004](../../usecase/US-004-retheme-cli-from-one-place.md) (derived_from); [NFR-003](../../non-functional/cli/NFR-003-style-single-source.md) (constrained_by); FR-001 (depends_on)

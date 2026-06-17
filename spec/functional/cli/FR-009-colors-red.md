@@ -36,5 +36,5 @@ Bright ANSI red (`\x1b[31m`) reads as alarming in contexts where a failure is ro
 
 ## Dependencies
 
-- **Upstream**: StR-001 consistent terminal design language
-- **Downstream**: FR-010 canonical colour palette object
+- **Upstream**: [StR-001](../../stakeholder/StR-001-consistent-terminal-design-language.md) consistent terminal design language
+- **Downstream**: [FR-010](./FR-010-colors-object.md) canonical colour palette object

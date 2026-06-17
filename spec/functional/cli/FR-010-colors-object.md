@@ -10,7 +10,7 @@ relationships:
 
 ## Description
 
-`colors` is the exported colour palette object from `@agent-ix/ix-ui-cli`. It wraps `picocolors` functions and adds the custom `red` (FR-009). All Agent IX CLI components that apply colour SHALL use this object rather than importing `picocolors` directly, ensuring a single point of override if the palette changes.
+`colors` is the exported colour palette object from `@agent-ix/ix-ui-cli`. It wraps `picocolors` functions and adds the custom `red` ([FR-009](./FR-009-colors-red.md)). All Agent IX CLI components that apply colour SHALL use this object rather than importing `picocolors` directly, ensuring a single point of override if the palette changes.
 
 ## Definition
 
@@ -45,5 +45,5 @@ export const blue = pc.cyan;   // "IX blue" alias
 
 ## Dependencies
 
-- **Upstream**: StR-001 consistent terminal design language; FR-009 `colors.red` terracotta red
-- **Downstream**: FR-016 shared style tokens
+- **Upstream**: [StR-001](../../stakeholder/StR-001-consistent-terminal-design-language.md) consistent terminal design language; [FR-009](./FR-009-colors-red.md) `colors.red` terracotta red
+- **Downstream**: [FR-016](./FR-016-shared-style-tokens.md) shared style tokens

@@ -28,4 +28,4 @@ so that I can adjust the orbit glyphs, the row indent, the brackets, or the tail
 
 Centralizing all visual tokens in `style.ts` gives the design system a real "tweak once, retheme everywhere" contract. New components (status panels, progress meters, prompt frames, future visualization shapes) consume the same module and immediately participate in any retheme.
 
-ANSI cursor-control sequences are NOT part of this module — Ink owns cursor management (NFR-002).
+ANSI cursor-control sequences are NOT part of this module — Ink owns cursor management ([NFR-002](../non-functional/cli/NFR-002-no-imperative-stdout.md)).

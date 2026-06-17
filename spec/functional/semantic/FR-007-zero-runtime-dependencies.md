@@ -32,4 +32,4 @@ relationships:
 
 ## Dependencies
 
-- **Upstream**: StR-002 (implements)
+- **Upstream**: [StR-002](../../stakeholder/StR-002-zero-dep-semantic-vocabulary.md) (implements)

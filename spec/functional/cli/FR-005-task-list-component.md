@@ -79,7 +79,7 @@ const TaskList: FC<TaskListProps>;
 | FR-005-AC-15 | Calling `helpers.setStatus(...)` or `helpers.log(...)` after a task has settled SHALL be a no-op (no console warning, no rendered change) | Test |
 | FR-005-AC-16 | When `concurrent === true`, `onError(err)` fires once at completion with the first thrown error encountered (in array order) | Test |
 | FR-005-AC-17 | Tasks are identified by their position in the `tasks` array | Test |
-| FR-005-AC-18 | If `onComplete` or `onError` callbacks throw (synchronously or return a rejected Promise), the error SHALL propagate up to the surrounding error boundary or `render()` (FR-008-AC-8) | Test |
+| FR-005-AC-18 | If `onComplete` or `onError` callbacks throw (synchronously or return a rejected Promise), the error SHALL propagate up to the surrounding error boundary or `render()` ([FR-008-AC-8](./FR-008-render-entry-point.md)) | Test |
 
 ### Rendering
 
@@ -120,7 +120,7 @@ const TaskList: FC<TaskListProps>;
 ### Identity and callback contracts
 
 - **FR-005-AC-17**: Tasks are identified by their position in the `tasks` array. React keys for task rows SHALL use the array index. Consumers who reorder tasks across renders without changing the array reference SHALL expect rows to swap state (since identity is positional, not by `title`).
-- **FR-005-AC-18**: If `onComplete` or `onError` callbacks throw (synchronously or return a rejected Promise), the error SHALL propagate up to the surrounding error boundary or `render()` (FR-008-AC-8). The schedule SHALL NOT retry or swallow the error. The schedule's settled rows remain rendered.
+- **FR-005-AC-18**: If `onComplete` or `onError` callbacks throw (synchronously or return a rejected Promise), the error SHALL propagate up to the surrounding error boundary or `render()` ([FR-008-AC-8](./FR-008-render-entry-point.md)). The schedule SHALL NOT retry or swallow the error. The schedule's settled rows remain rendered.
 
 ## Rendered Example
 
@@ -164,9 +164,9 @@ const TaskList: FC<TaskListProps>;
 
 - **FR-005-CON-1**: Task execution is implemented inside `<TaskList>` using React effects + a small scheduler. No external task runner library is used.
 - **FR-005-CON-2**: Per FR-001-AC-3, no direct stdout writes.
-- **FR-005-CON-3**: Glyph and indent vocabulary is imported from FR-016 / semantic.
+- **FR-005-CON-3**: Glyph and indent vocabulary is imported from [FR-016](./FR-016-shared-style-tokens.md) / semantic.
 
 
 ## Dependencies
 
-- **Upstream**: US-003 (derived_from); FR-002 (depends_on); FR-001 (depends_on); NFR-001 (constrained_by)
+- **Upstream**: [US-003](../../usecase/US-003-frame-cli-command-with-intro-outro.md) (derived_from); FR-002 (depends_on); FR-001 (depends_on); [NFR-001](../../non-functional/cli/NFR-001-redraw-interval.md) (constrained_by)

@@ -33,9 +33,9 @@ so that every command in the ecosystem has the same opening, body, and closing v
 - **US-003-AC-3**: Re-rendering with `status="passed"` and `tail="<msg>"` (or `tailVariant="warn"` / `"error"`) freezes the header to the corresponding glyph and emits a `└──•` tail (or red `⊗` tail for errors).
 - **US-003-AC-4**: A command that needs interactive input embeds prompt components (FR-006) as children of `<Listing>` — input is delegated automatically; the orbit continues animating.
 - **US-003-AC-5**: A command that needs to run task work embeds `<TaskList>` (FR-005) as a child or sibling — both share the same visual vocabulary.
-- **US-003-AC-6**: In a non-TTY environment, the same component tree emits plain frames (one per state change) with no animation and no cursor control sequences (FR-008-AC-6, AC-7).
-- **US-003-AC-7**: Every body row, opener, and tail uses indents and connectors imported from the shared style module (FR-016).
+- **US-003-AC-6**: In a non-TTY environment, the same component tree emits plain frames (one per state change) with no animation and no cursor control sequences ([FR-008-AC-6](../functional/cli/FR-008-render-entry-point.md), AC-7).
+- **US-003-AC-7**: Every body row, opener, and tail uses indents and connectors imported from the shared style module ([FR-016](../functional/cli/FR-016-shared-style-tokens.md)).
 
 ## Context
 
-This story produces the visual frame used by every non-task command in the Agent IX CLI ecosystem. `<Listing>` shares its visual vocabulary (orbit header, `└──┐` opener, `└──•` tail) with `<PhaseTable>` (US-002) and `<TaskList>` so a one-shot listing command and a multi-service progress run read as the same family of output.
+This story produces the visual frame used by every non-task command in the Agent IX CLI ecosystem. `<Listing>` shares its visual vocabulary (orbit header, `└──┐` opener, `└──•` tail) with `<PhaseTable>` ([US-002](./US-002-display-concurrent-service-progress.md)) and `<TaskList>` so a one-shot listing command and a multi-service progress run read as the same family of output.

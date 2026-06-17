@@ -139,7 +139,7 @@ PhaseState: pending | queued | running | done | failed
 
 ### 7.2 Glyph Vocabulary
 
-The canonical glyph mapping is defined in `@agent-ix/ix-ui-semantic` and re-exported with rendering helpers from `@agent-ix/ix-ui-cli` (FR-016).
+The canonical glyph mapping is defined in `@agent-ix/ix-ui-semantic` and re-exported with rendering helpers from `@agent-ix/ix-ui-cli` ([FR-016](./functional/cli/FR-016-shared-style-tokens.md)).
 
 | State | TTY glyph | Non-TTY text | Animated | Token |
 |-------|-----------|--------------|----------|-------|
@@ -165,15 +165,15 @@ ix-ui is terminal-only. Web rendering is owned by `ix-themes`. The `cli` package
 | Component / API | Description | Spec |
 |---|---|---|
 | `<Frame>` | Base layout: animated/frozen orbit header, `└──┐` opener, body, optional `└──•` tail. | FR-002 |
-| `<HeaderSpinner>` | Animated orbit glyph (240 ms per frame, NFR-001). Used inside `<Frame>` while running. | FR-002, FR-007 |
+| `<HeaderSpinner>` | Animated orbit glyph (240 ms per frame, [NFR-001](./non-functional/cli/NFR-001-redraw-interval.md)). Used inside `<Frame>` while running. | FR-002, FR-007 |
 | `<Listing>` (with `<Group>` / `<Item>` / `<Note>`) | Frame for static listings, status views, mixed flows. | FR-003 |
 | `<PhaseTable>` | Concurrent multi-service progress with phase columns. | FR-004 |
 | `<TaskList>` | Sequential or concurrent named-task execution. | FR-005 |
 | `<TextPrompt>`, `<PasswordPrompt>`, `<ConfirmPrompt>`, `<SelectPrompt>`, `<MultiSelectPrompt>` | Ink-native interactive prompts. | FR-006 |
 | `useInterval`, `useExecaPhase`, `useKubectlRollout`, `useHelmHookWatcher` | Async work hooks with auto-cleanup on unmount. | FR-007 |
-| `render(element, opts?)` | Mount entry point. Returns a Promise that resolves on unmount. Handles non-TTY and Ctrl-C. | FR-008 |
-| `colors` palette | Semantic color helpers (cyan, green, yellow, red, dim, bold, IX blue). | FR-009, FR-010 |
-| `style` module | Visual layout tokens: indents, connectors, glyphs, header rendering. | FR-016 |
+| `render(element, opts?)` | Mount entry point. Returns a Promise that resolves on unmount. Handles non-TTY and Ctrl-C. | [FR-008](./functional/cli/FR-008-render-entry-point.md) |
+| `colors` palette | Semantic color helpers (cyan, green, yellow, red, dim, bold, IX blue). | [FR-009](./functional/cli/FR-009-colors-red.md), [FR-010](./functional/cli/FR-010-colors-object.md) |
+| `style` module | Visual layout tokens: indents, connectors, glyphs, header rendering. | [FR-016](./functional/cli/FR-016-shared-style-tokens.md) |
 
 ---
 

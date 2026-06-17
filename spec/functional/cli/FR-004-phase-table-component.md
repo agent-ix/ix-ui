@@ -59,7 +59,7 @@ const PhaseTable: <P extends string>(props: PhaseTableProps<P>) => ReactElement;
 | FR-004-AC-2 | Each row SHALL be a flexbox `<Box flexDirection="row">` with three cells | Test |
 | FR-004-AC-3 | When the terminal is resized narrower, the status cell SHALL truncate without wrapping the row to a second physical line | Test |
 | FR-004-AC-4 | When `hidePending === true`, rows whose phases are all `pending` SHALL be omitted from the rendered output and the summary count | Test |
-| FR-004-AC-5 | The leading glyph for each row reflects the current phase state, drawn from `PHASE_GLYPHS` (semantic) — for `running` and `queued` the braille spinner advances every NFR-001 tick | Test |
+| FR-004-AC-5 | The leading glyph for each row reflects the current phase state, drawn from `PHASE_GLYPHS` (semantic) — for `running` and `queued` the braille spinner advances every [NFR-001](../../non-functional/cli/NFR-001-redraw-interval.md) tick | Test |
 | FR-004-AC-6 | The aggregate status (passed to `<Frame>` and used by AC-7, AC-9, AC-10) defaults to | Test |
 | FR-004-AC-7 | The aggregate header animates only while `status === "running"` | Test |
 | FR-004-AC-8 | When the active phase is the last phase in `phases` and `status` matches the pod-count pattern `^(\d+)/(\d+)(?:(\s*·\s*).+)?$`, the status cell SHALL color-code the count via `colorPods()` (cyan for fully ready, yellow for partial) | Test |
@@ -88,7 +88,7 @@ const PhaseTable: <P extends string>(props: PhaseTableProps<P>) => ReactElement;
 
 ### Glyphs and animation
 
-- **FR-004-AC-5**: The leading glyph for each row reflects the current phase state, drawn from `PHASE_GLYPHS` (semantic) — for `running` and `queued` the braille spinner advances every NFR-001 tick.
+- **FR-004-AC-5**: The leading glyph for each row reflects the current phase state, drawn from `PHASE_GLYPHS` (semantic) — for `running` and `queued` the braille spinner advances every [NFR-001](../../non-functional/cli/NFR-001-redraw-interval.md) tick.
 - **FR-004-AC-6**: The aggregate status (passed to `<Frame>` and used by AC-7, AC-9, AC-10) defaults to:
   - `"failed"` if any visible row has a `failed` phase or the `status` prop is `"failed"`.
   - `"passed"` if all visible rows have all phases `done` or the `status` prop is `"passed"`.
@@ -97,7 +97,7 @@ const PhaseTable: <P extends string>(props: PhaseTableProps<P>) => ReactElement;
 
 ### Pod-status rendering
 
-- **FR-004-AC-8**: When the active phase is the last phase in `phases` and `status` matches the pod-count pattern `^(\d+)/(\d+)(?:(\s*·\s*).+)?$`, the status cell SHALL color-code the count via `colorPods()` (cyan for fully ready, yellow for partial). Text after `·` SHALL be dim/gray, including active Helm hook text. The implementation reuses the `colorPods` helper from FR-016.
+- **FR-004-AC-8**: When the active phase is the last phase in `phases` and `status` matches the pod-count pattern `^(\d+)/(\d+)(?:(\s*·\s*).+)?$`, the status cell SHALL color-code the count via `colorPods()` (cyan for fully ready, yellow for partial). Text after `·` SHALL be dim/gray, including active Helm hook text. The implementation reuses the `colorPods` helper from [FR-016](./FR-016-shared-style-tokens.md).
 - **FR-004-AC-8a**: Completed row elapsed values SHALL render dim/gray while running row elapsed values remain normal.
 
 ### Tail
@@ -211,9 +211,9 @@ const PhaseTable: <P extends string>(props: PhaseTableProps<P>) => ReactElement;
 
 - **FR-004-CON-1**: No imperative `transition()`, `setPodStatus()`, `setError()`, `start()`, `finish()` methods exist. State flows through props.
 - **FR-004-CON-2**: Per FR-001-AC-7, the component does not read `process.stdout.columns`; width is sourced from `useStdout()`.
-- **FR-004-CON-3**: Glyphs, colors, and connectors are imported from FR-016 / `@agent-ix/ix-ui-semantic` — no inline literals.
+- **FR-004-CON-3**: Glyphs, colors, and connectors are imported from [FR-016](./FR-016-shared-style-tokens.md) / `@agent-ix/ix-ui-semantic` — no inline literals.
 
 
 ## Dependencies
 
-- **Upstream**: US-002 (derived_from); FR-002 (depends_on); FR-001 (depends_on); NFR-001 (constrained_by)
+- **Upstream**: [US-002](../../usecase/US-002-display-concurrent-service-progress.md) (derived_from); FR-002 (depends_on); FR-001 (depends_on); [NFR-001](../../non-functional/cli/NFR-001-redraw-interval.md) (constrained_by)

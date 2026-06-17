@@ -36,7 +36,7 @@ The `cli` package SHALL render every terminal UI exclusively via **Ink** (`ink` 
 
 - **FR-001-AC-1**: `@agent-ix/ix-ui-cli` declares runtime dependencies on `ink` and `react`.
 - **FR-001-AC-2**: All visual components in `packages/cli/src/components/` are React function components rendering Ink elements (`<Box>`, `<Text>`, etc.). Class components are PROHIBITED.
-- **FR-001-AC-3**: `packages/cli/src/` contains no calls to `process.stdout.write`, `process.stderr.write`, `console.log`, `console.error`, or manual ANSI escape sequences (`\x1b[…`) outside of strings consumed inside `<Text>` children. (Per NFR-002.)
+- **FR-001-AC-3**: `packages/cli/src/` contains no calls to `process.stdout.write`, `process.stderr.write`, `console.log`, `console.error`, or manual ANSI escape sequences (`\x1b[…`) outside of strings consumed inside `<Text>` children. (Per [NFR-002](../../non-functional/cli/NFR-002-no-imperative-stdout.md).)
 - **FR-001-AC-4**: Animation timing (header orbit, braille spinners) is driven by React state updates from a `useInterval` hook (FR-007), not by `setInterval` directly inside renderers.
 
 ### Layout and resize
@@ -59,11 +59,11 @@ The `cli` package SHALL render every terminal UI exclusively via **Ink** (`ink` 
 ## Constraints
 
 - **FR-001-CON-1**: The package targets Node ≥ 18 (Ink v5+ minimum).
-- **FR-001-CON-2**: Non-TTY environments are served by Ink's built-in non-TTY rendering (frame-per-render structured output) plus a `plain` mode flag on `render()` (FR-008).
+- **FR-001-CON-2**: Non-TTY environments are served by Ink's built-in non-TTY rendering (frame-per-render structured output) plus a `plain` mode flag on `render()` ([FR-008](./FR-008-render-entry-point.md)).
 - **FR-001-CON-3**: `@agent-ix/ix-ui-semantic` (zero-runtime types/glyph tables) is the only sibling-package dependency.
 - **FR-001-CON-4**: Type definitions for every exported component, hook, and helper SHALL be generated and shipped in the published package (`dist/index.d.ts`).
 
 
 ## Dependencies
 
-- **Upstream**: StR-001 (derived_from); NFR-002 (constrained_by)
+- **Upstream**: [StR-001](../../stakeholder/StR-001-consistent-terminal-design-language.md) (derived_from); [NFR-002](../../non-functional/cli/NFR-002-no-imperative-stdout.md) (constrained_by)

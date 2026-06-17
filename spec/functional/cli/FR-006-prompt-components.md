@@ -86,7 +86,7 @@ const MultiSelectPrompt: <T>(props: MultiSelectPromptProps<T>) => JSX.Element;
 | FR-006-AC-18 | When a prompt component unmounts before submission, no `onSubmit` callback fires | Test |
 | FR-006-AC-19 | Multiple Enter keypresses within one render tick SHALL fire `onSubmit` at most once | Test |
 | FR-006-AC-20 | When `process.stdin` is not a TTY OR does not support raw mode, mounting any prompt component SHALL fire `onSubmit({ ok: false, cancelled: true })` immediately and render a frozen `? <message> «no interactive stdin»` summary line | Test |
-| FR-006-AC-21 | If the consumer-supplied `onSubmit` callback throws (synchronously or returns a rejected Promise), the prompt SHALL still render its frozen summary; the thrown error SHALL propagate up to the surrounding error boundary or `render()` (FR-008-AC-8) | Test |
+| FR-006-AC-21 | If the consumer-supplied `onSubmit` callback throws (synchronously or returns a rejected Promise), the prompt SHALL still render its frozen summary; the thrown error SHALL propagate up to the surrounding error boundary or `render()` ([FR-008-AC-8](./FR-008-render-entry-point.md)) | Test |
 | FR-006-AC-22 | The `validate(value)` callback SHALL be treated as a pure, read-only function | Test |
 | FR-006-AC-23 | `options[].value` is the canonical identity for each option | Test |
 
@@ -139,7 +139,7 @@ const MultiSelectPrompt: <T>(props: MultiSelectPromptProps<T>) => JSX.Element;
 
 ### Callback contracts (extension points)
 
-- **FR-006-AC-21**: If the consumer-supplied `onSubmit` callback throws (synchronously or returns a rejected Promise), the prompt SHALL still render its frozen summary; the thrown error SHALL propagate up to the surrounding error boundary or `render()` (FR-008-AC-8). The prompt SHALL NOT swallow the error or re-arm itself in response.
+- **FR-006-AC-21**: If the consumer-supplied `onSubmit` callback throws (synchronously or returns a rejected Promise), the prompt SHALL still render its frozen summary; the thrown error SHALL propagate up to the surrounding error boundary or `render()` ([FR-008-AC-8](./FR-008-render-entry-point.md)). The prompt SHALL NOT swallow the error or re-arm itself in response.
 - **FR-006-AC-22**: The `validate(value)` callback SHALL be treated as a pure, read-only function. Consumers SHALL NOT mutate component state or external resources from inside `validate()`. The package does not enforce this; mutating validators are the consumer's responsibility and may produce surprising re-render behavior.
 
 ### Option identity (SelectPrompt / MultiSelectPrompt)
@@ -182,4 +182,4 @@ After submission:
 
 ## Dependencies
 
-- **Upstream**: US-003 (derived_from); FR-001 (depends_on)
+- **Upstream**: [US-003](../../usecase/US-003-frame-cli-command-with-intro-outro.md) (derived_from); FR-001 (depends_on)

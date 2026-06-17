@@ -51,4 +51,4 @@ export type PhaseState = "pending" | "queued" | "running" | "done" | "failed";
 
 ## Dependencies
 
-- **Upstream**: StR-001 (implements); StR-002 (implements)
+- **Upstream**: [StR-001](../../stakeholder/StR-001-consistent-terminal-design-language.md) (implements); [StR-002](../../stakeholder/StR-002-zero-dep-semantic-vocabulary.md) (implements)

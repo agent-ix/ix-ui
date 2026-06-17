@@ -62,7 +62,7 @@ function useHelmHookWatcher(
 | FR-007-AC-1 | `useInterval(cb, delay)` SHALL fire `cb` every `delay` ms after the component mounts | Test |
 | FR-007-AC-2 | `cb` is referenced via a ref so re-rendering with a new callback does not reset the interval | Test |
 | FR-007-AC-3 | On unmount, the underlying `setInterval` SHALL be cleared | Test |
-| FR-007-AC-4 | The orbit-header animation (FR-002) and braille spinner cells (FR-004) SHALL drive their frame index from `useInterval(tick, 80)` per NFR-001 | Test |
+| FR-007-AC-4 | The orbit-header animation (FR-002) and braille spinner cells (FR-004) SHALL drive their frame index from `useInterval(tick, 80)` per [NFR-001](../../non-functional/cli/NFR-001-redraw-interval.md) | Test |
 | FR-007-AC-5 | `useExecaPhase` SHALL return `{ state: "idle" }` when `opts.enabled === false` AND not yet started; `{ state: "running", pid }` once execa is spawned; `{ state: "done", stdout }` on success; `{ state: "failed", error, stderr }` on non-zero exit or spawn error | Test |
 | FR-007-AC-6 | Changing `command` or `args` between renders SHALL NOT auto-restart a running subprocess | Test |
 | FR-007-AC-7 | On unmount, the subprocess SHALL receive `SIGTERM` via `subprocess.kill()` | Test |
@@ -81,7 +81,7 @@ function useHelmHookWatcher(
 - **FR-007-AC-1**: `useInterval(cb, delay)` SHALL fire `cb` every `delay` ms after the component mounts. Passing `delay = null` SHALL pause the interval without unmounting.
 - **FR-007-AC-2**: `cb` is referenced via a ref so re-rendering with a new callback does not reset the interval.
 - **FR-007-AC-3**: On unmount, the underlying `setInterval` SHALL be cleared. (Verified by absence of leaked timers in tests.)
-- **FR-007-AC-4**: The orbit-header animation (FR-002) and braille spinner cells (FR-004) SHALL drive their frame index from `useInterval(tick, 80)` per NFR-001.
+- **FR-007-AC-4**: The orbit-header animation (FR-002) and braille spinner cells (FR-004) SHALL drive their frame index from `useInterval(tick, 80)` per [NFR-001](../../non-functional/cli/NFR-001-redraw-interval.md).
 
 ### useExecaPhase
 

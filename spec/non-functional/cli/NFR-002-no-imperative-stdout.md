@@ -52,7 +52,7 @@ A test iterates `packages/cli/src/` and runs the static greps in the Acceptance 
 ## Acceptance Criteria
 
 - **NFR-002-AC-1**: A static grep across `packages/cli/src/` for `process\.stdout\.write\|process\.stderr\.write\|console\.(log|error|warn)\|process\.stdout\.(cursorTo|moveCursor|clearLine|columns)` SHALL return zero matches.
-- **NFR-002-AC-2**: A static grep across `packages/cli/src/` (excluding `colors.ts`) for `\\x1b\[` SHALL return zero matches. The single permitted source of an SGR escape literal is `colors.ts` (FR-009-AC-1's terracotta-red 256-color helper); cursor-control escapes (`\\x1b[?…`, `\\x1b[<n>A`, `\\x1b[K`) are forbidden everywhere.
+- **NFR-002-AC-2**: A static grep across `packages/cli/src/` (excluding `colors.ts`) for `\\x1b\[` SHALL return zero matches. The single permitted source of an SGR escape literal is `colors.ts` ([FR-009-AC-1](../../functional/cli/FR-009-colors-red.md)'s terracotta-red 256-color helper); cursor-control escapes (`\\x1b[?…`, `\\x1b[<n>A`, `\\x1b[K`) are forbidden everywhere.
 - **NFR-002-AC-3**: A static grep across `packages/cli/src/` for `\\r` appearing **outside a regex literal** SHALL return zero matches. Regex literals that match `\r\n` line endings in input strings (e.g. `text.replace(/\\s*\\r?\\n\\s*/g, " ")` to normalize embedded newlines per FR-001-AC-12) are permitted — they consume `\r`, they do not emit it.
 - **NFR-002-AC-4**: Width-aware code uses Ink's `useStdout()` hook. A grep for `process\.stdout\.columns` SHALL return zero matches.
 - **NFR-002-AC-5**: Hook implementations (FR-007) MAY shell out to subprocesses via `execa` and capture their stdout/stderr — that does not violate this NFR. The output is parsed and exposed as state, never re-emitted to the user's terminal directly.
