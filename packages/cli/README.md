@@ -122,40 +122,40 @@ console.log(`${GLYPH_DONE} ${colors.green("done")}`);
 
 ### Components
 
-| Export | Description |
-| --- | --- |
-| `Frame` | Base header/body/tail frame with `running` / `passed` / `failed` status. |
-| `HeaderSpinner` | Animated orbit-glyph spinner used as a running-frame indicator. |
-| `Listing` | Frame for static listings, status views, and mixed flows. |
-| `FlowLine`, `Group`, `Item`, `Info`, `Note` | Row/section primitives for composing `Listing` bodies. |
-| `PhaseTable` | Multi-phase service progress table with per-row state and elapsed time. |
-| `TaskList` | Sequential or concurrent task runner with live status, logs, and a result summary. |
-| `TextPrompt` | Single-line text input prompt with optional validation. |
-| `PasswordPrompt` | Masked text input prompt. |
-| `ConfirmPrompt` | Yes/no confirmation prompt. |
-| `SelectPrompt` | Single-choice selection prompt. |
-| `MultiSelectPrompt` | Multiple-choice selection prompt. |
+| Export                                      | Description                                                                        |
+| ------------------------------------------- | ---------------------------------------------------------------------------------- |
+| `Frame`                                     | Base header/body/tail frame with `running` / `passed` / `failed` status.           |
+| `HeaderSpinner`                             | Animated orbit-glyph spinner used as a running-frame indicator.                    |
+| `Listing`                                   | Frame for static listings, status views, and mixed flows.                          |
+| `FlowLine`, `Group`, `Item`, `Info`, `Note` | Row/section primitives for composing `Listing` bodies.                             |
+| `PhaseTable`                                | Multi-phase service progress table with per-row state and elapsed time.            |
+| `TaskList`                                  | Sequential or concurrent task runner with live status, logs, and a result summary. |
+| `TextPrompt`                                | Single-line text input prompt with optional validation.                            |
+| `PasswordPrompt`                            | Masked text input prompt.                                                          |
+| `ConfirmPrompt`                             | Yes/no confirmation prompt.                                                        |
+| `SelectPrompt`                              | Single-choice selection prompt.                                                    |
+| `MultiSelectPrompt`                         | Multiple-choice selection prompt.                                                  |
 
 ### Hooks
 
-| Export | Description |
-| --- | --- |
-| `useInterval` | Fire a callback every `delay` ms while mounted; pass `null` to pause. |
-| `useExecaPhase` | Run a command via `execa` and report its phase state; SIGTERM/SIGKILL on unmount. |
-| `useKubectlRollout` | Poll a kubectl rollout and report ready/total pod counts. |
-| `useHelmHookWatcher` | Watch Helm hook jobs and report per-job phase. |
-| `useRenderResult` | Set the resolved value and exit from inside a `render()`-mounted tree. |
+| Export               | Description                                                                       |
+| -------------------- | --------------------------------------------------------------------------------- |
+| `useInterval`        | Fire a callback every `delay` ms while mounted; pass `null` to pause.             |
+| `useExecaPhase`      | Run a command via `execa` and report its phase state; SIGTERM/SIGKILL on unmount. |
+| `useKubectlRollout`  | Poll a kubectl rollout and report ready/total pod counts.                         |
+| `useHelmHookWatcher` | Watch Helm hook jobs and report per-job phase.                                    |
+| `useRenderResult`    | Set the resolved value and exit from inside a `render()`-mounted tree.            |
 
 ### Render & utilities
 
-| Export | Description |
-| --- | --- |
-| `render` | Mount an Ink tree; resolves `{ cancelled, result }` on unmount. |
-| `renderStatic` | Render a final-state tree once and exit after the first paint. |
-| `colors`, `blue` | Picocolors-based color helpers and the IX accent color. |
-| `renderHeader`, `colorOrbitFrame`, `colorPods` | Header/orbit/pod-status string colorizers. |
-| `GLYPH_*`, `PHASE_PASS`, `PHASE_FAIL`, `ORBIT_SPINNER`, `orbitFrameGlyphs` | Glyph and spinner tokens. |
-| `PLANET_COL`, `ROW_INDENT`, `NOTE_INDENT`, `ERROR_INDENT`, `FLOW_INDENT`, `ROUTE_INDENT`, `ROUTE_URL`, `PHASE_WIDTH`, `HEADER_TICK_DIV` | Layout / indent constants. |
+| Export                                                                                                                                  | Description                                                     |
+| --------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
+| `render`                                                                                                                                | Mount an Ink tree; resolves `{ cancelled, result }` on unmount. |
+| `renderStatic`                                                                                                                          | Render a final-state tree once and exit after the first paint.  |
+| `colors`, `blue`                                                                                                                        | Picocolors-based color helpers and the IX accent color.         |
+| `renderHeader`, `colorOrbitFrame`, `colorPods`                                                                                          | Header/orbit/pod-status string colorizers.                      |
+| `GLYPH_*`, `PHASE_PASS`, `PHASE_FAIL`, `ORBIT_SPINNER`, `orbitFrameGlyphs`                                                              | Glyph and spinner tokens.                                       |
+| `PLANET_COL`, `ROW_INDENT`, `NOTE_INDENT`, `ERROR_INDENT`, `FLOW_INDENT`, `ROUTE_INDENT`, `ROUTE_URL`, `PHASE_WIDTH`, `HEADER_TICK_DIV` | Layout / indent constants.                                      |
 
 Ink's `Box` and `Text`, and React's `useState` / `useEffect`, are re-exported
 for convenience so consumers can do ad-hoc layout without adding `ink` or

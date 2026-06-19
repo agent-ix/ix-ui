@@ -84,28 +84,28 @@ orbitFrameGlyphs(frame); // e.g. "⋅⊙∘"
 
 ### Types
 
-| Export | Description |
-| --- | --- |
-| `PhaseState` | Union of phase states: `"pending" \| "queued" \| "running" \| "done" \| "failed"`. |
-| `PhaseGlyph` | Glyph descriptor: `{ tty: string; nonTty: string; animated: boolean }`. |
-| `OrbitTone` | Depth/brightness tone for an orbit cell: `"gray" \| "dim" \| "medDim" \| "med" \| "bright"`. |
-| `OrbitCell` | A single orbit-spinner cell: `" "` (blank) or `{ glyph: string; tone: OrbitTone }`. |
-| `OrbitFrame` | One frame of the orbit spinner: an array of `OrbitCell`. |
+| Export       | Description                                                                                  |
+| ------------ | -------------------------------------------------------------------------------------------- |
+| `PhaseState` | Union of phase states: `"pending" \| "queued" \| "running" \| "done" \| "failed"`.           |
+| `PhaseGlyph` | Glyph descriptor: `{ tty: string; nonTty: string; animated: boolean }`.                      |
+| `OrbitTone`  | Depth/brightness tone for an orbit cell: `"gray" \| "dim" \| "medDim" \| "med" \| "bright"`. |
+| `OrbitCell`  | A single orbit-spinner cell: `" "` (blank) or `{ glyph: string; tone: OrbitTone }`.          |
+| `OrbitFrame` | One frame of the orbit spinner: an array of `OrbitCell`.                                     |
 
 ### Glyphs
 
-| Export | Description |
-| --- | --- |
+| Export         | Description                                                                                           |
+| -------------- | ----------------------------------------------------------------------------------------------------- |
 | `PHASE_GLYPHS` | `Record<PhaseState, PhaseGlyph>` mapping each phase state to its tty/non-tty glyph and animated flag. |
-| `STATUS_DOTS` | Compact status dot symbols for `done` (`•`), `failed` (`○`), and `pending` (`·`). |
+| `STATUS_DOTS`  | Compact status dot symbols for `done` (`•`), `failed` (`○`), and `pending` (`·`).                     |
 
 ### Spinners
 
-| Export | Description |
-| --- | --- |
-| `BRAILLE_SPINNER` | 10-frame braille spinner (`string[]`). |
-| `HEADER_SPINNER` | 4-frame header spinner (`string[]`). |
-| `ORBIT_SPINNER` | 10-frame orbit spinner (`OrbitFrame[]`), each cell carrying glyph + tone. |
+| Export             | Description                                                                   |
+| ------------------ | ----------------------------------------------------------------------------- |
+| `BRAILLE_SPINNER`  | 10-frame braille spinner (`string[]`).                                        |
+| `HEADER_SPINNER`   | 4-frame header spinner (`string[]`).                                          |
+| `ORBIT_SPINNER`    | 10-frame orbit spinner (`OrbitFrame[]`), each cell carrying glyph + tone.     |
 | `orbitFrameGlyphs` | Flattens an `OrbitFrame` to a plain glyph string — useful for tests and logs. |
 
 ## Development
