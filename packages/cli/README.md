@@ -19,18 +19,7 @@ here.
 
 ## Install
 
-This package is published to **GitHub Packages** under the `@agent-ix` scope
-(not the public npm registry). Point the `@agent-ix` scope at GitHub Packages
-and provide a token with `read:packages`.
-
-Create an `.npmrc` (in your project or `~/.npmrc`):
-
-```ini
-@agent-ix:registry=https://npm.pkg.github.com
-//npm.pkg.github.com/:_authToken=${GITHUB_TOKEN}
-```
-
-Then install:
+This package is published on the public npm registry under the `@agent-ix` scope:
 
 ```bash
 npm install @agent-ix/ix-ui-cli

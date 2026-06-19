@@ -16,13 +16,7 @@ For the web/React design system (oklch tokens, shadcn, Storybook), see
 
 ## Install
 
-Both packages publish to GitHub Packages under the `@agent-ix` scope. Point the
-scope at GitHub Packages in `.npmrc`:
-
-```
-@agent-ix:registry=https://npm.pkg.github.com
-//npm.pkg.github.com/:_authToken=${GITHUB_TOKEN}
-```
+Both packages are published on the public npm registry under the `@agent-ix` scope:
 
 ```bash
 npm install @agent-ix/ix-ui-cli @agent-ix/ix-ui-semantic

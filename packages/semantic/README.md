@@ -18,15 +18,7 @@ with **zero runtime dependencies**.
 
 ## Install
 
-Published to GitHub Packages under the `@agent-ix` scope. Point the `@agent-ix`
-scope at the GitHub Packages registry in an `.npmrc`:
-
-```ini
-@agent-ix:registry=https://npm.pkg.github.com
-//npm.pkg.github.com/:_authToken=${GITHUB_TOKEN}
-```
-
-Then install:
+Published on the public npm registry under the `@agent-ix` scope:
 
 ```bash
 npm install @agent-ix/ix-ui-semantic
