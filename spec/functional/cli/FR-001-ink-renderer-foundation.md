@@ -4,7 +4,7 @@ title: "Ink Renderer Foundation"
 type: FR
 relationships:
   - target: "ix://agent-ix/ix-ui/spec/stakeholder/StR-001"
-    type: "derived_from"
+    type: "derives_from"
     cardinality: "N:1"
   - target: "ix://agent-ix/ix-ui/spec/non-functional/cli/NFR-002"
     type: "constrained_by"
