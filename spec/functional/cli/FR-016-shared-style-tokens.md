@@ -4,7 +4,7 @@ title: "Shared Visual Style Tokens — Single Source of Truth"
 type: FR
 relationships:
   - target: "ix://agent-ix/ix-ui/spec/usecase/US-004"
-    type: "derived_from"
+    type: "derives_from"
     cardinality: "N:1"
   - target: "ix://agent-ix/ix-ui/spec/non-functional/cli/NFR-003"
     type: "constrained_by"

@@ -4,7 +4,7 @@ title: "Prompt Components — Text, Password, Confirm, Select, MultiSelect"
 type: FR
 relationships:
   - target: "ix://agent-ix/ix-ui/spec/usecase/US-003"
-    type: "derived_from"
+    type: "derives_from"
     cardinality: "N:1"
   - target: "ix://agent-ix/ix-ui/spec/functional/cli/FR-001"
     type: "depends_on"
