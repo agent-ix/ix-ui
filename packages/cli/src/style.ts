@@ -119,7 +119,7 @@ export const PHASE_PASS: string = colorOrbitFrame([
   " ",
 ]);
 /** Frozen "failed" header indicator — red ⊗, padded to PHASE_WIDTH. */
-export const PHASE_FAIL: string = " " + colors.red("⊗") + "   ";
+export const PHASE_FAIL: string = "  " + colors.red("⊗") + "  ";
 
 /** Wrap a header string in gray brackets with gray `·` separators. */
 export function renderHeader(text: string): string {
