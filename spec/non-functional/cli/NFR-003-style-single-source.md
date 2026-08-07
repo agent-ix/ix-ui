@@ -42,10 +42,13 @@ The design system's "tweak once, retheme everywhere" guarantee depends on every 
 
 ## Acceptance Criteria
 
-- **NFR-003-AC-1**: A static grep across `packages/cli/src/` (excluding `style.ts`) for the canonical indent strings (`"    "`, `"      "`, `"        "`) used as ASCII whitespace literals SHALL return zero matches outside template-literal interpolations of the corresponding token.
-- **NFR-003-AC-2**: A static grep across `packages/cli/src/` (excluding `style.ts`) for connector substrings (`"└──┐"`, `"└──•"`, `"└──"`) SHALL return zero matches.
-- **NFR-003-AC-3**: A static grep across `packages/cli/src/` (excluding `style.ts`) for the standard glyphs used in headers/rows (`"⊙"`, `"⊗"`, `"⊕"`, `"●"`, `"○"`, `"·"` used as a row glyph) SHALL return zero matches outside re-export statements.
-- **NFR-003-AC-4**: Each component file imports every layout token it uses from `style.ts` (or via the package root re-export). The component source files contain no `const ROW_INDENT = ...`, `const ROUTE_INDENT = ...`, etc. — only imports.
+
+| ID | Criteria | Verification |
+|----|----------|--------------|
+| NFR-003-AC-1 | A static grep across `packages/cli/src/` (excluding `style.ts`) for the canonical indent strings (`"    "`, `"      "`, `"        "`) used as ASCII whitespace literals SHALL return zero matches outside template-literal interpolations of the corresponding token. | Inspection |
+| NFR-003-AC-2 | A static grep across `packages/cli/src/` (excluding `style.ts`) for connector substrings (`"└──┐"`, `"└──•"`, `"└──"`) SHALL return zero matches. | Inspection |
+| NFR-003-AC-3 | A static grep across `packages/cli/src/` (excluding `style.ts`) for the standard glyphs used in headers/rows (`"⊙"`, `"⊗"`, `"⊕"`, `"●"`, `"○"`, `"·"` used as a row glyph) SHALL return zero matches outside re-export statements. | Inspection |
+| NFR-003-AC-4 | Each component file imports every layout token it uses from `style.ts` (or via the package root re-export). The component source files contain no `const ROW_INDENT = ...`, `const ROUTE_INDENT = ...`, etc. — only imports. | Demonstration |
 
 ## Verification
 
