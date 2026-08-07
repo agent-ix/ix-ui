@@ -42,5 +42,9 @@ Inconsistent terminal output across tools erodes operator confidence and slows d
 
 ## Validation Criteria
 
-- A developer switching between `ix up`, `ix elements init`, and `ix spec run` sees the same spinner frames, the same `●`/`○`/`·` status dots, and the same intro/outro framing.
-- A new CLI package author can produce spec-compliant output by importing `@agent-ix/ix-ui-cli` with no additional styling work.
+
+| ID | Criteria | Validation |
+|----|----------|------------|
+| StR-001-VC-1 | A developer switching between `ix up`, `ix elements init`, and `ix spec run` sees the same spinner frames, the same `●`/`○`/`·` status dots, and the same intro/outro framing. | Demonstration |
+| StR-001-VC-2 | A new CLI package author can produce spec-compliant output by importing `@agent-ix/ix-ui-cli` with no additional styling work. | Demonstration |
+

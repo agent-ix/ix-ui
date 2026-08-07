@@ -27,5 +27,9 @@ A monorepo design system that couples types to a renderer forces every consumer 
 
 ## Validation Criteria
 
-- `@agent-ix/ix-ui-semantic/package.json` has no `dependencies` field (or an empty object).
-- A Next.js server component can import `PhaseState` from `@agent-ix/ix-ui-semantic` without bundler warnings about Node-only APIs.
+
+| ID | Criteria | Validation |
+|----|----------|------------|
+| StR-002-VC-1 | `@agent-ix/ix-ui-semantic/package.json` has no `dependencies` field (or an empty object). | Demonstration |
+| StR-002-VC-2 | A Next.js server component can import `PhaseState` from `@agent-ix/ix-ui-semantic` without bundler warnings about Node-only APIs. | Demonstration |
+
