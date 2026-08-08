@@ -65,13 +65,13 @@ TC ID conventions:
 | FR | Title | AC count | Planned TCs |
 |---|---|---|---|
 | FR-001 | Ink renderer foundation | 12 | TC-100 – TC-111 |
-| FR-002 | Frame component | 12 | TC-112 – TC-122, TC-122a |
+| FR-002 | Frame component | 13 | TC-112 – TC-122, TC-122a |
 | FR-003 | Listing component | 9 | TC-123 – TC-131 |
 | FR-004 | PhaseTable component | 17 | TC-132 – TC-147, TC-140a |
 | FR-005 | TaskList component | 18 | TC-148 – TC-163, TC-163a – TC-163b |
-| FR-006 | Prompt components | 23 | TC-164 – TC-183, TC-183a – TC-183c |
+| FR-006 | Prompt components | 24 | TC-164 – TC-183, TC-183a – TC-183c |
 | FR-007 | Async work hooks | 16 | TC-184 – TC-198, TC-198a |
-| FR-008 | render() entry point | 12 | TC-199 – TC-210 |
+| FR-008 | render() entry point | 13 | TC-199 – TC-210 |
 | FR-009 | colors.red | 3 | TC-211 – TC-213 |
 | FR-010 | colors palette object | 4 | TC-214 – TC-217 |
 | FR-016 | Shared style tokens | 15 | TC-300 – TC-313, TC-307a |
@@ -82,7 +82,7 @@ TC ID conventions:
 
 | NFR | Title | AC count | Planned TCs |
 |---|---|---|---|
-| NFR-001 | Animation tick interval — 80 ms | 5 | TC-320 – TC-324 |
+| NFR-001 | Animation tick interval — 80 ms | 6 | TC-320 – TC-324 |
 | NFR-002 | No imperative stdout / ANSI control | 5 | TC-325 – TC-329 (static greps) |
 | NFR-003 | Single source of style | 4 | TC-330 – TC-333 (static greps) |
 
@@ -207,7 +207,7 @@ TC ID conventions:
 | TC-181 | AC-18 | Unmount before submit fires nothing. |
 | TC-182 | AC-19 | Multiple Enter within tick fires once. |
 | TC-183 | AC-20 | Non-TTY stdin → graceful cancel summary. |
-| TC-183a | AC-21 | Throwing onSubmit propagates; prompt still renders summary. |
+| TC-183a | AC-21, AC-24 | Throwing onSubmit propagates; prompt still renders summary. |
 | TC-183b | AC-22 | Validate purity is documented (review-only — no automated test). |
 | TC-183c | AC-23 | Duplicate option values render as separate rows; first match wins. |
 
@@ -243,7 +243,7 @@ TC ID conventions:
 | TC-203 | AC-5 | Caller inspects cancelled. |
 | TC-204 | AC-6 | Non-TTY → frame-per-render, no in-place. |
 | TC-205 | AC-7 | Plain mode static UI emits one final frame. |
-| TC-206 | AC-8 | Synchronous render error rejects + restores cursor. |
+| TC-206 | AC-8, AC-13 | Synchronous render error unmounts, restores cursor, then rejects. |
 | TC-207 | AC-9 | Hook async error stays in hook state. |
 | TC-208 | AC-10 | Cursor visible on every exit path. |
 | TC-209 | AC-11 | Concurrent render() rejects with active-error. |
@@ -289,7 +289,7 @@ TC ID conventions:
 | TC-321 | NFR-001-AC-2 | Header advances every 240 ms. |
 | TC-322 | NFR-001-AC-3 | Braille spinners advance every 80 ms. |
 | TC-323 | NFR-001-AC-4 | No alternative animation paths. |
-| TC-324 | NFR-001-AC-5 | Non-TTY: no animation tick fires. |
+| TC-324 | NFR-001-AC-5, NFR-001-AC-6 | Non-TTY: no animation tick fires, and components render their frozen frame. |
 | TC-325 | NFR-002-AC-1 | Static grep: no console / stdout writes. |
 | TC-326 | NFR-002-AC-2 | Static grep: no `\\x1b[` literals. |
 | TC-327 | NFR-002-AC-3 | Static grep: no `\\r` literals. |
@@ -319,7 +319,7 @@ Each row is a distinct render scenario verified against snapshot output. `🔘` 
 | TC-OP-07 | passed | success | no | yes | Header + tail (no opener) — tail-only frame. |
 | TC-OP-08 | failed | success → coerced error | yes | yes | Variant auto-coerces to `error` per Frame.tsx logic. |
 
-Trace: TC-OP-01 – TC-OP-08 → FR-002-AC-1..AC-9.
+Trace: TC-OP-01 – TC-OP-08 → FR-002-AC-1..AC-9, AC-13.
 
 ### TaskList scheduling
 
@@ -388,7 +388,7 @@ Trace: TC-OP-30 – TC-OP-36 → FR-006-AC-3, AC-9..AC-10, AC-13..AC-14.
 | EC-06 | Prompt: stdin not TTY | FR-006-AC-20 | TC-183 | "Raw mode not supported" thrown. |
 | EC-07 | Prompt: option list empty (SelectPrompt) | FR-006-AC-11 | TC-EC-07 | No items to render — should show empty list, accept Enter as cancel. |
 | EC-08 | Frame: header is empty string | FR-002-AC-12 | TC-122a | `[ ]` collapses or layout breaks. |
-| EC-09 | render(): tree throws synchronously on first render | FR-008-AC-8 | TC-206 | Cursor left hidden; promise hangs. |
+| EC-09 | render(): tree throws synchronously on first render | FR-008-AC-8, FR-008-AC-13 | TC-206 | Cursor left hidden; promise hangs. |
 | EC-10 | render(): called twice concurrently | FR-008-AC-11 | TC-209 | Two trees fight for stdout. |
 | EC-11 | render(): SIGTERM during pending hook | FR-008-AC-12 | TC-210 | Hook's subprocess leaks. |
 | EC-12 | useExecaPhase: enabled flips false → true twice | FR-007-AC-6 | TC-EC-12 | Re-spawn behavior verified. |
