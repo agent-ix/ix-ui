@@ -50,11 +50,12 @@ function useRenderResult<T>(): {
 | FR-008-AC-5 | Subsequent CLI logic SHALL inspect `result.cancelled` and exit the process appropriately | Test |
 | FR-008-AC-6 | When `process.stdout.isTTY === false` OR `opts.plain === true`, Ink SHALL render in non-interactive mode: each render commits a frame to stdout via `\n` and no in-place updates occur | Test |
 | FR-008-AC-7 | In plain mode, the final state SHALL be the only frame committed for static UIs (`<Listing>` with `status="passed"` and a tail) — there is no frame-per-tick log spam | Test |
-| FR-008-AC-8 | If a component throws during render (synchronously) AND no React error boundary catches it, `render()` SHALL unmount the tree and the Promise SHALL reject with the original error | Test |
+| FR-008-AC-8 | If a component throws during render (synchronously) AND no React error boundary catches it, `render()` SHALL unmount the tree | Test |
 | FR-008-AC-9 | If a hook's async work throws (e.g | Test |
 | FR-008-AC-10 | On unmount (success, cancel, or error path), the cursor SHALL be visible | Test |
 | FR-008-AC-11 | At most one `render()` invocation MAY be active at a time within a process | Test |
 | FR-008-AC-12 | When `process.on("SIGTERM")` fires, `render()` SHALL unmount the tree and resolve with `{ cancelled: true }` | Test |
+| FR-008-AC-13 | On that same uncaught render throw, the `render()` Promise SHALL reject with the original error, cursor visibility having been restored first | Test |
 
 ### Mounting and resolution
 
@@ -74,7 +75,8 @@ function useRenderResult<T>(): {
 
 ### Error handling
 
-- **FR-008-AC-8**: If a component throws during render (synchronously) AND no React error boundary catches it, `render()` SHALL unmount the tree and the Promise SHALL reject with the original error. Cursor visibility SHALL be restored before rejection.
+- **FR-008-AC-8**: If a component throws during render (synchronously) AND no React error boundary catches it, `render()` SHALL unmount the tree.
+- **FR-008-AC-13**: On that same uncaught render throw, the `render()` Promise SHALL reject with the original error, and cursor visibility SHALL be restored before it rejects.
 - **FR-008-AC-9**: If a hook's async work throws (e.g. `useExecaPhase` rejects), the failure SHALL be exposed via the hook's state (e.g. `{ state: "failed", error }`). It SHALL NOT cause `render()` to reject.
 
 ### Cursor and terminal hygiene

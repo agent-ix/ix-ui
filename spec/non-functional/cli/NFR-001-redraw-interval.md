@@ -46,5 +46,6 @@ A test inspects the shared `useInterval` driver and asserts the 80 ms cadence an
 | NFR-001-AC-2 | The orbit-header advance rate is `80 ms × HEADER_TICK_DIV (3)` = 240 ms per frame ([FR-016-AC-12](../../functional/cli/FR-016-shared-style-tokens.md)). | Analysis |
 | NFR-001-AC-3 | Braille spinner cells advance every 80 ms (one frame per tick). | Analysis |
 | NFR-001-AC-4 | No alternative animation path (e.g. `requestAnimationFrame`, `setTimeout` recursive loop, RxJS interval) exists in `packages/cli/src/`. | Inspection |
-| NFR-001-AC-5 | When the package is consumed in a non-TTY environment (Ink's static / plain mode, [FR-008](../../functional/cli/FR-008-render-entry-point.md)), the animation tick SHALL NOT fire — there is nothing to animate. Components SHALL render their frozen frame. | Inspection |
+| NFR-001-AC-5 | When the package is consumed in a non-TTY environment (Ink's static / plain mode, [FR-008](../../functional/cli/FR-008-render-entry-point.md)), the animation tick SHALL NOT fire — there is nothing to animate. | Inspection |
+| NFR-001-AC-6 | In that same non-TTY environment, components SHALL render their frozen frame rather than nothing. | Inspection |
 

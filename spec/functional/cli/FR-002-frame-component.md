@@ -38,7 +38,7 @@ const Frame: FC<FrameProps>;
 
 | ID | Criteria | Verification |
 |----|----------|--------------|
-| FR-002-AC-1 | When `status === "running"`, the header glyph SHALL be the animated orbit frame produced by the `<HeaderSpinner>` component (advancing every 240 ms per [NFR-001](../../non-functional/cli/NFR-001-redraw-interval.md)) and the bracketed text SHALL be rendered via the `renderHeader(text)` helper ([FR-016](./FR-016-shared-style-tokens.md)) | Test |
+| FR-002-AC-1 | When `status === "running"`, the header glyph SHALL be the animated orbit frame produced by the `<HeaderSpinner>` component (advancing every 240 ms per [NFR-001](../../non-functional/cli/NFR-001-redraw-interval.md)) | Test |
 | FR-002-AC-2 | When `status === "passed"`, the header glyph SHALL be `PHASE_PASS` (frozen orbit, [FR-016](./FR-016-shared-style-tokens.md)) | Test |
 | FR-002-AC-3 | When `status === "failed"`, the header glyph SHALL be `PHASE_FAIL` (red `⊗`, [FR-016](./FR-016-shared-style-tokens.md)) | Test |
 | FR-002-AC-4 | The header line SHALL be exactly `PLANET_COL` + `PHASE_WIDTH` + `[ … ]` columns wide; visual indicator width is constant across all three states | Test |
@@ -50,10 +50,12 @@ const Frame: FC<FrameProps>;
 | FR-002-AC-10 | `<Frame>` SHALL accept any Ink-renderable React node as `children` | Test |
 | FR-002-AC-11 | `<Frame>` SHALL forward `marginTop` and `marginLeft` props to its outer `<Box>` so callers can position the frame within larger layouts | Test |
 | FR-002-AC-12 | When `header` is an empty string, the bracketed area SHALL still render (`[ ]`) — the indicator + opener layout is preserved | Test |
+| FR-002-AC-13 | The bracketed header text SHALL be rendered via the `renderHeader(text)` helper ([FR-016](./FR-016-shared-style-tokens.md)), in every `status` | Test |
 
 ### Header
 
-- **FR-002-AC-1**: When `status === "running"`, the header glyph SHALL be the animated orbit frame produced by the `<HeaderSpinner>` component (advancing every 240 ms per [NFR-001](../../non-functional/cli/NFR-001-redraw-interval.md)) and the bracketed text SHALL be rendered via the `renderHeader(text)` helper ([FR-016](./FR-016-shared-style-tokens.md)).
+- **FR-002-AC-1**: When `status === "running"`, the header glyph SHALL be the animated orbit frame produced by the `<HeaderSpinner>` component (advancing every 240 ms per [NFR-001](../../non-functional/cli/NFR-001-redraw-interval.md)).
+- **FR-002-AC-13**: The bracketed header text SHALL be rendered via the `renderHeader(text)` helper ([FR-016](./FR-016-shared-style-tokens.md)). This holds in every `status` — the glyph varies per AC-1..AC-3, the text rendering does not.
 - **FR-002-AC-2**: When `status === "passed"`, the header glyph SHALL be `PHASE_PASS` (frozen orbit, [FR-016](./FR-016-shared-style-tokens.md)).
 - **FR-002-AC-3**: When `status === "failed"`, the header glyph SHALL be `PHASE_FAIL` (red `⊗`, [FR-016](./FR-016-shared-style-tokens.md)).
 - **FR-002-AC-4**: The header line SHALL be exactly `PLANET_COL` + `PHASE_WIDTH` + `[ … ]` columns wide; visual indicator width is constant across all three states.
