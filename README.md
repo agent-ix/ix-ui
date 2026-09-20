@@ -1,5 +1,7 @@
 # @agent-ix/ix-ui
 
+[![Discord](https://img.shields.io/badge/Discord-Join%20us-5865F2?logo=discord&logoColor=white)](https://discord.gg/6qsdhSPE)
+
 > Design system for Agent IX — terminal-first UI components plus the shared, render-agnostic semantic vocabulary behind them.
 
 `ix-ui` is a pnpm-workspace monorepo that ships the **terminal** side of the Agent IX
