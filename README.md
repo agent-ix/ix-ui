@@ -1,6 +1,6 @@
 # @agent-ix/ix-ui
 
-[![Discord](https://img.shields.io/badge/Discord-Join%20us-5865F2?logo=discord&logoColor=white)](https://discord.gg/6qsdhSPE)
+[![Discord](https://img.shields.io/badge/Discord-Join%20us-5865F2?logo=discord&logoColor=white)](https://discord.gg/k8DVhuYBR2)
 
 > Design system for Agent IX — terminal-first UI components plus the shared, render-agnostic semantic vocabulary behind them.
 
